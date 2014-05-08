@@ -51,34 +51,7 @@ getPGM<-function(s){
 }
 
 
-test.SummaryTable<-function(){
 
-
-	aberration_data_type="generic data type"
-	dataSetName = "generic data set name"
-	targetName = "generic target name"
-	pgmFile = "/Users/samhiggins2001_worldperks/tprog/main_130525/input/test_files/overlaptestGisticFile.txt"
-	pgm = open.PGM(fname=pgmFile)
-	pgm = pgm==0
-	target_matrix = NULL
-	path_detail  = STUDY@studyMetaData@paths
-	
-	dir.create("./testData/")
-	path_detail_file_name= "./testData/path_detail_object"
-	pgm_file_name = "./testData/pgm"
-	save(path_detail, file=path_detail_file_name, compress=T)
-	save(pgm, file=pgm_file_name, compress=T)
-
-	
-	gsum = summaryTable4(paths_detail=path_detail, 
-											 target_matrix=target_matrix,
-											 individualEnrichment=T,
-											 verbose=T,
-											 dataSetName=dataSetName,
-											 patientGeneMatrix=pgm, 
-											 targetname=targetName)
-	
-}
 
 RunGenericEnrichment<-function(settings, study){
 	
@@ -210,13 +183,13 @@ RunGenericEnrichment_main<-function(path_detail,
 	}
 
 	rownames(pgm)<-corsym(symbol_set=rownames(pgm), 
-												hugoref=path_detail$HUGOtable, 
+												symref=path_detail$symtable, 
 												verbose=customCorrections)
 	if(!is.null(target_list)){
 		if(!is.atomic(target_list)) target_list = target_list[,1]
 		
 		target_list <-corsym(symbol_set=target_list, 
-												 hugoref=path_detail$HUGOtable, 
+												 symref=path_detail$symtable, 
 												 verbose=customCorrections)
 	}
 	originalPGM = pgm

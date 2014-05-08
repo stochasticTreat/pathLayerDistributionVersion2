@@ -122,10 +122,10 @@ getTargetGenesFromDrugs<-function(drugTargetsFileName="./input/drug_targets_2.tx
 #cleans symbols, removing -phosphorylated and items in parenthesis
 #takes: data frame with column titled "gene"
 #returns: the input data frame with symbols in "gene" column cleaned
-cleanSyms<-function(tab, s, htab=NULL){
+cleanSyms<-function(tab, s, symtab=NULL){
 	cat("in cleanSyms()\n")
-	if(is.null(htab)){
-		htab = getHugoSymbols()
+	if(is.null(symtab)){
+		symtab = getHugoSymbols()
 	}
 	#remove -domain information
 	allSymsPlusPhos = sapply(X=tab$gene,function(x){strsplit(x=x,split="\\(")[[1]][1]})
@@ -136,7 +136,7 @@ cleanSyms<-function(tab, s, htab=NULL){
 	s = setting(s=s, prompt="Have manual gene symbol corrections already been made? (y/n) ")
 	
 	allSymsCor = corsym(symbol_set=allSyms, 
-											hugoref=htab, 
+											symref=symtab, 
 											verbose=s$.text=="n")
 	tab$gene = allSymsCor
 	return(list(txt=tab, s=s))
@@ -219,7 +219,7 @@ DrugMultiScoreReduce<-function(dstab, s){
 #calls the corsym function to attempt to correct the gene symbols found
 #
 #takes:		tab: table with column named "gene", containing HUGO gene symbols
-extractAndCleanGeneSymbols<-function(tab, study, s, htab=NULL){
+extractAndCleanGeneSymbols<-function(tab, study, s, symtab=NULL){
 	
 	#remove blank rows: 
 	blanki = which(tab$gene=="")
@@ -234,7 +234,7 @@ extractAndCleanGeneSymbols<-function(tab, study, s, htab=NULL){
 			length(allSyms),
 			"unique gene symbols were found")
 	s = setting(s=s, prompt="Have manual gene symbol corrections already been made? (y/n)")
-	allSymsCor = corsym(symbol_set=allSyms, hugoref=getHugoSymbols(paths_detail=study),
+	allSymsCor = corsym(symbol_set=allSyms, symref=getHugoSymbols(paths_detail=study),
 											verbose=s$.text=="n")
 	allSymsCor = unique(allSymsCor)
 	return(list(txt = allSymsCor, s=s))
@@ -470,10 +470,10 @@ runPanelAnalysis<-function(path_detail, study, s=list()){
 	}else{
 		print("not in stacked format")
 		patient_gene_levels = open.PGM(fname=drug_scores_fname)
-		approved_hugo=path_detail$HUGOtable
+		approved_hugo=path_detail$symtable
 		s = setting(s=s, prompt="Have manual symbol corrections been performed yet for the current data set? (y/n)")
 		targets= corsym(symbol_set=row.names(patient_gene_levels),
-										hugoref=path_detail$HUGOtable, 
+										symref=path_detail$symtable, 
 										verbose=s$.text=="n")
 		
 		row.names(patient_gene_levels)<-as.character(targets)

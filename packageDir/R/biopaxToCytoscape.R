@@ -51,7 +51,7 @@ getAllDrugGeneAssociations<-function(study,
 																		 				 "./reference_data/drugDB/drugbank/all_enzyme_ids_all.csv")){
 	dtd2 = NULL
 	for(fn in fnames){
-		dtd1 = getDrugTargetData(hugo=study@studyMetaData@paths$HUGOtable, 
+		dtd1 = getDrugTargetData(hugo=study@studyMetaData@paths$symtable, 
 														 fname=fn)
 		dtd2 = rbind(dtd2,dtd1)
 	}
@@ -1675,11 +1675,11 @@ fixGeneNames <- function (nodeTable, df, STUDY, pname) {
 	#next, try to correct the hugo symbols
 	# 	update the nonHugoNodeIds, nonHugoSymbols and idSymDict to reflect those still not in the path
 	notInPathi = !nodeTable$displayName%in%pathGenes
-	notHugoi = !nodeTable$displayName%in%STUDY@studyMetaData@paths$HUGOtable$Approved.Symbol
+	notHugoi = !nodeTable$displayName%in%STUDY@studyMetaData@paths$symtable$Approved.Symbol
 	toCorrectInNodeTablei=toBeCorrected&notInPathi&notHugoi
 	nonHugoNodeIds = nodeTable$nodeID[toCorrectInNodeTablei]
 	#		attempt to correct the alternate symbols to HUGO
-	idnameXref[,2] = corsym(symbol_set=idnameXref[,2], hugoref=STUDY, verbose=F)
+	idnameXref[,2] = corsym(symbol_set=idnameXref[,2], symref=STUDY, verbose=F)
 	idnameXref = unique(idnameXref)#make the rows unique
 
 	nodeTable=checkUseAlternates(missing=pathIdsMissingFromBiopax, xref=idnameXref, nodeTable=nodeTable)

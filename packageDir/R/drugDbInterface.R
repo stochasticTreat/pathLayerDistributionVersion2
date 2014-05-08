@@ -1,9 +1,4 @@
 #drugDbInterface.R
-
-if(!exists("acc_loaded")){
-	source("./acc_functions.R")
-}
-
 #Finds possible drugs to traget driver or sensitive and driver pathways
 
 
@@ -53,7 +48,7 @@ getDrugTargetData<-function(hugo, fname="./reference_data/drugDB/drugbank/all_ta
 	htab = targtab[targtab$Species == "Homo sapiens",]
 
 	#next, attempt-correction of gene Name column 
-	tmpName = corsym(symbol_set=htab$Gene.Name,verbose=F, hugoref=hugo)
+	tmpName = corsym(symbol_set=htab$Gene.Name,verbose=F, symref=hugo)
 	htab$Gene.Name = tmpName
 	
 	
@@ -356,10 +351,10 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	
 	#open the data files
 	
-	dtd1 = getDrugTargetData(hugo=STUDY@studyMetaData@paths$HUGOtable, 
+	dtd1 = getDrugTargetData(hugo=STUDY@studyMetaData@paths$symtable, 
 													 fname="./reference_data/drugDB/drugbank/all_target_ids_all.csv")
 	dtd2 = getDrugTargetData(fname="./reference_data/drugDB/drugbank/all_enzyme_ids_all.csv",
-													 hugo=STUDY@studyMetaData@paths$HUGOtable)
+													 hugo=STUDY@studyMetaData@paths$symtable)
 	
 	#merge the two gene-drug association lists
 	dtd1 = rbind(dtd1,dtd2[!dtd2$geneID%in%dtd1$geneID,])

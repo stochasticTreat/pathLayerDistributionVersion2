@@ -10,8 +10,8 @@ getNodes<-function(path){
 }
 
 # importAllGraphite()
-importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, nci=nci, kegg=kegg, biocarta=biocarta), htab=NULL, verbose=F){
-	if(is.null(htab)) htab = getHugoSymbols()
+importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, nci=nci, kegg=kegg, biocarta=biocarta), symtab=NULL, verbose=F){
+	if(is.null(symtab)) symtab = getHugoSymbols()
 	if(verbose){
 		print(matrix(data=names(repositories), ncol=1, dimnames=list(1:length(repositories), "Repository Name")))
 		while(T){
@@ -27,11 +27,11 @@ importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, 
 		preped_paths = importFromGraphite(db=pws)
 		#correct gene symbols
 		colnames(preped_paths$paths)<-corsym(symbol_set=colnames(preped_paths$paths), 
-																				 hugoref=htab, 
+																				 symref=symtab, 
 																				 verbose=T)
 		
 		#setPathMetaData
-		preped_paths = manualPathMetaData(preped_paths=preped_paths, htab=htab)
+		preped_paths = manualPathMetaData(preped_paths=preped_paths, symtab=symtab)
 		
 		#establish path set
 		recordPathSet(ps=preped_paths)
@@ -93,10 +93,10 @@ parseReactomeUniprot<-function(firstVectorColum, fname = NULL ){
 #takes set of ids (vector)
 #returns set of ids with as many switched as possible
 
-switchIds<-function(idv,htab=NULL){
+switchIds<-function(idv,symtab=NULL){
 	
 	#see which can be switched
-	#idv%in%htab$
+	#idv%in%symtab$
 	dict = c("testSymbol")
 	names(dict) = c("UniProt:P12956")
 	for(i in 1:length(idv)){
@@ -174,10 +174,10 @@ getUniverse<-function(gsv)
 }
 
 test.getPaths<-function(){
-	htab = getHugoSymbols()
+	symtab = getHugoSymbols()
 	path_file=NULL
 	referenceFileName = "./reference_data/paths/pathMetaData.txt"
-	testPths = getPaths(htab=htab)
+	testPths = getPaths(symtab=symtab)
 	print(dim(testPths$paths))
 	print(testPths$paths[1:2,1:2])
 }
@@ -187,14 +187,15 @@ test.getPaths<-function(){
 #requires path meta data be available in file "./reference_data/paths/pathMetaData.txt"
 # takes: path_file: the file name of the pathways to be loaded; if provided, interactive pathway selection will not be used
 #				 referenceFileName: the name of the path meta data file
-#				 htab: the symbol look up table for hugo symbols 
+#				 symtab: the symbol look up table for hugo symbols 
 # returns path_detail object
 getPaths<-function(path_file=NULL, 
 									 referenceFileName = "./reference_data/paths/pathMetaData.txt", 
-									 htab=NULL){
+									 symtab=NULL, 
+									 verbose=T){
 	if(class(path_file)=="Study") return(path_file@studyMetaData@paths)
 	#initilize
-	if(is.null(htab)) htab = getHugoSymbols()
+	if(is.null(symtab)) symtab = getHugoSymbols(verbose=verbose)
 	
 	if(!length(path_file)) path_file=NULL
 	if(!is.null(path_file)){
@@ -209,10 +210,10 @@ getPaths<-function(path_file=NULL,
 		pRecord = choosePaths(ref=referenceFileName, path_file=path_file)
 		if(!is.null(pRecord)) break
 		#if excecution gets here, no pathway was selected and the option to import new pathway sets will be provided
-		importPathways(htab)
+		importPathways(symtab)
 	}
 	#load the actual paths
-	paths = loadPaths(pRecord=pRecord, htab=htab)
+	paths = loadPaths(pRecord=pRecord, symtab=symtab)
 	return(paths)
 }
 
@@ -224,16 +225,30 @@ getPathsFromStudy<-function(studyObject){
 	return(studyObject@studyMetaData@paths)
 }
 
+getPathMetaData<-function(ref="./reference_data/paths/pathMetaData.txt"){
+	
+	if(file.exists(ref)){
+		fullTab = read.table(file=ref, header=T, sep="\t", stringsAsFactors=F, comment.char="")
+	}else{
+		
+		fullTab = read.table(file=system.file("extdata/pathMetaData.txt", 
+																					package = PACKAGENAME), header=T, sep="\t", stringsAsFactors=F, comment.char="")
+		if(!file.exists("./referenceData/")) dir.create(path="./referenceData")
+		write.table(x=fullTab, file=ref, quote=F, sep="\t", col.names=T, row.names=F)
+		return(fullTab)
+	}
+}
+
 #choosePaths()
 #allows interactive selection of pathways
 #takes: 	ref: path meta data file (default:"./reference_data/paths/pathMetaData.txt")
 #					path_file: the file name of a pathway set (must be in GSEA format)
 #returns: list: 1 row from the path meta data file given by the ref argument
 choosePaths<-function(ref="./reference_data/paths/pathMetaData.txt", path_file=NULL){
+	
 	if(!length(path_file)) path_file = NULL
 	outRecord = NULL
-	if(!file.exists(ref)) return(NULL)
-	fullTab = read.table(file=ref, header=T, sep="\t", stringsAsFactors=F, comment.char="")
+	fullTab = getPathMetaData(ref)
 	if(is.null(path_file)){
 		refTab=fullTab[,c(1:4)]
 		colnames(refTab)<-gsub(pattern="[._]", replacement=" ",x=colnames(refTab))
@@ -266,10 +281,10 @@ choosePaths<-function(ref="./reference_data/paths/pathMetaData.txt", path_file=N
 	return(outRecord)
 }#choosePaths
 
-getPathObject<-function(htab, pRecord, pData, repset=NULL){
+getPathObject<-function(symtab, pRecord, pData, repset=NULL){
 	#getPathObject
 	#creates path list object with all possible slots filled
-	# htab: the hugo lookup table
+	# symtab: the hugo lookup table
 	# pData: the bipartate graph of pathways
 	# pRecord: the row of data from the path meta data file
 	# repset: depricated: the set of repositories
@@ -278,7 +293,7 @@ getPathObject<-function(htab, pRecord, pData, repset=NULL){
 	pData = as.matrix(pData)
 	colnames(pData)  = gsub(pattern="\\.",replacement="-",x=colnames(pData))#replace periods with dashes
 	if(pRecord$Gene_Id_Type=="HUGO"){
-		colnames(pData) = corsym(symbol_set=colnames(pData),verbose=F,hugoref=htab)
+		colnames(pData) = corsym(symbol_set=colnames(pData),verbose=F,symref=symtab)
 	}else{
 		cat("\nNon-HUGO symbols used in paths thus skipping gene symbol correction\n")
 	}
@@ -286,7 +301,7 @@ getPathObject<-function(htab, pRecord, pData, repset=NULL){
 	pd = setPathMetaData(pd=pd, 
 											 symbol_type=pRecord$Gene_Id_Type,
 											 p.file=pRecord$file, 
-											 htab=htab, 
+											 symtab=symtab, 
 											 p.info = paste(pRecord$Set_name, pRecord$date_procured),
 											 p.date = pRecord$date_procured,
 											 p.source=pRecord$Set_name, 
@@ -295,7 +310,7 @@ getPathObject<-function(htab, pRecord, pData, repset=NULL){
 	return(pd)
 }
 
-setPathMetaData<-function(htab, 
+setPathMetaData<-function(symtab, 
 													p.paths, 
 													p.file, 
 													p.date, 
@@ -306,7 +321,7 @@ setPathMetaData<-function(htab,
 													symbol_type="HUGO"){
 #setPathMetaData
 	#establishes path meta data
-	#takes: htab: the symbol lookup table
+	#takes: symtab: the symbol lookup table
 	#				p.paths: the set of pathways in bipartate graph format
 	#				p.file: the file containing the pathways
 	#				p.date: the date the pathways were produced
@@ -332,7 +347,7 @@ setPathMetaData<-function(htab,
 	pd[["source"]] = p.source
 	pd[["gene_overlap_counts"]] = rep(T,nrow(p.paths))%*%p.paths
 	pd[["full_path_length"]] = p.paths%*%rep(T,ncol(p.paths))
-	pd[["HUGOtable"]] = htab
+	pd[["symtable"]] = symtab
 	pd[["paths"]] = p.paths
 	pd[["symbol_type"]] = symbol_type
 	pd[["graphite"]] = list()
@@ -347,13 +362,13 @@ setPathMetaData<-function(htab,
 #will try to load path in GSEA format from the file denoted by file_name
 #takes: paths pRecord: a list with one slot named "file" and other slots to be used by getPathObject
 #returns: pathset
-loadPaths<-function(pRecord, htab=NULL){
+loadPaths<-function(pRecord, symtab=NULL){
 	
-	if(is.null(htab)) htab = getHugoSymbols()
+	if(is.null(symtab)) symtab = getHugoSymbols()
 
 	tmptab = list_to_table(pth=loadPathsAsSets(firstGeneColum=3, fname=pRecord$file))
 	
-	pathset = getPathObject(htab=htab, pRecord=pRecord, pData=tmptab)
+	pathset = getPathObject(symtab=symtab, pRecord=pRecord, pData=tmptab)
 
 	return(pathset)
 }
@@ -417,13 +432,13 @@ GSEAImport<-function(fname=NULL){
 
 #importPathways
 #allows import of pathways either interactively or by choice and file name
-#takes: htab : table of symbol lookups
+#takes: symtab : table of symbol lookups
 #				choice: currently b for bipartate graph or g for GSEA format
 #				fname: the file name of the pathway repository
 #								must match the format indicated by the choice argument
 #returns: nothing
-importPathways<-function(htab=NULL, choice=NULL, fname=NULL){
-	if(is.null(htab)) htab = getHugoSymbols()
+importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
+	if(is.null(symtab)) symtab = getHugoSymbols()
 	
 	#initialize
 	preped_paths = NULL#will hold the forming path object
@@ -447,15 +462,15 @@ importPathways<-function(htab=NULL, choice=NULL, fname=NULL){
 		symbol_type="HUGO"
 		#correct gene symbols
 		colnames(preped_paths$paths)<-corsym(symbol_set=colnames(preped_paths$paths), 
-																				 hugoref=htab, 
+																				 symref=symtab, 
 																				 verbose=T)
 	}else{
 		symbol_type=readline("Please enter the type of gene identifiers employed (ex: UniProt) ")
-		htab=NULL
+		symtab=NULL
 	}
 
 	#setPathMetaData
-	preped_paths = manualPathMetaData(preped_paths=preped_paths, htab=htab, symbol_type=symbol_type)
+	preped_paths = manualPathMetaData(preped_paths=preped_paths, symtab=symtab, symbol_type=symbol_type)
 
 	#establish path set
 	recordPathSet(ps=preped_paths)
@@ -466,13 +481,13 @@ importPathways<-function(htab=NULL, choice=NULL, fname=NULL){
 #allows user to interactively establish path meta data
 #used by importPathways() function
 #takes: preped_paths: nascent path_detail object with file name and paths slots filled in. 
-#				htab: the symbol lookup table
+#				symtab: the symbol lookup table
 #returns: preped_paths: the path_detail object with meta data filled in
-manualPathMetaData<-function(preped_paths, htab=NULL, symbol_type="HUGO"){
-	if(is.null(htab)) htab = getHugoSymbols()
+manualPathMetaData<-function(preped_paths, symtab=NULL, symbol_type="HUGO"){
+	if(is.null(symtab)) symtab = getHugoSymbols()
 	pathsFolder = "./reference_data/paths/"
 	library("tools")
-# 	allSlots = c("paths","name", "file", "info", "date", "source", "gene_overlap_counts", "full_path_length", "HUGOtable", "original_file_or_source", "original_file_creation_date")
+# 	allSlots = c("paths","name", "file", "info", "date", "source", "gene_overlap_counts", "full_path_length", "symtable", "original_file_or_source", "original_file_creation_date")
 	neededSlots = c("name", "date", "source")
 	missingSlots = neededSlots[!neededSlots%in%names(preped_paths)]
 	addedSlots = list()
@@ -493,7 +508,7 @@ manualPathMetaData<-function(preped_paths, htab=NULL, symbol_type="HUGO"){
 	preped_paths = c(preped_paths, addedSlots)
 	fileName = paste(pathsFolder, preped_paths$name," ", gsub(pattern="[-:]", replacement=".", x=as.character(Sys.time())),".txt", sep="")
 	cat("\nusing file name:", fileName,"to save the current set of pathways.\n")
-	preped_paths = setPathMetaData(htab=htab, symbol_type=symbol_type,
+	preped_paths = setPathMetaData(symtab=symtab, symbol_type=symbol_type,
 																 pd=preped_paths,
 																 p.info=paste(preped_paths[["name"]], preped_paths[["date"]]),
 																 p.name=preped_paths[["name"]],
@@ -521,7 +536,7 @@ test.recordPathSet<-function(){
 
 # 
 # #obtain path meta data
-# ps = setPathMetaData(htab=hugo, 
+# ps = setPathMetaData(symtab=hugo, 
 # 										 p.date=p.date, 
 # 										 p.source=p.source,
 # 										 p.file=fileName, 
@@ -559,7 +574,7 @@ addToPathRecords<-function(pfull, precFname = "./reference_data/paths/pathMetaDa
 						 nrow(pfull$paths), 
 						 ncol(pfull$paths), 
 						 sum(pfull$full_path_length==0), 
-						 sum(!colnames(pfull$paths)%in%pfull$HUGOtable$Approved.Symbol), 
+						 sum(!colnames(pfull$paths)%in%pfull$symtable$Approved.Symbol), 
 						 pfull$file, 
 						 pfull$original_file_or_source, 
 						 pfull$original_file_creation_date, 

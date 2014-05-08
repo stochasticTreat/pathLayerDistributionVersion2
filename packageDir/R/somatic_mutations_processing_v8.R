@@ -1,8 +1,4 @@
 #somatic_mutations_processing_v8.R
-source('./acc_functions.R')
-source('./PolyPhenAppend.R')
-source('./InitiateDataStructures.R')
-
 
 #runSomaticMutationsProcessing
 #main interface for somatic mutations input arm
@@ -401,7 +397,7 @@ FilterDuplicates<-function(tcga_som_raw, s, tracker, paths_detail){
 		customCorrections = s$.text=="y"
 	}
 	tcga_som[,"Hugo_Symbol"] = corsym(tcga_som[,c("Hugo_Symbol", "Chrom")],
-																		hugoref=paths_detail$HUGOtable, 
+																		symref=paths_detail$symtable, 
 																		verbose=customCorrections)
 	#####check again for duplicates
 	minimalUniqueKey = c("Chrom", "Start_Position", "Reference_Allele", "Tumor_Sample_Barcode", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2")
@@ -531,12 +527,17 @@ processSomaticData<-function(study,
 	}
 	
 	###### check number of genes that then have official HUGO symbols
-	approvedHugoSymbols = paths_detail$HUGOtable$Approved.Symbol[paths_detail$HUGOtable$Status == "Approved"]
+	if("Status"%in%paths_detail$symtable){
+		approvedHugoSymbols = paths_detail$symtable$Approved.Symbol[paths_detail$symtable$Status == "Approved"]
+	}else{
+		approvedHugoSymbols = unique(paths_detail$symtable$Approved.Symbol)
+	}
+	
 	notApprovedHugoVector = tcga_som[!tcga_som[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols),"Hugo_Symbol"]
 	numNotHugo = sum(!tcga_som[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols))
 	cat("\n",numNotHugo," unique mutations do not have official HUGO symbols associated\n",sep="")
 	tracker[["After symbol correction, the number of mutations without approved HUGO symbols:"]] = numNotHugo
-	approvedHugoSymbols = paths_detail$HUGOtable$Approved.Symbol
+	approvedHugoSymbols = paths_detail$symtable$Approved.Symbol
 	tracker[["List of all symbols from the input that were not official HUGO symbols:"]] = matrix(data=tcga_som[!tcga_som[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols),"Hugo_Symbol"], ncol=1)
 	
 	#########################################################
@@ -585,7 +586,7 @@ processSomaticData<-function(study,
 	s=SNPless$s
 	
 	###### check number of genes that then have official HUGO symbols
-	approvedHugoSymbols = paths_detail$HUGOtable$Approved.Symbol[paths_detail$HUGOtable$Status == "Approved"]
+	approvedHugoSymbols = paths_detail$symtable$Approved.Symbol[paths_detail$symtable$Status == "Approved"]
 	notApprovedHugoVector = som_select[!som_select[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols),"Hugo_Symbol"]
 	numNotHugo = sum(!som_select[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols))
 	cat("\nAfter filtering, there are ",numNotHugo," unique mutations that do not have official HUGO symbols.\n",sep="")

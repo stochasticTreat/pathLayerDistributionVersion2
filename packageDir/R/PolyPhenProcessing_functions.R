@@ -1,6 +1,4 @@
-#process polyphen
-source('./acc_functions.R')
-
+#PolyPhenProcessing_functions.R
 
 runOHSUPolyPhenData<-function(fname, path_detail){
 	#runOHSUPolyPhenData is the main interface for accepting polyphen data from OHSU
@@ -32,7 +30,7 @@ PPMultiMapRedux<-function(pdat){
 	# the max score for each index
 	#return: data frame, same structure as input; same data, but rows removed; no multi mapping to indexes
 	#extract the needed columns
-	xcol = pdat[,c("index","pid","Start.Pos","Symbol","prediction")]
+	xcol = pdat[,c("index","pid","Symbol","prediction")]
 	
 	numscore = getNumericScoreColumn(xcol = xcol)
 	xcol = cbind(xcol, numscore)
@@ -47,34 +45,32 @@ PPMultiMapRedux<-function(pdat){
 	redux = xcol[gindexes,]	
 	return(redux)
 }
-
-PolyPhenFromMaf<-function(outfname, mafFname=NULL){
+ 
+PolyPhenFromMaf<-function(mafFname=NULL, outFname=NULL){
 	#orchestrates creation of polyphen input file from .maf file
 	#takes: mafData: name of .maf file
-	if(is.null(mafFname)) mafFname = file.choose()
 	tracker = list()
-	
-	#split the base file name, add "polyphen_input.txt" to the end, resurect it to ./intput/<name>
-	base = strsplit(mafFname, "/")[[1]]
 	
 	mafData = read.table(comment="",
 											 file=mafFname,
 											 header=T,
 											 sep="\t", 
 											 stringsAsFactors=F)
-	#add index column
-	index_col = 1:nrow(mafData)
-	mafData = cbind(mafData, index_col)
+	
 	tracker[["Rows of mutation data found in .maf file input"]] = nrow(mafData)
 	tracker[["Number of patient IDs found in .maf file"]] = length(unique(mafData$pid))
 	datf1 = filtToPolyPhenTypes(mafData=mafData)
 	tracker[["Rows of mutation data found after filtering to only PolyPhen types"]] = nrow(datf1)
 	tracker[["Number of patient IDs found in mutation data after filtering by mutation types"]] = length(unique(datf1$pid))
 	datf1 = addMappingColumn(datf1)
-	ppcols = makePolyPhenCols(datf1)	
-	write.table(x=ppcols, file=outfname, sep=" ", quote=F, row.names=F,col.names=F)
-	tracker[["PolyPhen input file name"]] = outfname
-	cat("\nPolyPhen input file written to",outfname, "\n")
+	ppcols = makePolyPhenCols(datf1)
+	if(is.null(outFname)){
+		outFname = strsplit(fname, split="/")[[1]][length(strsplit(fname, split="/")[[1]])]
+		outFname = paste("./output/", outFname, ".polyphenInput.txt", sep="")
+	}
+	write.table(x=ppcols, file=outFname, sep=" ", quote=F, row.names=F,col.names=F)
+	tracker[["PolyPhen input file name"]] = outFname
+	cat("\nPolyPhen input file written to",outFname, "\n")
 	return(tracker)
 }
 
@@ -114,8 +110,6 @@ selectionList<-function(valcol, verbose=T){
 	
 	usel = unique(valcol)
 	uselmat = matrix(data=1:length(usel), ncol=1, dimnames=list(usel, "selection number"))
-	cat("\nPolyPhen values:")
-	print(uselmat)
 	uin = readline(paste("Please enter the number(s) corresponding to the PolyPhen values you would like to consider aberrational.\n",
 											 "Press enter for the default set: (probably_damaging)"))
 	if(uin=="") uin = "1"
@@ -176,7 +170,7 @@ preProcessPdat<-function(fname){
 }
 
 loadPolyPhenResults<-function(fname){
-
+	
 	newFname = preProcessPdat(fname)
 	pdat = read.table(file=newFname, sep="\t",header=T,comment.char="", stringsAsFactors=F)
 	#first parse out the map.col
@@ -184,8 +178,6 @@ loadPolyPhenResults<-function(fname){
 	mcs = data.frame(matrix(byrow=T,data=unlist(strsplit(mc, split="\\|")), ncol=4), stringsAsFactors=F)
 	colnames(mcs)<-c("index", "Symbol", "Start.Pos", "pid")
 	pdat = cbind(pdat, mcs)
-	#fix the white space in prediction
-	pdat$prediction = gsub(pattern="^ *", replacement="", x=pdat$prediction)
 	return(pdat)
 }
 
@@ -196,16 +188,15 @@ runMAFPolyPhen<-function(fname){
 	#re-formatt it
 	#break out the mapping
 	pdat = loadPolyPhenResults(fname=fname)
-
+	
 	fpdat = PPMultiMapRedux(pdat = pdat)
 	#find max for each gene/patient: for each index, find the max polyphen score
-		#possibly do this again for each patient/gene combo?
+	#possibly do this again for each patient/gene combo?
 	#change column names to make them appropriate for processPolyPhen
 	colnames(fpdat)<-c("index", "alias", "Symbol", "PolyPhen", "numscore")
 	psum = processPolyPhen(polyDat=fpdat,paths_detail=path_detail)
 	return(psum)
 }
-
 
 processPolyPhen<-function(polyDat, paths_detail, disease_type="disease type not given", threshold=NULL){
 	#processPolyPhen()
@@ -231,7 +222,7 @@ processPolyPhen<-function(polyDat, paths_detail, disease_type="disease type not 
 	##### check / correct gene names
 	polyDat$Symbol = corsym(symbol_set=polyDat$Symbol, 
 													verbose=T,
-													hugoref=path_detail$HUGOtable)
+													symref=path_detail$symtable)
 	
 	#### clean polyphen values, removing any that are marked "unknown" or ""
 	polyDat = splitScoresOut(seqdat=polyDat)
@@ -259,7 +250,7 @@ processPolyPhen<-function(polyDat, paths_detail, disease_type="disease type not 
 }
 
 filePrompt<-function(defaultfile = "./input/OHSUseqPolyPhencoding_and_nodbSNP_rows.txt.reformatted.txt"){
-#prompts user to select file for data input
+	#prompts user to select file for data input
 	#provides default file option
 	#returns file name
 	fsel = readline(paste("\nTo select a file of PolyPhen data, Enter s\n",
@@ -272,75 +263,3 @@ filePrompt<-function(defaultfile = "./input/OHSUseqPolyPhencoding_and_nodbSNP_ro
 	cat("\nLoading PolyPhen data from:\n",pfile,"\n")
 	return(pfile)	
 }
-
-if(!exists("acc_loaded")){
-	source("acc_functions.R")
-}
-
-if(!exists("path_detail")){
-	path_detail = getPaths()
-}
-if(!exists("patient_set_name")){
-	aberration_patient_subset = NULL 
-	patient_set_name = ""
-}
-
-if(!exists("study_name")){
-	study_name = gsub(pattern=":",replacement=".",x=paste("single_run_of_PolyPhen_data",Sys.time(), sep="_"))
-}
-
-if(!exists("polyPhenSummary")) polyPhenSummary = NULL
-
-#selection structure
-cat("\n\nWelcome to the PolyPhen data interface\n\n")
-while(T){
-	cat("\n\nMain options for PolyPhen data interface:\n\n")
-	mainsel = readline(paste("To process and analyze a PolyPhen data set enter p\n",
-													 "To make input file for PolyPhen, enter i\n",
-													 "To make HTML summary of PolyPhen data enter s\n",
-													 "To exit PolyPhen interface enter e\n",sep=""))
-	if(mainsel=="p"){
-		ssel = readline("If you'd like to process PolyPhen data from an OHSU sequencing file, enter 1. \nIf you'd like to process PolyPhen data from a TCGA .maf file, enter 2")
-		if(ssel == "1"){#select an OHSU sequencing file
-			opfile = filePrompt(defaultfile="./input/OHSUseqPolyPhencoding_and_nodbSNP_rows.txt.reformatted.txt")
-			polyPhenSummary = processPolyPhen(pdat,
-																				disease_type=study_name,
-																				paths_detail=path_detail,
-																				thresh=NULL)
-		}else if(ssel == "2"){#select a TCGA .maf file
-			mafPolyFile = filePrompt(defaultfile="./polyphen/AML_full_ref_tag_Aug17thpph2-full.txt")
-			polyPhenSummary = runMAFPolyPhen(fname=mafPolyFile)
-		}else{
-			print("sorry, that input could not be understood.")
-		}
-	}else if(mainsel=="i"){ #create polyphe input file 
-		mafFileName = filePrompt(defaultfile="./output/AML_somatic_data_reactome/somatic_mutation_aberration_summary/unfiltered_data.txt")
-		#polyInFname = paste("./input/PolyPhenInputFile.",study_name,".txt",sep="")
-		
-		outFname = strsplit(mafFileName, split="/")[[1]][length(strsplit(mafFileName, split="/")[[1]])]
-		outFname = paste("./output/", outFname, ".polyphenInput.txt", sep="")
-		prompt = paste("Please enter a file name for the polyPhen input file to be produced.\nPress enter to use the default,", 
-									 outFname, "\nThe file will be saved to the ./output/ directory.")
-		uin = readline(prompt)
-		if(uin!=""){
-			outFname = paste("./output/",outFname, sep="")
-			cat("\nThe PolyPhen input file will be saved to", outFname, "\n")
-		}
-		dataWorkupNotes = PolyPhenFromMaf(mafFname=mafFileName, outfname=outFname)
-		#cat("\nPolyPhen input file written to",polyInFname,"\n")
-	}else if(mainsel=="s"){
-		if(!is.null(polyPhenSummary)){
-			htmlSummary(sumset=polyPhenSummary,
-									fname=paste("./output/Summary_Of_PolyPhen_data_for",study_name,Sys.Date(),".html",sep=""))
-		}else{cat("\nAn analysis of polyPhen data hasn't been conducted since this program\nwas loaded, so a summary of that analysis can't really be saved.\n")}
-	}else if(mainsel=="e"){
-		break
-	}else{
-		print("Sorry, program did not understand that input. Please try again.")
-	}
-	
-}
-
-
-
-

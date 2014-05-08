@@ -82,7 +82,7 @@ is.uninitilizedNull<-function(val){
 # save(s, file=defaultSettingsFile)
 #allow interactive determination of path analysis settings
 pathAnalysisSettings <- function (psr, study, s=NULL, interactive=F, 
-																	defaultSettingsFile="./reference_data/defaultSettings/defaultSummaryTableSettings.txt") {
+																	defaultSettingsFile=NULL) {
 	print("inside pathAnalysisSettings")
 	if(is.null(s)){
 		s = list()
@@ -99,7 +99,7 @@ pathAnalysisSettings <- function (psr, study, s=NULL, interactive=F,
 		print("Loading default path analysis settings..")
 		#get default settings
 		if(is.null(study@studyMetaData@settings$defaultSummaryTable)){
-			stmp = loadSettings(fname=defaultSettingsFile)
+			stmp = loadSettings()
 		}else{
 			stmp = study@studyMetaData@settings$defaultSummaryTable
 		}

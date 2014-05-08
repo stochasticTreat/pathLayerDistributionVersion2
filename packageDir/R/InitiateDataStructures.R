@@ -1,5 +1,5 @@
 #initiate data structures
-source('./SettingsObjectInterface.R')
+
 
 Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character", 
 																													file="character", 
@@ -9,7 +9,7 @@ Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character",
 																													graphite="list",
 																													gene_overlap_counts="matrix", 
 																													full_path_length="matrix", 
-																													HUGOtable="data.frame", 
+																													symtable="data.frame", 
 																													paths="matrix", 
 																													symbol_type="character"))
 
@@ -163,7 +163,7 @@ patientSums<-function(dset){
 # 	cat(i,dataType(STUDY@results$functional_drug_screen_summary[[i]]),"\n",sep="\t\t")
 # } 
 
-getDefaultSettings<-function(settingFileName = "./reference_data/defaultSettings/defaultSummaryTableSettings.txt"){
+getDefaultSettings<-function(settingFileName = NULL){
 	
 	
 # 	summaryTableSettings = read.table(file=settingFileName, header=T, sep="\t")
@@ -209,7 +209,6 @@ getStudyObject<-function(	study.name="",
 	return(study)
 }
 
-
 ##loadDataArm
 #takes:	scriptFile:
 #				mainFunction: the main function for the data arm, 
@@ -225,8 +224,8 @@ getStudyObject<-function(	study.name="",
 # 									 scriptFile="./drug_screen_nuevo.R", 
 # 									 mainFunction=RunDrugScreen, 
 # 									 arms=arms)
-loadDataArm<-function(scriptFile, mainFunction, arms, title, description){
-	source(scriptFile)
+loadDataArm<-function(mainFunction, arms, title, description, scriptFile="no script file provided, loading data arm main function from local environment"){
+	if(!is.null(scriptFile)) source(scriptFile)
 	tmp = new("DataArm", 
 						title=title, 
 						scriptFile=scriptFile,

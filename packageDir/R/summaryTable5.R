@@ -1,6 +1,3 @@
-source('./hypergeometricPathAnalysis.R')
-source("./summaryTableFunctions.R")
-
 
 #save(stemp,file=testStudyObjectFileName, compress=T)
 # 	somres = stemp@results$somatic_mutation_aberration_summary
@@ -13,7 +10,7 @@ saveDefaultSettings<-function(){
 	fname="./reference_data/defaultSettings/defaultSummaryTableSettings.txt"
 	dflist = saveSettings(set=toSave)
 	write.table(x=dflist, file=fname, sep="\t")
-	
+
 }
 
 

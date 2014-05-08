@@ -118,15 +118,21 @@ loadAllSettings<-function(fname){
 }
 
 test.loadSettings<-function(){
-	fname="./reference_data/defaultSettings/defaultSummaryTableSettings.txt"
+
 	originalSettings = study@studyMetaData@settings$defaultSummaryTable
 	dflist = saveSettings(set=originalSettings)
 	write.table(x=dflist, file=fname, sep="\t")
-	reopened = loadSettings(fname=fname)
+	reopened = loadSettings()
 	checkEquals(target=originalSettings, current=reopened)
 }
 
-loadSettings<-function(fname="./reference_data/defaultSettings/defaultSummaryTableSettings.txt"){
+loadSettings<-function(fname=NULL){
+	print("Inside loadSettings()")
+	if(is.null(fname)){
+		warning("Loading the default summary table settings")
+		data("defaultSummaryTable140504", verbose=T, envir="packageDir")
+		return(defaultSummaryTableSettings)
+	}
 	settingsData = read.table(file=fname, header=T, sep="\t", comment.char="", stringsAsFactors=FALSE)
 	out = dfToList(settingsData)
 	return(out)

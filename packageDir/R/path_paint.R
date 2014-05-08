@@ -1,7 +1,6 @@
 #paint_path.R
 library("graphite")
 library("rBiopaxParser")
-source('./biopaxToCytoscape.R')
 
 #this function takes patient gene matracies, 
 #then, via the graphite and RCytoscape packages, 
@@ -354,7 +353,7 @@ paintPath<-function(graphitePathway, ab_analysis, paths_detail, drug_analysis=NU
 	### correct symbols
 	# 	pathway@nodes = corsym(symbol_set=pathway@nodes,
 	# 												 verbose=F,
-	# 												 hugoref=paths_detail$HUGOtable)
+	# 												 symref=paths_detail$symtable)
 	# 	print("gene symbols are all official")
 	#first get the nodes of the pathway
 	pnodes = colnames(paths)[paths[pathName,]]
@@ -379,7 +378,7 @@ paintPath<-function(graphitePathway, ab_analysis, paths_detail, drug_analysis=NU
 	g <- buildGraphNEL(nodes=nodes(pathway), 
 										 edges=edges(pathway), 
 										 sym=FALSE)#, ...)
-	nodes(g)<-corsym(symbol_set=g@nodes, hugoref=path_detail$HUGOtable,verbose=F)
+	nodes(g)<-corsym(symbol_set=g@nodes, symref=path_detail$symtable,verbose=F)
 	cat(".")
 	g <- markMultiple(g)#marks edgeType attribute
 	cat(".")

@@ -1,26 +1,3 @@
-#accessory functions
-if(!require("RUnit")){
-	install.packages("RUnit")
-	library("RUnit")
-}
-if(!require("tcltk")){
-	install.packages("tcltk")
-	library("tcltk")
-}
-
-acc_loaded=T
-source('./summaryTable5.R')
-source('./pathway_functions.R')
-source('./InitiateDataStructures.R')
-source('./OverlapAnalysisFunctions.R')
-source('./path_paint.R')
-source('./save_and_load_data.R')
-source('./SettingsObjectInterface.R')
-
-# source("http://bioconductor.org/biocLite.R")
-# biocLite("RCytoscape")
-library("RCytoscape")
-library("graphite")
 
 if(!exists("VERBOSE")) VERBOSE = F
 
@@ -52,6 +29,34 @@ longTextBarPlot<-function(data, lab, main=""){
 	text(x=xcoord, y=bpdata, labels=lab, pos=4)
 	
 }
+
+###############################################################################
+#
+# helperFunctions.R: 	This file contains the all helper functions not directly related to any other source file.
+# author: Frank Kramer <dev@frankkramer.de>
+#
+# This is released under GPL-2.
+# 
+# Documentation was created using roxygen
+#
+###############################################################################
+
+#' Replace factors/levels in a data.frame and use plain strings instead 
+#' 
+#' This function takes a data.frame as argument and returns it with strings instead of factors.
+#' 
+#' @param df any data.frame with factor levels in at least one column
+#' @return The data.frame is returned using strings instead of factors.
+#' @author Frank Kramer
+unfactorize <- function (df) {
+	if(!("data.frame" %in% class(df))) { stop("Error: unfactorize: data.frame as argument expected") }
+	
+	for (i in 1:ncol(df)) {
+		if (class(df[,i]) == "factor") df[,i] <- as.character(df[,i])
+	}
+	df
+}
+
 
 save.plot<-function(pname){
 	return(AutoSavePlot(pname))
@@ -206,92 +211,6 @@ extract_pid_w_matchnormal<-function(n=NULL)
 	return(out)
 }
 
-#cleanGeneSymbols
-#cleanes input gene symbols, removing leading and trailing spaces, quotes, 
-#repaces spaces with dashes and periods with dashes
-#takes & returns vector of gene symbols
-cleanGeneSymbols<-function(genes){
-	#remove leading and trailing spaces
-	ltspace2 = gsub(pattern="^ ",replacement="",x=genes)
-	#remove trailing spaces
-	ltspace2 = gsub(pattern=" $",replacement="",x=ltspace2)
-	#replace " " with "-"
-	spfixed2 = gsub(pattern=" ",replacement="-",x=ltspace2)
-	spfixed2 = gsub(pattern="\\.",replacement="-",x=spfixed2)
-	spfixed2 = gsub(pattern="\"",replacement="",x=spfixed2)
-	out = toupper(spfixed2)
-	return(out)
-}
-
-#corListCheck
-#if the HUGO symbols reference file has changed, 
-#corListCheck will assure the symbol changes are consistent with the new reference file
-#takes:		cl:		corrections list
-#					htab:	hugo reference table 
-#returns: corrections list data frame
-#
-#works with files: "./reference_data/gene_symbol_corrections_list.txt"
-#
-corListCheck<-function(cl=NULL, htab=NULL){
-	cat("\nScreening symbol correction table...\n")
-	curhugofname = "./reference_data/current_hugo_table.txt"
-	correctionsfile="./reference_data/gene_symbol_corrections_list.txt"
-	if(is.null(cl)){
-		cl = read.delim(file=correctionsfile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
-	}
-	if(is.null(htab)){
-		cat("\nOpening HUGO symbol reference table...\n")
-		htab=read.table(file=curhugofname,#"./reference_data/current_hugo_table.txt","./reference_data/slim_current_hugo_table.txt"
-										header=T, 
-										sep="\t", 
-										quote="", 
-										comment.char="", 
-										stringsAsFactors=F,na.strings="-")
-	}
-	#handle three cases:
-	#1: symbol added to HUGO ref
-	#2: symbol removed from HUGO ref
-	#3: symbol changed
-	
-	#for 2 and 3: 
-	#check if any of the "new" are withdrawn:
-	wnew = paste(cl$new_symbol, "~withdrawn", sep="")
-	
-	iswithdrawn = wnew%in%htab$Approved.Symbol
-	if(sum(iswithdrawn)){#if some of the symbols have been withdrawn, see if replacement symbols can be found
-		cltmp = cbind.data.frame(cl[iswithdrawn,], wnew[iswithdrawn], stringsAsFactors=F)
-		colnames(cltmp)[3] = "withdrawn"
-		#for each row in cltmp, merg it's corresponding row in htab
-		htabtmp = htab[htab$Approved.Symbol%in%cltmp$withdrawn,1:8]#extract the rows from htab
-		chmerge = merge(x=cltmp, y=htabtmp, by.x="withdrawn", by.y="Approved.Symbol")
-		####### issue 2
-		###### check if some symbols were withdrawn and there is no replacement
-		if(sum(chmerge$Status=="Entry Withdrawn")){
-			cat("\nOf the symbols in the symbol correction table, these entries were\nwithdrawn as official HUGO sybols, and no replacements were provided:\n")
-			print(chmerge$new_symbol[chmerge$Status%in%"Entry Withdrawn"])
-		}
-		chmerge = chmerge[chmerge$Status == "Symbol Withdrawn",]
-		if(nrow(chmerge)){
-			tmp= sapply(chmerge$Approved.Name, function(x) strsplit(x=x, split="symbol withdrawn, see ")[[1]][2])
-			chmerge$new_symbol = tmp
-			clt = rbind(cl, chmerge[,c("old_symbol","new_symbol")])
-			clt = clt[!duplicated(x=clt$old_symbol, fromLast=T),]
-			cl = clt
-			cl = corListCheck(cl=cl,htab=htab)#recursive call, 
-			#handles case where symbol was changed more than once
-		}
-	}
-	### now scan the old_symbols for appoved symbols
-	#remove rows where the old_symbol is an approved symbol
-	if(sum(cl$old_symbol%in%htab$Approved.Symbol)){
-		cat("\nSome rows in the symbol correction table were ",
-				"found to correct symbols that were already approved.",
-				"These rows will be removed to prevent data inconsistencies\n")
-		cl = cl[!cl$old_symbol%in%htab$Approved.Symbol,]
-	}
-	return(cl)
-}
-
 toPGMWithCoverage<-function(sds, coverageSet){
 	
 	pgm = toPGM(sds)
@@ -397,486 +316,6 @@ cleanTables<-function(tab,figs=3, verbose=F){
 	return(tab)
 }
 
-
-#getHugoSymbols()
-#paths_detail: paths object: if passed, this function will excise the currently used hugo symbol set and return them.<them?>
-#curhugofname: the name of the 
-#returns HUGO lookup table
-#
-#function allows re-download of hugo cross ref file. 
-getHugoSymbols<-function(paths_detail=NULL, 
-												 curhugofname="./reference_data/current_hugo_table_slim.txt",
-												 verbose=F){
-	if(class(paths_detail)=="Study"){
-		cat("\nGetting HUGO gene symbols from study..\n")
-		paths_detail=paths_detail@studyMetaData@paths
-	}
-	if(is.null(paths_detail)){
-		cat("\nLoading official HUGO gene symbols from file..\n")
-		
-		cref = read.table(file=curhugofname,
-											sep="\t",
-											comment.char="",
-											header=T,
-											quote="", 
-											stringsAsFactors=F, 
-											na.strings="-")
-		
-		cref$Approved.Symbol = cleanGeneSymbols(genes=cref$Approved.Symbol)
-		cat("\nUsing a symbol correction file downloaded from http://www.genenames.org/",
-				"on",as.character(file.info(curhugofname)$mtime),".\n")
-		ginfo = ""
-		if(verbose){
-			ginfo=readline(paste("To get info on how to update this file enter \"i\"\n",
-													 "Otherwise, just press enter to continue"))
-		}else{
-			cat("\nTo get info on how to update HUGO symbol cross reference file \n",
-					"or automatically re-download cross ref file, re-run the getHugoSymbols() function\n",
-					"using the argument verbose=T (default: verbose=F)\n")
-		}
-		if(ginfo=="i"){
-			cref = getHugoDownloadInfo(curhugofname = curhugofname)
-		}
-		return(cref)
-	}else{
-		cat("\nGetting HUGO symbols from Path_Detail reference calss object")
-		return(paths_detail$HUGOtable)
-	}#if/else
-}#getHugoSymbols
-
-
-getHugoDownloadInfo <- function (curhugofname) {
-	
-	if("r"==readline("To attempt to download a current cross reference table of HUGO symbols enter r \n(note: this can take more than 10 minutes to download)\nIf you tried this once and it didn't work, press enter to get other options. ")){
-		full_hurl = "http://www.genenames.org/cgi-bin/hgnc_downloads?title=HGNC+output+data&hgnc_dbtag=on&preset=all&status=Approved&status=Entry+Withdrawn&status_opt=2&level=pri&=on&where=&order_by=gd_app_sym_sort&limit=&format=text&submit=submit&.cgifields=&.cgifields=level&.cgifields=chr&.cgifields=status&.cgifields=hgnc_dbtag"
-		cat("\nConnecting to HGNC website...\n")
-		reopenedfurl=try(expr=read.table(file=full_hurl,sep="\t",comment.char="",header=T,quote="", stringsAsFactors=F,na.strings="-"),
-										 silent=T)
-		if(sum(grep(pattern="error", x=class(reopenedfurl), ignore.case=T))){
-			cat("\nError text:\n")
-			print(reopenedfurl)
-			cat("\nError, could not download Hugo reference table from HGNC..\n")
-		}else{
-			cat("\nTable downloaded, writing to file...\n")
-			write.table(x=reopenedfurl,file=curhugofname,quote=F,sep="\t")
-			cref = read.table(file=curhugofname,sep="\t",comment.char="",header=T,quote="", stringsAsFactors=F, na.strings="-")
-			cref$Approved.Symbol = cleanGeneSymbols(cref$Approved.Symbol)
-			return(cref)
-		}
-	}
-	
-	cat("Go to http://www.genenames.org/ and find the biomart interface.\n",
-			"Make sure to check the boxes to download Approved symbol, previous symbol\n",
-			"synonyms, status, approved name, date approved and name synonyms.\n")
-	cat("Make sure column names match those in the file",curhugofname,"\n",
-			"and replace that file with the one downloaded (it is suggested that\n",
-			"you rename the old file so as not to loose it if anything goes wrong\n")
-	cat("These are the column names from the current hugo cross reference file:")
-	print(colnames(cref))
-	readline("Press enter to continue.\nPress escape to exit the program so that you can update the cross ref file.")
-	cref = getHugoDownloadInfo(curhugofname)
-	return(cref)
-}
-
-
-
-#corsym
-#corrects symbols in somatic data
-#takes		symbol_set: 1 of 2 options
-#																1)table with columns: 
-#																"Hugo_Symbol": the set of symbols which should be checked for symbols that need correction
-#																col2: 			 The chromosome in the genome that the gene symbols are associated with
-#																2)vector of symbols to be corrected
-#					curhugofname: the relative file path to a hugo lookup table
-#					verbose: if this is set to true, no text output will be given and previously official symbols will not be checked. 
-#
-#returns: vector: set of gene symbols, corrected to hugo symbols
-#
-#usage: som_select[,"Hugo_Symbol"] = corsym(som_select[,c("Hugo_Symbol", col2)], "./reference_data/hugo_dl.txt", verbose=verbose)
-corsym<-function(symbol_set, hugoref=NULL, verbose=T, col2="Chrom", correctionsfile="./reference_data/gene_symbol_corrections_list.txt"){
-	
-	if(verbose) cat("\n\nChecking that gene symbols match official HUGO gene symbols. . . . . \n")
-	curhugofname="./reference_data/current_hugo_table.txt"
-	if(is.null(hugoref)){
-		cref=getHugoSymbols(curhugofname=curhugofname)
-	}else if(is.character(hugoref)){#if hugoref is a character, it is a file name; open the file
-		cref=getHugoSymbols(curhugofname=hugoref)#the direct passing of a hugo file name.  . .not sure if we're doing that any more...
-	}else if(class(hugoref)=="Study"){
-		if(STUDY@studyMetaData@geneIdentifierType!="HUGO"){
-			message("Checking and correction of non-HUGO symbols not implemented.")
-			return(symbol_set)
-		} 
-		cref=hugoref@studyMetaData@paths$HUGOtable
-		hugoref=cref
-	}else if(class(hugoref)=="data.frame"){#the hugo table was passed directly
-		cref = hugoref
-	}
-	
-	#make sure the input symbol set is a table
-	if(is.vector(symbol_set)){
-		symbol_set = cbind(symbol_set,rep("",times=length(symbol_set)))
-	}
-	#correct the column names
-	if(!sum(c("Hugo_Symbol",col2)%in%colnames(symbol_set))){
-		colnames(symbol_set)<-c("Hugo_Symbol",col2)
-	}
-	
-	if(verbose){
-		cat(sep="","\n\n",nrow(cref)," symbol records loaded from ",curhugofname,
-				"\nNote: these do not all correspond to currently approved HUGO symbols.",
-				"\nSome are place holders from previously used or withdrawn symbols\n")
-	}
-	
-	###########################################################
-	# Correct gene names
-	###########################################################
-	#check how many symbols are in both TCGA somatic data and HUGO
-	#cross refernce table : if chasm output cant so easily be matched to chasm input
-	
-	#change all symbols to upper case: 
-	cref[,"Approved.Symbol"] = toupper(cref[,"Approved.Symbol"])
-	symbol_set[,"Hugo_Symbol"] = toupper(symbol_set[,"Hugo_Symbol"])
-	if(verbose){
-		cat("\nTo conduct symbol comparrisons and corrections, these reformattings were made:")
-		cat("\nConversion to upper case.\nRemoval of leading and trailing spaces.",
-				"\nConversion of spaces and periods to dashes.\n",
-				"***NOTE: These reformattings are not saved or recorded to any file!!\n")
-	}
-	
-	symbol_set[,"Hugo_Symbol"]= cleanGeneSymbols(symbol_set[,"Hugo_Symbol"])
-	
-	tcga_hugo = intersect(cref[,"Approved.Symbol"], symbol_set[,"Hugo_Symbol"])
-	if(verbose){
-		cat(paste("\nOut of the ", as.character(length(unique(symbol_set[,"Hugo_Symbol"])))," symbols in current data set,\n", 
-							length(tcga_hugo), " were found to be currently approved HUGO symbols.\n",sep=""))
-	}
-	not_approvedi = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])
-	not_approved = symbol_set[not_approvedi,c("Hugo_Symbol", col2), drop=F]
-	not_approved = unique(not_approved)
-	
-	if(!max(0,nrow(not_approved))){#if all symbols match approved hugo symbols, this will be true
-		return(symbol_set[,"Hugo_Symbol"])
-	}
-	if((max(0,nrow(not_approved))<50) & verbose){
-		cat("\nThese are the symbols that were not found to be approved HUGO symbols:\n")
-		print(not_approved)
-	}else if(verbose){
-		cat("\nThese are the first 50 out of",max(nrow(not_approved),0),"symbols that were not found to be approved HUGO symbols:\n")
-		print(not_approved[1:50,])
-	}
-	
-	#check how many appear to be Micro RNA genes
-	possible_miRNAs = grep(pattern="^MIR|-MIR",x=not_approved,ignore.case=T)
-	if(length(possible_miRNAs)&verbose){
-		cat("\nOf the aformentioned symbols,",length(possible_miRNAs),"symbols begin with \"MIR-\", or contain the string \"-MIR\"",
-				"and thus appear to be symbols for microRNAs, as opposed to protein-coding genes.\n",
-				"Note: it is possible that gene symbols not containing \"MIR\" correspond to microRNAs as well.\n")
-	}
-	
-	if(verbose){cat("\nA full list of symbols found not to be approved, before attempted",
-									"correction, can be found at ./output/not_approved_symbols_from_last_run.txt\n")}
-	
-	write.table(x=not_approved,file="./output/not_approved_symbols_from_last_run.txt",sep="\t",row.names=F)
-	
-	correction_set = NULL#the set of mappings from old names to new names, which is retreived from the corrections file
-	correctedSymbols = NULL#this will contain mappings to be made in this run of the program
-	new_corrections = NULL
-	
-	###################################  Check Corrections File
-	if(file.exists(correctionsfile)){
-		raw_correction_set = read.delim(file=correctionsfile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
-		resave = F
-		#check for repeated rows
-		dupcheck = duplicated(raw_correction_set)
-		if(sum(dupcheck)){
-			raw_correction_set = raw_correction_set[!dupcheck,]
-			resave=T
-		}
-		
-		#check that individual old symbol do not have multiple entries
-		dupcheck2 = duplicated(raw_correction_set$old_symbol)
-		if(sum(dupcheck2)){			
-			allolddup = dupcheck2 | duplicated(raw_correction_set$old_symbol,fromLast=T)
-			cat("\nWarning, multimapping issue found!\n",
-					"These symbol corrections indicate multiple, different corrections for the same symbols:\n")
-			print(raw_correction_set[allolddup,])
-			readline("Please edit these symbols in the symbol correction file and re-run the program to prevent errors\nPress enter to continue")
-		}
-		
-		if(sum(raw_correction_set$old_symbol == raw_correction_set$new_symbol)){#if there are symbols that are changed to the same thing
-			#remove symbols that are the same btwx old and new
-			chsymindex = which(raw_correction_set$old_symbol != raw_correction_set$new_symbol)
-			correction_set = raw_correction_set[chsymindex,]
-			resave=T
-		}
-		raw_correction_set_tmp=corListCheck(cl=raw_correction_set, htab=hugoref)
-		if(sum(!all.equal(target=raw_correction_set_tmp, current=raw_correction_set)==T)){
-			resave = T
-		}
-		raw_correction_set = raw_correction_set_tmp
-		correction_set = raw_correction_set
-		
-		numcor = intersect(x=correction_set[,1], not_approved[,"Hugo_Symbol"])#numcor is the number of symbols in symbols set 
-		#that can be corrected from the symbol correction file 
-		if(length(numcor)){
-			if(verbose){
-				cat("\nA previously made corrections file was found at",correctionsfile,"\nThis file contains corrections for ", 
-						as.character(length(numcor)), "of the ",nrow(not_approved),"unapproved gene symbols.\n")
-			}
-			use_previous=""
-			if(verbose){
-				use_previous = readline(paste("Press enter to use these corrections.\nEnter anything else to skip using these corrections\n", 
-																			"(You will be provided with a chance to select your own corrections): "))
-			}
-			if(use_previous==""){
-				symbol_set[,"Hugo_Symbol"] = swapsymbols2(corrected=correction_set, genelist=symbol_set[,"Hugo_Symbol"])
-				not_approved = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])#temporary state of not_approved
-				not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2), drop=F]#not approved now has two columns
-				not_approved = unique(not_approved)
-				if(verbose) cat("\nThere are now", as.character(max(0,nrow(not_approved))), "symbols remaining which do not match approved HUGO symbols.")
-			}
-			print("not approved 1.2:")
-			print(not_approved)
-			if(resave){
-				write.table(x=correction_set, file=correctionsfile, 
-										quote=F, sep="\t", row.names=F, col.names=c("old_symbol", "new_symbol"))
-				raw_correction_set = read.delim(file=correctionsfile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
-			}
-		}
-		
-		if(max(0,nrow(not_approved))==0){
-			return(symbol_set[,"Hugo_Symbol"])
-		}
-	}
-	
-	if(verbose){
-		if(max(0,nrow(not_approved))){
-			###################################   Check previously used symbols
-			checkprev = readline("\nWould you like to check previously official HUGO symbols for the remaining unmatching symbols? \n(enter y or n)")
-			if(checkprev=="y"){
-				######## Check previous HUGO symbols
-				switches = checkPreviousSymbols(symbols=not_approved, indexes=1:nrow(not_approved), hugolookup=cref, col2=col2)
-				if(nrow(switches)){
-					print(switches)
-					symbol_set[,"Hugo_Symbol"]=swapsymbols2(corrected=switches, genelist=symbol_set[,"Hugo_Symbol"]) 
-					not_approved = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])#temporary state of not_approved
-					not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2)]#not approved now has two columns
-					not_approved = unique(not_approved)
-					new_corrections = rbind(switches, new_corrections)
-					cat("\n",nrow(switches),"mystery symbols were found in the previously official hugo symbols.\n")
-					cat("There is/are now", as.character(nrow(not_approved)), "symbol(s) remaining which do/does not match approved HUGO symbols.\n")
-					print(not_approved)
-				}else{
-					cat("\nNo matches were found in the previously used HUGO symbols\n")
-				} 
-			}	
-		}
-		print(not_approved)
-		if(max(nrow(not_approved),0)){
-			###################################   Check synonyms
-			checksyn = readline("\nWould you like to check synonyms for the remaining unmatching symbols? (enter y or n) ")
-			if(checksyn=="y"){
-				
-				syncor = checkSynonyms(symbols=not_approved, indexes=1:nrow(not_approved), hugolookup=cref, col2=col2)
-				if(nrow(syncor)){
-					colnames(syncor)<-c("old_symbol","new_symbol")
-					symbol_set[,"Hugo_Symbol"]=swapsymbols2(corrected=syncor, genelist=symbol_set[,"Hugo_Symbol"])
-					not_approved = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])#temporary state of not_approved
-					not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2), drop=F]#not approved now has two columns
-					not_approved = unique(not_approved)
-					new_corrections = rbind(new_corrections, syncor)
-				}
-				cat("\nThere is/are now", as.character(nrow(not_approved)), "symbol(s) remaining which do not match approved HUGO symbols.\n")
-				print(not_approved)
-			}
-			
-			if(verbose){cat("\nA full list of symbols which were found not to be approved and which could\n",
-											"not be corrected can be found at ./output/not_approved_not_correctable_symbols_from_last_run.txt\n")}
-			write.table(x=not_approved,file="./output/not_approved_not_correctable_symbols_from_last_run.txt",sep="\t",row.names=F)
-			if(length(new_corrections)){
-				cat("\nThese are the new corrections that were just added to the symbol corrections file:\n")
-				print(new_corrections)
-				if(readline("Would you like to save the set of corrections just made to the corrections file (y/n)")=="y"){
-					addCorrections(new_corrections=new_corrections, correction_set=correction_set, correctionsfile=correctionsfile)
-				}
-			}
-		}
-	}#if verbose
-	return(symbol_set[,"Hugo_Symbol"])
-}#corsym function
-
-
-#'@title addCorrections()
-#'@description Adds corrections to the corrections file
-#'@param new_corrections: a two column matrix; column 1 = old, incorrect symbols, column 2 = new, corrected symbols
-#'@param correctionsfile: the file name of the corrections file
-#'@param correction set: the original contents of teh corrections file before new corrections were made
-addCorrections<-function(new_corrections, correctionsfile="./reference_data/gene_symbol_corrections_list.txt", correction_set=NULL){
-	if(is.null(correction_set)){
-		if(file.exists(correctionsfile)){
-			correction_set = as.matrix(read.delim(file=correctionsfile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-"))
-		}else{
-			correction_set = matrix(data="", ncol=2, nrow=0, dimnames=list(NULL, c("old_symbol", "new_symbol")))
-		}
-	} 
-	colnames(new_corrections)<-colnames(correction_set)
-	final_corrections = rbind(correction_set, new_corrections)
-	#screen for NA values
-	final_corrections = final_corrections[!is.na(final_corrections[,1]),,drop=F]
-	final_corrections = final_corrections[!is.na(final_corrections[,2]),,drop=F]
-	#now attempt to clean the final_collections of rows where no changes are made (ie, old symbol is the same as new symbol)
-	final_corrections=final_corrections[final_corrections[,1]!=final_corrections[,2],,drop=F]
-	final_corrections = unique(final_corrections)
-	write.table(x=final_corrections, file=correctionsfile, 
-							quote=F, sep="\t", row.names=F, col.names=c("old_symbol", "new_symbol"))
-	cat("\nSymbol corrections recorded in file:", correctionsfile, "\n")	
-}
-
-#examineHugoSet
-#get summary information on a set of HUGO symbols
-#takes: symbol_set: the list of symbols
-#study_name and data_type describe the source of the symbols, for display on the read out
-#
-examineHugoSet<-function(symbol_set,study_name,data_type,curhugofname="./reference_data/current_hugo_table.txt"){
-	
-	cref = read.delim(file=curhugofname, header=T, stringsAsFactors=F, na.strings="-")
-	approvedHugoFile = paste("./output/",study_name,"_approved_hugo_w_annotation_from_",data_type,"_data.txt",sep="")
-	
-	cat("\nA table of approved HUGO symbols, including those just corrected, can be found in the file",approvedHugoFile,"\n")
-	
-	in_study = cref[cref[,"Approved.Symbol"]%in%symbol_set,]
-	not_hugo = setdiff(x=symbol_set, y=cref[,"Approved.Symbol"])
-	nhtab = matrix(nrow=length(not_hugo),ncol=ncol(in_study))
-	colnames(nhtab)<-colnames(in_study)
-	nhtab[,"Approved.Symbol"] = not_hugo
-	nhtab[,"Locus.Type"] = rep("Not HUGO symbol",times=length(not_hugo))
-	nhtab[,"Locus.Group"] = rep("Not HUGO symbol",times=length(not_hugo))	
-	
-	in_study = rbind(in_study, nhtab)
-	
-	write.table(x=in_study,file=approvedHugoFile,quote=F,sep="\t",row.names=F,col.names=T)
-	
-	return(in_study)
-}
-
-#takes: indexes: indexes of symbols to be checked
-#       symbols: list of symbols which the indexes refer to 
-#                             (those to be switched and those to remain)
-#       hugolookup: hugo look up table with columns : <Approved.Symbols>, <Previous.Symbols>
-#returns: table: <index to be switched> <what it should be switched to>
-checkPreviousSymbols<-function(symbols, indexes, hugolookup, col2){
-	
-	hugolookup[,"Previous.Symbols"] = toupper(hugolookup[,"Previous.Symbols"])
-	
-	oldsyms = NULL #output set of those which are previous symbols
-	ssymbols = NULL #
-	for(i in 1:length(indexes))
-	{
-		cur = symbols[indexes[i],"Hugo_Symbol"]
-		curchrom = symbols[indexes[i], col2]
-		cursym = gsub(pattern="[[:punct:]]", replacement=" ", x=cur)
-		
-		#grep the row against the previous symbols column
-		pat = paste("(^|[[:blank:]])", cursym, "(,|$)", collapse="", sep="")
-		ind = grep(pattern=pat, x=hugolookup[["Previous.Symbols"]],ignore.case=T)
-		if(length(ind)==1){#if grep caught something
-			ssymbols = c(ssymbols, as.character(hugolookup[ind,"Approved.Symbol"]))
-			oldsyms = c(oldsyms, cur)
-		}else if(length(ind)>1){#if grep found more than one matching previous symbol
-			dcols = colnames(hugolookup)[grep("date", colnames(hugolookup), ignore.case=T)]
-			dcols = c(dcols,colnames(hugolookup)[grep(col2, colnames(hugolookup), ignore.case=T)])
-			cat("\nCorrecting gene symbol", as.character(i), "of", as.character(length(indexes)), "symbols that need correction.\n")
-			cat("\nMultiple previous symbols were found to match", as.character(cursym), " (from Chrom ", as.character(curchrom), "). \n")
-			cat("\nThese are the symbols that were found to match:\n")
-			print(hugolookup[ind,c("Approved.Symbol", "Previous.Symbols", dcols)])
-			line = readline("Please enter the correct HUGO name if it appears above under Approved.Symbol.\nPress enter to continue with out making any symbol corrections.")
-			if(line != ""){
-				ssymbols = c(ssymbols, line)
-				oldsyms = c(oldsyms, cur)
-			}
-		}
-	}
-	#cat("\n",length(oldsyms),"symbols were found to match previously official symbols, and are being corrected.\n")
-	out = cbind.data.frame(oldsyms, ssymbols, stringsAsFactors=F)
-	return(out)
-}
-
-
-#takes: indexes: indexes of symbols to be checked
-#       symbols: list of symbols which the indexes refer to 
-#                             (those to be switched and those to remain)
-#       hugolookup: hugo look up table with columns : <Approved.Symbols>, <Previous.Symbols>
-#returns: table: <index to be switched> <what it should be switched to>
-checkSynonyms<-function(symbols, indexes, hugolookup, col2){
-	sindexes = NULL #output set of those which are previous symbols
-	ssymbols = NULL
-	for(i in 1:length(indexes))
-	{
-		osym = symbols[indexes[i],"Hugo_Symbol"]
-		curchrom = symbols[indexes[i], col2]
-		cursym = gsub(pattern="[[:punct:]]", replacement=" ", x=osym)
-		sterm=cursym
-		acc = NULL
-		while(T){
-			print("start while(T)")
-			#grep the row against the previous symbols column
-			pat = paste("(^|[[:blank:]])", sterm, "(,|$)", collapse="", sep="")
-			res1 = grep(pattern=pat, x=hugolookup[["Synonyms"]])
-			res2 = grep(pattern=sterm, x=hugolookup[["Synonyms"]], ignore.case=T)
-			res3 = grep(pattern=pat, x=hugolookup[["Approved.Symbol"]], ignore.case=T)
-			cat("\n###################################################### Searching synonyms for", cursym,"\n")
-			cat("#####in the data being processed, this symbol is associated with chromosome", curchrom, "\n\n########## Original query:", osym,
-					"\n########## Current search term: ", sterm, "\n")
-			if(length(res2)>0){
-				cat("\n ############ These near matches were found: \n")
-				print(hugolookup[res2, c("Approved.Symbol","Approved.Name","Status", "Synonyms", 
-																 colnames(hugolookup)[grep("date", colnames(hugolookup), ignore.case=T)], 
-																 colnames(hugolookup)[grep(col2, colnames(hugolookup), ignore.case=T)])])
-			}else{cat("\nNo synonyms were found for the search term.\n")}
-			if(length(res3)==1){
-				cat("\n ************ This exactly matching approved HUGO symbol was found: \n")
-				print(hugolookup[res3, c("Approved.Symbol","Approved.Name", 
-																 colnames(hugolookup)[grep(col2, colnames(hugolookup), ignore.case=T)])])
-				if(readline(prompt="If you would like to accept this exactly matching approved HUGO symbol, press ENTER.")==""){
-					acc = as.character(hugolookup[res3, "Approved.Symbol"]) 
-					break
-				}
-			}
-			if(length(res1)==1){
-				cat("\n ************ This exactly matching synonym was found: \n")
-				print(hugolookup[res1, c("Approved.Symbol","Approved.Name","Status", "Synonyms", 
-																 colnames(hugolookup)[grep("date.approved", colnames(hugolookup), ignore.case=T)], 
-																 colnames(hugolookup)[grep(col2, colnames(hugolookup), ignore.case=T)])])
-				if(""==readline("If you would like to accept the exactly matching synonym above, please press ENTER\nIf you enter anything else, more options will be provided.")){
-					acc = as.character(hugolookup[res1, "Approved.Symbol"]) 
-					break
-				}
-			}
-			
-			line = readline(paste("\nIf you would like to accept the current search term, \"",
-														sterm,
-														"\" \nas the symbol correction, please press ENTER.\nTo continue with out making a correction, enter c\nIf you would prefer to enter a correction, please key it in now: "))
-			if(line ==""){
-				acc = sterm
-				break
-			}
-			if(line == "c"){
-				acc = ""
-				break
-			}
-			sterm = line
-		}#while
-		print("Out of while loop")
-		if(acc != ""){
-			ssymbols = c(ssymbols, acc)
-			sindexes = c(sindexes, osym)
-		}
-	}#for
-	out = cbind.data.frame(sindexes, ssymbols, stringsAsFactors=F)
-	if(nrow(out)) colnames(out)<-c("old_symbol","new_symbol")
-	print("about to return")
-	return(out)
-}#checkSynonyms
 
 #qinfo: gives you quick info about a data structure
 #takes: ds: vector, dataframe or matrix
@@ -1789,7 +1228,7 @@ twoHistOnePlot<-function(dataset1,dataset2,frequency_not_density=T,main_title="m
 	return(list(p1=p1, p2=p2))
 }
 
-scatterhist = function(x, y, xlab="", ylab="", main=""){
+scatterhist <- function(x, y, xlab="", ylab="", main=""){
 	zones=matrix(c(2,0,1,3), ncol=2, byrow=TRUE)
 	layout(zones, widths=c(4/5,1/5), heights=c(1/5,4/5))
 	xhist = hist(x, plot=FALSE)
@@ -1812,7 +1251,7 @@ scatterhist = function(x, y, xlab="", ylab="", main=""){
 	par(mar=c(5, 4, 4, 2) + 0.1 )
 }
 
-scatterhist2 = function(x1, y1, x2, y2, xlab="", ylab="", main="", legendTxt=NULL){
+scatterhist2 <- function(x1, y1, x2, y2, xlab="", ylab="", main="", legendTxt=NULL){
 	
 	zones=matrix(c(2,0,1,3), ncol=2, byrow=TRUE)
 	layout(zones, widths=c(4/5,1/5), heights=c(1/5,4/5))
@@ -1863,27 +1302,27 @@ addGeneInfo<-function(genelist, path_detail){
 	#adds additional gene info to a list of genes
 	#indicates genes which did not have hugo records
 	#initilize variables
-	htab = path_detail$HUGOtable
+	symtab = path_detail$symtable
 	
 	# 	#assure there are no symbols given as "\\N" 
 	# 	genelist = genelist[genelist!="\\N"]
 	
 	#attempt to make sure the symbols match 
-	genelist = corsym(genelist, hugoref=htab, verbose=T)
+	genelist = corsym(genelist, symref=symtab, verbose=T)
 	
 	#extract the needed columns
-	xhtab = htab[,c("Approved.Symbol", "Approved.Name", "Locus.Type", "Chromosome", "Previous.Names")]
-	rownames(xhtab) = xhtab$Approved.Symbol
+	xsymtab = symtab[,c("Approved.Symbol", "Approved.Name", "Locus.Type", "Chromosome", "Previous.Names")]
+	rownames(xsymtab) = xsymtab$Approved.Symbol
 	
 	#figure out which gene symbols we actually have info on:
-	have = genelist%in%xhtab$Approved.Symbol
+	have = genelist%in%xsymtab$Approved.Symbol
 	
 	#reduce the gene list to those we have info on and report those we dont have info on
 	goodset = genelist[have]
 	badset = genelist[!have]
 	
 	out=list()
-	out$'Genes and their records' = xhtab[goodset,]
+	out$'Genes and their records' = xsymtab[goodset,]
 	out$'Gene symbols for which records could not be found' = badset
 	
 	return(out)

@@ -513,6 +513,18 @@ loadSummary<-function(study_name="",path="./output"){
 	return(all_sum)
 }
 
+checkSetDirectoryStructure<-function(verbose=T){
+	
+	neededDirectories = c("input","output","reference_data")
+	wd = getwd()
+	notFoundDirs = neededDirectories[!neededDirectories%in%dir(wd)]
+	if(length(notFoundDirs)){
+		cat("\nNOTICE: \nCreating needed directory structure in current working directory with folders input, output and reference_data.\n")
+		for(dn in notFoundDirs) dir.create(path=dn, showWarnings=F)
+	}else if(verbose){
+		cat("\nCorrect directory structure found.\n")
+	}
+}
 
 #orchestrates establishment of a new study, or loading of an old study. 
 #takes: studyFolderName, path_detail, root, study.name
@@ -524,7 +536,7 @@ initiateStudy<-function(studyFolderName=NULL,
 	cat("\n---------------------Initilizing Study---------------------\n")
 	res1 = list()
 	studyNameLine="s"
-	
+	checkSetDirectoryStructure()
 	if(!is.null(study.name)) studyFolderName = paste("study_", study.name, sep="")
 	if(is.null(studyFolderName)) studyNameLine= readline("To load a saved study, Enter s\nEnter a study name to start a new study with that name\nTo start a new study with the date as the study name, press enter ")
 	
@@ -565,7 +577,7 @@ initiateStudy<-function(studyFolderName=NULL,
 		
 
 	}else if(is.null(path_detail)){
-		print("Paths needed, obtaining...")
+		print("Cellular pathway repository not assigned.. loading.. ")
 		path_detail=getPaths( path_file=as.character(studytmp@studyMetaData@paths$file))
 	}
 	# 	print("Check3")

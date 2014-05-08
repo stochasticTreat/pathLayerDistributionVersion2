@@ -1,0 +1,7 @@
+Package: packageDir
+Title: Tool for in silico functional analysis design
+Description: Allows exploration of relationship between aberrational and functionally sensitive gene targets
+Version: 0.1
+Author: Sam Higgins <samuelhiggins@gmail.com>
+Maintainer: Sam Higgins <samuelhiggins@gmail.com>
+License: MIT
