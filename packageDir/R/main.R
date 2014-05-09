@@ -1,6 +1,3 @@
-PACKAGENAME="packageDir"
-# data("defaultSummaryTable140504")
-
 #main.R
 loadBasicArms<-function(STUDY){
 	
@@ -31,8 +28,37 @@ loadBasicArms<-function(STUDY){
 	return(STUDY)
 }
 
+checkLoadLibrary<-function(libname){
+	if (!require(libname, character.only=T)){
+		mess = paste0("Library named \'",libname,"\' is missing")
+		stop(mess)
+	}
+}
+
+checkLoadDependencies<-function(){
+	checkLoadLibrary(libname="graphite")
+	checkLoadLibrary(libname="RUnit")
+	checkLoadLibrary(libname="RCytoscape")
+	checkLoadLibrary(libname="tcltk")
+	checkLoadLibrary(libname="VennDiagram")
+	checkLoadLibrary(libname="calibrate")
+	checkLoadLibrary(libname="RCurl")
+	checkLoadLibrary(libname="biomaRt")
+	checkLoadLibrary(libname="xtable")
+	checkLoadLibrary(libname="hwriterPlus")
+	checkLoadLibrary(libname="tools")
+	checkLoadLibrary(libname="HGNChelper")
+}
+
+
+#'@title runInteractivePathAnalysis()
+#'@description Main function for interactive usage of package. Provides menu-based access for nearly all program functionality.
+#'@param additionalArms Optional. Function loading additional data input arms. Function should take a Study object as an argument, use the loadDataArm() to load data arms, and return the Study object with arms added.
+
 ########################################################################
-interactiveMain<-function(additionalArms=NULL){
+runInteractivePathAnalysis<-function(additionalArms=NULL){
+	
+	checkLoadDependencies()
 	
 	#initiate variables
 	prevCohortFile = NULL

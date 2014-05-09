@@ -37,6 +37,10 @@ makeStacked<-function(dfin){
 
 
 getDrugTargetData<-function(hugo, fname="./reference_data/drugDB/drugbank/all_target_ids_all.csv"){
+	if(!file.exists(fname)){
+		warning(paste("The drug target database file,",fname,"could not be found. \nData for this file can be downloaded from http://www.drugbank.ca/"))
+		return(NULL)
+	}
 	ptm<-proc.time()
 	cat("\nLoading drug data from: \n", fname, "\n")
 	sep=","
@@ -44,6 +48,7 @@ getDrugTargetData<-function(hugo, fname="./reference_data/drugDB/drugbank/all_ta
 	quote="\""
 	delim=","
 	# 	fname="./drugDB/drugbank/all_target_ids_all.csv"
+
 	targtab = read.table(file=fname, sep=sep, header=header, quote=quote, stringsAsFactor=F)
 	htab = targtab[targtab$Species == "Homo sapiens",]
 

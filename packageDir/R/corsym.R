@@ -1,4 +1,4 @@
-library("HGNChelper")
+
 
 test.corsym<-function(){
 # 		symtabFile = "~/tprog/main_131219/reference_data/current_hugo_table.txt"
@@ -46,6 +46,7 @@ corsym<-function(symbol_set,
 								 verbose=T, 
 								 col2="Chrom", 
 								 correctionsfile="./reference_data/gene_symbol_corrections_list.txt"){
+
 	isHugo = T
 	hgnchelper = F
 	symtab = NULL
@@ -395,6 +396,12 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 }#corsym function
 
 getSymbolCorrectionTable<-function(correctionsfile){
+	
+	if(!file.exists(correctionsfile)){
+		dir.create(path=basename(path=correctionsfile), recursive=T)
+		file.copy(from=system.file("extdata/gene_symbol_corrections_list.txt", package = "packageDir"),
+							to=correctionsfile)
+	}
 	
 	raw_correction_set = read.delim(file=correctionsfile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
 

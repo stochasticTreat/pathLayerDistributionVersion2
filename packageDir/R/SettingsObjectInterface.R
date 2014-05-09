@@ -127,14 +127,20 @@ test.loadSettings<-function(){
 }
 
 loadSettings<-function(fname=NULL){
-	print("Inside loadSettings()")
+	
+	print("Inside loadSettings()  ... ")
 	if(is.null(fname)){
+		cat("\nLoading default summary table settings...\n")
 		warning("Loading the default summary table settings")
-		data("defaultSummaryTable140504", verbose=T, envir="packageDir")
-		return(defaultSummaryTableSettings)
+# 		data("defaultSummaryTable140504", verbose=T)
+		load(file=system.file("extdata/defaultSummaryTable140504.rdata", package = "packageDir"), 
+				 verbose=T)
+		out = defaultSummaryTableSettings
+	}else{
+		settingsData = read.table(file=fname, header=T, sep="\t", comment.char="", stringsAsFactors=FALSE)
+		out = dfToList(settingsData)
 	}
-	settingsData = read.table(file=fname, header=T, sep="\t", comment.char="", stringsAsFactors=FALSE)
-	out = dfToList(settingsData)
+
 	return(out)
 }
 
@@ -402,7 +408,7 @@ settingList<-function(s, prompt, set){
 
 			if( sum((!s[[fullSet]]%in%set[,1]) | (!set[,1]%in%s[[fullSet]])) ){#if the options in the input set have changed, the user must be re-prompted
 				cat("\nAvailable options have changed ")
-				system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+				#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 				forceInput = T
 			} 
 		}

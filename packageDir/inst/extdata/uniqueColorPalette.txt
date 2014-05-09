@@ -1,0 +1,37 @@
+1	white
+46	steel blue
+68	cyan
+121	powder coat blue
+128	light royal blue
+26	royal blue
+29	dark royal blue
+31	light violet
+454	dark purple pink
+459	red purple pink
+555	mid red
+552	red red
+566	salmon
+41	dark cream
+58	soft salmon
+91	orange
+93	dark orange
+142	yellow
+652	lemon yellow
+94	hemlock
+367	pepto pink
+450	hot pink
+3	cream
+8	light mint
+11	dark mint
+15	light grey
+17	medium grey
+22	medium cream
+351	light grey
+326	lightish grey
+301	darkish grey
+180	dark grey
+23	dark cream
+24	black
+393	neon greeen
+
+

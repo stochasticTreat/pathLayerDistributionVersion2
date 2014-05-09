@@ -583,7 +583,7 @@ initiateStudy<-function(studyFolderName=NULL,
 	# 	print("Check3")
 	studytmp@studyMetaData@paths = path_detail
 	# 	print("Check4")
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	# system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	# 	print("Check5")
 	return(studytmp)
 }#initiateStudy

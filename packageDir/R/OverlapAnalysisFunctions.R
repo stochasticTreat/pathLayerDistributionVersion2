@@ -19,10 +19,6 @@ abDrugOverlapAnalysis<-function(study,
 																overlapPatients=NULL, 
 																settings=NULL){
 	
-	if(!require("VennDiagram")){
-		install.packages("VennDiagram")
-		library("VennDiagram")
-	}
 	cat("\n******************************************************************************************\n")
 	cat("\n*************************************overlap analysis*************************************\n")
 	cat("\n******************************************************************************************\n")
@@ -82,7 +78,7 @@ abDrugOverlapAnalysis<-function(study,
 	
 	ola = selectOverlapType(ola=ola, study=study)
 	
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	ola$results$overlap_analysis$settings = ola$settings
 
 	return(ola$results$overlap_analysis)
@@ -340,15 +336,6 @@ CheckPatientOverlap<-function(results){
 }#CheckPatientOverlap
 
 plotOverlapArea<-function(tabout_targAndAb, results, abandtargplotname){
-	if(!require(calibrate)){
-		cat("\nAttempting to install package calibrate which allows better plotting options.\n")
-		
-		if(!require(calibrate)){
-			install.packages("calibrate")
-			library(calibrate)
-			cat("\nError: could not install package calibrate!!!\n")
-		}
-	}
 	
 	if(!nrow(tabout_targAndAb)){
 		print("There are no pathways in the overlap between drug targeted/drug sensitive and aberrational")

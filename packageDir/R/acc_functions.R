@@ -544,16 +544,8 @@ getEmpP<-function(path,pgm,reps=1000,paths){
 # AAK1 ACVRL1 ADCK3 ADCK4 ALK ANKK1 NUAK1 AURKB AURKC AXL BMP2K BLK BMX BRSK1 BRSK2 CAMK1 CAMK1D CAMK1G CDK11B CDK11A CDK19 CDK3 CDK8 CDK9 CIT CLK1 CLK2 CLK3 CLK4 DCLK1 DCLK2 DCLK3 DDR1 DDR2 DMPK CDC42BPG STK17A STK17B DYRK1B MAPK6 MAPK4 MAPK15 FRK GAK LATS1 LATS2 STK10 LTK MAP4K5 MARK1 MARK2 MARK3 MARK4 MELK MERTK MAP3K9 MAP3K10 CDC42BPA CDC42BPB MST1 STK24 MST4 MUSK MYO3A MYO3B STK38L NEK1 NEK2 NEK5 NEK6 NEK7 NEK9 CDK16 CDK17 CDK18 CDK14 PIM3 PKN1 PKN2 PLK3 PLK4 PRKD1 PRKD2 PRKD3 PTK6 RIOK3 ROS1 MYLK4 NUAK2 SIK1 SIK2 SRMS SRPK1 SRPK2 STK16 STK33 TESK1 TIE1 TLK1 TLK2 TNIK TNK1 TNK2 TNNI3K TSSK1B TYRO3 STK32B STK32C STK25 ZAK
 
 startHTMLPlugIns<-function(){
-	if(!require("xtable")){
-		print("Trying to install xtable so that HTML output can be generated")
-		install.packages("xtable")
-		if(require("xtable")){
-			print("xtable installed and loaded")
-		} else {
-			stop("could not install xtable")
-		}
-	}
-	library("xtable", lib.loc="/Library/Frameworks/R.framework/Versions/2.15/Resources/library")
+
+
 	if(!require("hwriterPlus")){
 		print("Trying to install hwriterPlus so that HTML output can be generated")
 		install.packages("hwriterPlus")
@@ -563,7 +555,16 @@ startHTMLPlugIns<-function(){
 			stop("could not install hwriterPlus")
 		}
 	}
-	library("hwriterPlus", lib.loc="/Library/Frameworks/R.framework/Versions/2.15/Resources/library")
+	if(!require("xtable")){
+		print("Trying to install hwriterPlus so that HTML output can be generated")
+		install.packages("hwriterPlus")
+		if(require("xtable")){
+			print("xtable installed and loaded")
+		} else {
+			stop("could not install xtable")
+		}
+	}
+
 }
 
 WriteSettings<-function(sumset, p){

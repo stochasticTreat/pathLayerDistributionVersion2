@@ -43,7 +43,7 @@ FilterdbSNP<-function(ohsuSeqDat, tracker, filterYN=NULL, verbose=T){
 			nrow(ohsuSeqDat),
 			"variants found in the cohort,the number with dbSNP records is",
 			sum( ohsuSeqDat$in_dbsnp==1),"\n")
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	if(verbose) filterYN = readline("Would you like to filter out dbSNP Values? (y/n)")
 	if(filterYN=="y"){
 		filtLogicVector = ohsuSeqDat$in_dbsnp==0
@@ -161,13 +161,13 @@ getColorSequence<-function(cnames){
 	out = rep(0,times = length(cnames))
 	names(out) = cnames
 	
-	cpal = read.table(file="./reference_data/uniqueColorPalette.txt",
+	cpal = read.table(file=system.file("extdata/uniqueColorPalette.txt", package = "packageDir"),
 										stringsAsFactors=F,
 										header=F,sep="\t")
 	colnames(cpal) = c("colorNumber", "colorDescription")
 	
 	#make dictionary
-	assignments = read.table(file="./reference_data/colorMatches.txt",
+	assignments = read.table(file=system.file("extdata/colorMatches.txt", package = "packageDir"),
 						 			stringsAsFactors=F,
 						 			header=F,
 						 			sep="\t")

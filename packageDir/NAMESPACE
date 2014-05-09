@@ -1,2 +1,6 @@
 exportPattern("^[[:alpha:]]+")
 
+import(HGNChelper, RCytoscape, graphite, tcltk, VennDiagram, calibrate, RCurl, biomaRt, xtable, hwriterPlus, tools)
+
+exportClasses(Study)
+exportClasses(Path_Detail)

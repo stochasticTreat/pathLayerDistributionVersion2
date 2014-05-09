@@ -224,8 +224,12 @@ getStudyObject<-function(	study.name="",
 # 									 scriptFile="./drug_screen_nuevo.R", 
 # 									 mainFunction=RunDrugScreen, 
 # 									 arms=arms)
-loadDataArm<-function(mainFunction, arms, title, description, scriptFile="no script file provided, loading data arm main function from local environment"){
-	if(!is.null(scriptFile)) source(scriptFile)
+loadDataArm<-function(mainFunction, 
+											arms, 
+											title, 
+											description, 
+											scriptFile="no script file provided, loading data arm main function from local environment"){
+	if(file.exists(scriptFile)) source(scriptFile)
 	tmp = new("DataArm", 
 						title=title, 
 						scriptFile=scriptFile,

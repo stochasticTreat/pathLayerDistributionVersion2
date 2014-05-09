@@ -1,0 +1,7 @@
+exportPattern("^[[:alpha:]]+")
+
+importFrom(HGNChelper, findExcelGeneSymbols, checkGeneSymbols, hgnc.table)
+import(RCytoscape, graphite, tcltk, VennDiagram, calibrate, RCurl, biomaRt, xtable, hwriterPlus, tools)
+
+exportClasses(Study)
+exportClasses(path_detail)

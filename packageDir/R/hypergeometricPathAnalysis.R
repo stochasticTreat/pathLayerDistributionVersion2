@@ -3,9 +3,9 @@
 
 #'@title hypergeometricPathEnrichment
 #'@description provides hypergeometric test for analysis of pathway enrichment
-#'@param targetMatrix
-#'@param paths: bipartate graph of biological pathways
-#'@returns data.frame with two columns, one with hypergeometric p-values for each path, the other with B.H./FDR adjusted p-value.
+#'@param paths_detail: an object of the Path_Detail class
+#'@param pathSigRunner: a object of the PathSummaryRunner reference class
+#'@return data.frame with two columns, one with hypergeometric p-values for each path, the other with B.H./FDR adjusted p-value.
 #'@note Implements the path test interface with one input, the path summary list, and the output, a data.frame with pathway names as row name(s) and named column(s) giving the result of the significance test. 
 hypergeometricPathEnrichment <- function (pathSigRunner, paths_detail) {
 	

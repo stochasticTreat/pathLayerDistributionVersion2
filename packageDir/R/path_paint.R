@@ -1,6 +1,5 @@
 #paint_path.R
-library("graphite")
-library("rBiopaxParser")
+
 
 #this function takes patient gene matracies, 
 #then, via the graphite and RCytoscape packages, 
@@ -128,7 +127,7 @@ addPathwayImagesWithSelection<-function(study,
 	 	
 	 }
 	
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	
 	return(results)
 }#addPathwayImagesWithSelection()
@@ -140,10 +139,7 @@ pathsAreFromGraphite<-function(stud){
 
 loadGraphitePaths<-function(stud){
 	
-	if(!require("graphite")){
-		install.packages("graphite")
-		library("graphite")
-	}
+
 		
 	repset = list(Reactome=reactome, NCI=nci, KEGG=kegg)
 	
@@ -339,9 +335,6 @@ paintOverlap<-function(results, paths_detail, specificPath=NULL){
 
 paintPath<-function(graphitePathway, ab_analysis, paths_detail, drug_analysis=NULL){
 	
-	if(!require(graphite)){
-		print("Cannot load graphite.. . \nthat package is needed for the interface to cytoscape to work")
-	}
 	
 	### set up variables
 	pathName = graphitePathway@title #used to extract data from path matrix
@@ -371,8 +364,6 @@ paintPath<-function(graphitePathway, ab_analysis, paths_detail, drug_analysis=NU
 	
 	#make a color vector from the abs logic vector
 	
-	if (!require(RCytoscape))
-		stop("the RCytoscape package is missing")
 	print("building graphNEL object")
 	
 	g <- buildGraphNEL(nodes=nodes(pathway), 
@@ -557,7 +548,7 @@ setNodeSize<-function(w, abAnalysis, defaultSize=40, maxSize=100){
 	return(w)
 }
 
-#'@setNodeColors()
+#'@title setNodeColors()
 #'@param w: the cytoscape connection
 #'@param node_color_choices: a vector, length 3, containing the hex color codes for the targeted, the unactive and the active nodes
 #'@param targeted: the vector of nodes considered to be targeted
@@ -654,8 +645,6 @@ setBorderColors<-function(w,
 }
 
 cytoscapePlot <- function(pathway, ...) {
-	if (!require(RCytoscape))
-		stop("the RCytoscape package is missing")
 	
 	g <- buildGraphNEL(nodes(pathway), edges(pathway), FALSE)#, ...)
 	g <- markMultiple(g)#marks edgeType attribute

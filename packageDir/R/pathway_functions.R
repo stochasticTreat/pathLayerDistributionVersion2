@@ -39,7 +39,7 @@ importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, 
 }
 
 importFromGraphite<-function(db){
-	library("graphite")
+
 	outset = list()
 	date = c()
 	dbname = c()
@@ -176,7 +176,7 @@ getUniverse<-function(gsv)
 test.getPaths<-function(){
 	symtab = getHugoSymbols()
 	path_file=NULL
-	referenceFileName = "./reference_data/paths/pathMetaData.txt"
+	referenceFileName = system.file("extdata/pathMetaData.txt", package = "packageDir")
 	testPths = getPaths(symtab=symtab)
 	print(dim(testPths$paths))
 	print(testPths$paths[1:2,1:2])
@@ -198,6 +198,7 @@ getPaths<-function(path_file=NULL,
 	if(is.null(symtab)) symtab = getHugoSymbols(verbose=verbose)
 	
 	if(!length(path_file)) path_file=NULL
+	
 	if(!is.null(path_file)){
 		if(!file.exists(path_file)){
 			cat("\n\nThe path file\n",path_file,"\ncould not be found.\n\n")
@@ -231,10 +232,16 @@ getPathMetaData<-function(ref="./reference_data/paths/pathMetaData.txt"){
 		fullTab = read.table(file=ref, header=T, sep="\t", stringsAsFactors=F, comment.char="")
 	}else{
 		
-		fullTab = read.table(file=system.file("extdata/pathMetaData.txt", 
-																					package = PACKAGENAME), header=T, sep="\t", stringsAsFactors=F, comment.char="")
-		if(!file.exists("./referenceData/")) dir.create(path="./referenceData")
-		write.table(x=fullTab, file=ref, quote=F, sep="\t", col.names=T, row.names=F)
+		fullTab = read.table(file=system.file("extdata/pathMetaData.txt",package = "packageDir"), 
+												 header=T, sep="\t", stringsAsFactors=F, comment.char="")
+		
+		if(!file.exists(dirname(path=ref))) dir.create(path=dirname(path=ref), recursive=T, showWarnings=F)
+		file.copy(from=system.file("extdata/pathMetaData.txt",package = "packageDir"), to=ref)
+		file.copy(from=system.file("extdata/Reactome 2014.04.06 12.52.27.txt",package = "packageDir"), 
+							to=paste0(dirname(ref), "/Reactome 2014.04.06 12.52.27.txt"))
+		
+	# write.table(x=fullTab, file=ref, quote=F, sep="\t", col.names=T, row.names=F)
+		
 		return(fullTab)
 	}
 }
@@ -244,11 +251,12 @@ getPathMetaData<-function(ref="./reference_data/paths/pathMetaData.txt"){
 #takes: 	ref: path meta data file (default:"./reference_data/paths/pathMetaData.txt")
 #					path_file: the file name of a pathway set (must be in GSEA format)
 #returns: list: 1 row from the path meta data file given by the ref argument
-choosePaths<-function(ref="./reference_data/paths/pathMetaData.txt", path_file=NULL){
+choosePaths<-function(ref="./reference_data/paths/pathMetaData.txt", 
+											path_file=NULL){
 	
 	if(!length(path_file)) path_file = NULL
 	outRecord = NULL
-	fullTab = getPathMetaData(ref)
+	fullTab = getPathMetaData(ref=ref)
 	if(is.null(path_file)){
 		refTab=fullTab[,c(1:4)]
 		colnames(refTab)<-gsub(pattern="[._]", replacement=" ",x=colnames(refTab))
@@ -486,7 +494,7 @@ importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
 manualPathMetaData<-function(preped_paths, symtab=NULL, symbol_type="HUGO"){
 	if(is.null(symtab)) symtab = getHugoSymbols()
 	pathsFolder = "./reference_data/paths/"
-	library("tools")
+
 # 	allSlots = c("paths","name", "file", "info", "date", "source", "gene_overlap_counts", "full_path_length", "symtable", "original_file_or_source", "original_file_creation_date")
 	neededSlots = c("name", "date", "source")
 	missingSlots = neededSlots[!neededSlots%in%names(preped_paths)]
@@ -886,11 +894,15 @@ test.prepPathListForSave<-function(){
 	GSEAImport(fname="./reference_data/paths/GraphiteReactomeUniprotFormat.txt")
 }
 
-#prepPathListForSave()
+#'@title prepPathListForSave()
 #'@description preps paths in gene-set format (list with names=path names and values = vector of gene names) for saving as a tab delimited file
 #'@param gset The list object of paths
-#'@param path_source A string desribing the source of the pathways, to be pasted as the second element in each line of the output in the manner "Reactome pathway" is here: Abacavir metabolism\tReactome pathway\tUniProt:P49902\tUniProt:Q16774
+#'@param path_source A string desribing the source of the pathways, to be pasted as the second element in each line of the output in the manner as "Reactome pathway" is seen here: 
+#'       Abacavir metabolism	Reactome pathway	UniProt:P49902	UniProt:Q16774
 #'@return one column matix, with each row containing the tab-delimited set: path name, path source and path members
+#'@examples 
+#'library(graphite)
+#'plistsAsDataFrame = prepPathListForSave(gset=reactome, path_source="Reactome pathway")
 prepPathListForSave<-function(gset = reactome, path_source="Reactome pathway"){
 	names(gset)
 	pasted =sapply(X=gset, FUN=function(x){paste(nodes(x), sep="", collapse="\t")})
@@ -901,7 +913,7 @@ prepPathListForSave<-function(gset = reactome, path_source="Reactome pathway"){
 		
 	}
 	return(matrix(data=dout, ncol=1))
-}#graphiteToGseaFormat
+}#prepPathListForSave
 
 
 

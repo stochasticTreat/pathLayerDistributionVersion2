@@ -65,12 +65,7 @@ runSomaticMutationsProcessing<-function(settings, study){
 }
 
 top20Hists<-function(unfilteredData,fileroot){
-	if(!require(ggplot2)){
-		install.packages("ggplot2")
-		if(!require(ggplot2)){
-			print("error, could not install ggplot2!!!!!!!!!!!!!!!!!")
-		}
-	}
+
 
 # 	unfilteredData=results$somatic_mutation_aberration_summary$unfiltered_data
 	
@@ -142,7 +137,8 @@ matchTabRow<-function(trow,tab){
 	return(out)
 }
 
-getColorSequence<-function(cnames, fname="./reference_data/colorMatches.txt"){
+getColorSequence<-function(cnames, 
+													 fname=system.file("extdata/colorMatches.txt", package = "packageDir")){
 	#first check cnames, 
 	#			if colors already assigned to cnames, 
 	#					set those colors already assigned
@@ -153,7 +149,7 @@ getColorSequence<-function(cnames, fname="./reference_data/colorMatches.txt"){
 	out = rep(0,times = length(cnames))
 	names(out) = cnames
 	
-	cpal = read.table(file="./reference_data/uniqueColorPalette.txt",
+	cpal = read.table(file=system.file("extdata/uniqueColorPalette.txt", package = "packageDir"),
 										stringsAsFactors=F,
 										header=F,sep="\t")
 	colnames(cpal) = c("colorNumber", "colorDescription")
@@ -279,7 +275,7 @@ remove_dbSNP<-function(tcga_som, tracker, s){
 #										$tracker: the tracker object
 filterMutationType<-function(tcga_som, tracker, s){
 
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	print("Before removal of genes marked as \"UNKNOWN\"")
 	stackedGeneBar(tcga_som)
 	tracker[["Before removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes"]]=save.plot("stackedGeneBarPreUnknownRemoval")

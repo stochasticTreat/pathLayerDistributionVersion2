@@ -1,5 +1,3 @@
-library("RCytoscape")
-#new biopaxToCytoscape
 
 
 test.addDrugsToGraph<-function(){
@@ -173,8 +171,6 @@ getRecordsWithNode<-function(biopax){
 
 graphNELToCytoscape<-function(gnel, pathname="no path name provided as argument to graphNELToCytoscape()") 
 {
-	if (!require(RCytoscape)) 
-		stop("the RCytoscape package is missing")
 	g = gnel
 	g <- markMultiple(g)
 	g <- initEdgeAttribute(g, "edgeType", "char", "undefined")
@@ -696,9 +692,6 @@ getPathwaysRecords<-function(pwrecord.fileName=NULL){
 
 getReactomeBiopax<-function(study, pathNames){
 	
-	#1 initilize
-	require("RCurl")
-	
 	biopax.dir = "./reference_data/paths/biopax/"
 	if(!file.exists(biopax.dir)) dir.create(path=biopax.dir, recursive=T, showWarnings=F)
 	
@@ -797,11 +790,6 @@ getBiomartDbIds<-function(){
 	return(bmres1)
 }
 reactomeBiomart<-function(verbose=T){
-	if(!require("biomaRt")){
-		source("http://bioconductor.org/biocLite.R")
-		biocLite("biomaRt")
-		library("biomaRt")
-	}
 	
 	reac = useMart("REACTOME")
 	
@@ -811,14 +799,15 @@ reactomeBiomart<-function(verbose=T){
 }
 
 biopaxFileNameFromPathName<-function(pathNames, pwrecord.file = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"){
-	if(file.exists(pwrecord.file)){ pwrecord = read.table(file=pwrecord.file, 
-																												quote="",
-																												comment.char="",
-																												stringsAsFactors=F,
-																												header=T,sep="\t")
-	}else{
-		pwrecord=data.frame(matrix(nrow=0,ncol=3,dimnames=c(list(NULL,c("dbID", "path_name", "download_date")))))
+	if(!file.exists(pwrecord.file)){ 
+		pwrecord.file = system.file("extdata/record_of_biopax_pathways.txt",package = "packageDir")
 	}
+	
+	pwrecord = read.table(file=pwrecord.file, 
+												quote="",
+												comment.char="",
+												stringsAsFactors=F,
+												header=T,sep="\t")
 	
 	#make a file-path association dictionary
 	rownames(pwrecord)<-pwrecord$path_name

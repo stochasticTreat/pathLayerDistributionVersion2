@@ -229,6 +229,6 @@ processSomaticDataWithCoverage<-function(study_name="no_study_name_provided",
 	#somatic_summary$genesummary = merge(x=preFilteringGeneSummary, y=somatic_summary$genesummary,all=T)
 	#colnames(somatic_summary$genesummary)<-c("Before_filtering", "After_filtering")
 	somatic_summary[["preFilteringGeneSummary"]] = preFilteringGeneSummary
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	return(somatic_summary)
 }#processSomaticData()
