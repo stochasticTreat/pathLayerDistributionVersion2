@@ -6,5 +6,5 @@ reference_data/
 executionDir/
 *.zip
 *.gz
-Rplots.pdf
+packageDir/Rplots.pdf
 packageDir.Rcheck/
