@@ -1,4 +1,5 @@
 #main.R
+
 loadBasicArms<-function(STUDY){
 	
 	arms = STUDY@arms
@@ -54,7 +55,8 @@ checkLoadDependencies<-function(){
 #'@title runInteractivePathAnalysis()
 #'@description Main function for interactive usage of package. Provides menu-based access for nearly all program functionality.
 #'@param additionalArms Optional. Function loading additional data input arms. Function should take a Study object as an argument, use the loadDataArm() to load data arms, and return the Study object with arms added.
-
+#'@export
+#'@return The Study object for the created in runInteractivePathAnalysis
 ########################################################################
 runInteractivePathAnalysis<-function(additionalArms=NULL){
 	
@@ -97,6 +99,7 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 			results = STUDY@results
 			path_detail = FullPathObject(STUDY)
 		}
+		
 		#establish path_detail, paths list object
 		if(is.null(path_detail)){
 			path_detail = getPaths()
@@ -106,6 +109,7 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 		#establish arms
 		STUDY = loadBasicArms(STUDY=STUDY)
 		if(class(additionalArms)=="function"){
+			print("loading additional arms")
 			STUDY = additionalArms(STUDY=STUDY)
 		}
 		#system('/usr/bin/afplay ./reference_data/Submarine.aiff')

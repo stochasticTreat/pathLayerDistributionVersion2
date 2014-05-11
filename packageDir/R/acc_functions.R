@@ -171,6 +171,11 @@ filePrompt<-function(defaultfile){
 	return(pfile)	
 }
 
+#'@title open.PGM
+#'@description Opens a patient gene matrix file.
+#'@param fname The file path to the patient gene matrix file.
+#'@return The patient gene matrix (logic matrix with gene identifiers given as row names and patient identifiers gien as column names)
+#'@export
 open.PGM<-function(fname = NULL){
 	#opens a patient gene matrix file
 	#takes: 1) file name

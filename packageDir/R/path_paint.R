@@ -157,6 +157,7 @@ loadGraphitePaths<-function(stud){
 #'@param limitCol: the column the returned pathways should be limited by
 #'@param limitVal: the value in the limitCol the returned pathways should be limited to
 #'@return vector, a list of pathways from study meeting the parameters described in the function argument
+#'@export
 extractPathNames <- function (resSetName, study, limitCol, limitVal) {
 
 		resSet = study@results[[resSetName]]
@@ -554,6 +555,7 @@ setNodeSize<-function(w, abAnalysis, defaultSize=40, maxSize=100){
 #'@param targeted: the vector of nodes considered to be targeted
 #'@param active: the vector of nodes considered to be active
 #'@param default.color: the hex color used as the default color 
+#'@export
 setNodeColors<-function(w, study, node_color_choices, targeted, active=NULL, default.color=NULL){
 	
 	graph_nodes=noa(getGraph(w),"label")
@@ -604,6 +606,7 @@ setNodeColors<-function(w, study, node_color_choices, targeted, active=NULL, def
 #'@param targeted:  vector of targeted genes (all strings)
 #'@param active:  vector of active genes (all strings)
 #'@param default.color: the default
+#'@export
 setBorderColors<-function(w, 
 													color_choices, 
 													targeted=NULL, 

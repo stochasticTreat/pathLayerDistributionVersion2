@@ -368,6 +368,7 @@ test.settingList<-function(){
 #'@param prompt: The message to be prompted to the user.
 #'@param set: data frame matrix or vector: the options the user has to select amongst
 #'@return The settings list object is returned with the list of user selections in the prompt slot and the full list of options in a slot named prompt, '<prompt>(Full list of options.)'
+#'@export
 settingList<-function(s, prompt, set){
 
 # 	print(s)

@@ -215,6 +215,7 @@ getPaths<-function(path_file=NULL,
 	}
 	#load the actual paths
 	paths = loadPaths(pRecord=pRecord, symtab=symtab)
+	
 	return(paths)
 }
 
@@ -222,6 +223,7 @@ getPaths<-function(path_file=NULL,
 #'@description Retreives biological pathway bipartate graph from study object
 #'@param studyObject An object of class Study
 #'@return a path matrix: representation of a collection of pathway gene memberships as a bipartate graph, with columns representing genes and rows representing pathways. 
+#'@export
 getPathsFromStudy<-function(studyObject){
 	return(studyObject@studyMetaData@paths)
 }
@@ -375,9 +377,9 @@ loadPaths<-function(pRecord, symtab=NULL){
 	if(is.null(symtab)) symtab = getHugoSymbols()
 
 	tmptab = list_to_table(pth=loadPathsAsSets(firstGeneColum=3, fname=pRecord$file))
-	
+	print("getting path object")
 	pathset = getPathObject(symtab=symtab, pRecord=pRecord, pData=tmptab)
-
+	print("got path object..")
 	return(pathset)
 }
 
@@ -900,6 +902,7 @@ test.prepPathListForSave<-function(){
 #'@param path_source A string desribing the source of the pathways, to be pasted as the second element in each line of the output in the manner as "Reactome pathway" is seen here: 
 #'       Abacavir metabolism	Reactome pathway	UniProt:P49902	UniProt:Q16774
 #'@return one column matix, with each row containing the tab-delimited set: path name, path source and path members
+#'@export
 #'@examples 
 #'library(graphite)
 #'plistsAsDataFrame = prepPathListForSave(gset=reactome, path_source="Reactome pathway")

@@ -11,12 +11,19 @@ RunOverlapAnalysis<-function(settings, study){
 
 #settings slots expected:
 #	combinedAberrations
-
+#'@title abDrugOverlapAnalysis
+#'@description main function for running analysis of functional and genomic aberration arms
+#'@param Study A study object (must have results loaded for aberration and functional analyses)
+#'@param thresh Numeric, the threshold used to establish which pathways will be considered to be drug sensitive and aberrational.
+#'@param enrich_col String, the name of the column in the path summary used to determine significance of a pathway. This is the column to which the threshold argument is to be applied.
+#'@param verbose Logical, a flag indicating if the program is to provide extra diagnostic output.
+#'@param settings List obejct. This contains the settings used in the overlap analysis. Use getDefaultOverlapSettings()
+#'@return Study object with overlap analysis in results list added or replaced 
+#'@export
 abDrugOverlapAnalysis<-function(study,
 																thresh=0.05,
 																enrich_col="hyperg_p_w_FDR",
 																verbose=T,
-																overlapPatients=NULL, 
 																settings=NULL){
 	
 	cat("\n******************************************************************************************\n")
@@ -33,7 +40,6 @@ abDrugOverlapAnalysis<-function(study,
 
 	ola$outfname_path = sfolder
 	ola$verbose = verbose
-	ola$overlapPatients = overlapPatients
 
 	if("interactive"%in%names(settings)){ 
 		#if interactive is found as a flag in settings it is the first time overlap analysis has been run for the study

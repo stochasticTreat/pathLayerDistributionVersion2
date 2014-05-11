@@ -80,6 +80,11 @@ nestedListToStudy<-function(res){
 #				path: the path to the location where the study folder tree should be saved
 #							if this argument is not supplied, the default, "./output/" will be used
 #returns: nothing
+#'@title saveStudy
+#'@description Function for saving study object to a human-readable format. 
+#'@param study A Study object to be saved. 
+#'@param path The file path where the study folder should be saved. 
+#'@export
 saveStudy<-function(study, path="./output/"){
 	# 	setClass("StudyMetaData", representation(paths="list",
 	# 																					 settings="list",
@@ -156,15 +161,15 @@ test.saveDataWorkUpNotes<-function(){
 	
 }
 
-
+#'@title saveDataWorkUpNotes
+#'@description Transforms the data work up notes, from a list, as the are produced by the arms, 
+#'@description and makes them into a data fram and an automatically named set of files for any 
+#'@description tables contained in the work up notes list.
+#'@param set: the data work up notes
+#'@param fpath: the file path that any tables should be saved to.
+#'@return data frame object with two columns: the notes and the values of the notes. 
+#'@export
 saveDataWorkUpNotes<-function(set, fpath){
-	#'@title saveDataWorkUpNotes
-	#'@description Transforms the data work up notes, from a list, as the are produced by the arms, 
-	#'@description and makes them into a data fram and an automatically named set of files for any 
-	#'@description tables contained in the work up notes list.
-	#'@param set: the data work up notes
-	#'@param fpath: the file path that any tables should be saved to.
-	#'@return data frame object with two columns: the notes and the values of the notes. 
 	if(is.data.frame(set)){
 		print("data workup notes already formatted.")
 		return(set)
@@ -529,6 +534,14 @@ checkSetDirectoryStructure<-function(verbose=T){
 #orchestrates establishment of a new study, or loading of an old study. 
 #takes: studyFolderName, path_detail, root, study.name
 #returns: study object
+#'@title initiateStudy
+#'@description Orchestrates establishment of a new study, or loading of an old study
+#'@param studyFolderName The name of the study folder. 
+#'@param path_detail A Path_Detail object.
+#'@param root The path to the folder containing a study to be loaded
+#'@param study.name The name of the study to be initiated
+#'@return The initiated Study object. 
+#'@export
 initiateStudy<-function(studyFolderName=NULL, 
 												path_detail=NULL, 
 												root="./output", 

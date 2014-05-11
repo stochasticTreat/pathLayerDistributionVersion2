@@ -191,6 +191,14 @@ multiRunFromSettings<-function(study, incSettingsTable, incArmName){
 #		arm description: the arm description string or the arm name (if arm name, the fromDescription flag must be set to F)
 #		interactive: flag for interactive mode
 #returns: study
+#'@title runArm
+#'@description Main function for taking and running a study arm. Provides needed settings and study object, implementing the study arm interface. 
+#'@param armDescription: the desription slot from a DataArm object
+#'@param study A Study object.
+#'@param fromDescription Indicates if arm should be retrieved by its description or by its title. 
+#'@param interactive Indicates if arm should be run in interactive mode. 
+#'@return Returns a Study object with results from running the study arm. 
+#'@export
 runArm<-function(armDescription, 
 								 study, 
 								 fromDescription=T, 
@@ -250,6 +258,10 @@ runArm<-function(armDescription,
 #displays a summary of loaded data
 #takes: results list, study_name string and path_detail list object
 #returns: nothing
+#'@title printProgramState
+#'@description Displays to standard out general information about the state of the program, including pathways, settings and data currently loaed. 
+#'@param stud A Study object from which the program state is to be determined. 
+#'@export
 printProgramState<-function(stud){#results, study_name, path_detail){
 	results = stud@results
 	study_name = studyName(stud)
@@ -276,11 +288,11 @@ printProgramState<-function(stud){#results, study_name, path_detail){
 	###show loaded data
 	if(length(results)){
 		
-# 		summaries:
-# 		summis = grepl(pattern="summary", x=names(results))
-# 		sumnames = names(results)[summis]
-# #			processed data:
-# 		odnames = names(results)[!summis]
+	# 		summaries:
+	# 		summis = grepl(pattern="summary", x=names(results))
+	# 		sumnames = names(results)[summis]
+	# #			processed data:
+	# 		odnames = names(results)[!summis]
 		sumnames = names(results)
 		for(n in sumnames){
 			
