@@ -3,3 +3,8 @@
 .RData
 output/
 reference_data/
+executionDir/
+*.zip
+*.gz
+Rplots.pdf
+packageDir.Rcheck/
