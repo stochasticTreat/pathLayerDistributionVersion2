@@ -402,22 +402,36 @@ setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
 	print(pgm[1:2,1:2])
 	if(verbose) cat("\nThis is the distribution of drug sensitivity scores:")
 	
-# 	oldpar <- par(no.readonly=T)
-# #	oldpar <- par()
+	# 	oldpar <- par(no.readonly=T)
+	# #	oldpar <- par()
 	while(T){
 		tr = try(expr={
-			par(mfrow=c(2,1))
-			hist(pgm, 
-					 ylab="Num. genes throughout cohort",
-					 xlab="Gene score", 
-					 main="Distribution of drug sensitivity scores for all genes\nexamined in cohort")
+	# 			par(mfrow=c(2,1))
+	# 			hist(pgm, 
+	# 					 ylab="Num. genes throughout cohort",
+	# 					 xlab="Gene score", 
+	# 					 main="Distribution of drug sensitivity scores for all genes\nexamined in cohort")
+			p1 = simpleGGHist(dataSet=as.vector(pgm), showPlot=F,
+									 xlab="Gene score", 
+									 ylab="Num. genes throughout cohort", 
+									 mainTitle="Distribution of drug sensitivity scores for all genes\nexamined in cohort")
+			
 			tmp = as.vector(pgm)
 			tmp = tmp[tmp>0]
-			hist(tmp, 
-					 ylab="Num. genes throughout cohort",
-					 xlab="Gene score", 
-					 main="Distribution of drug sensitivity scores in all genes\nwith scores > 0, in all selected patients")
-			par(mfrow=c(1,1))
+			
+			p2 = simpleGGHist(dataSet=tmp, showPlot=F,
+												xlab="Gene score", 
+												ylab="Num. genes throughout cohort", 
+												mainTitle="Distribution of drug sensitivity scores in all genes\nwith scores > 0, in all selected patients")
+			
+	# 			hist(tmp, 
+	# 					 ylab="Num. genes throughout cohort",
+	# 					 xlab="Gene score", 
+	# 					 main="Distribution of drug sensitivity scores in all genes\nwith scores > 0, in all selected patients")
+	# 			par(mfrow=c(1,1))
+		grid.arrange(p1, p2)
+
+			
 		}, silent=T)
 		
 		if(!is.error(tr)) break
