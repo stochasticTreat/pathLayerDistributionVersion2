@@ -240,7 +240,7 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 			source('./shinyDrugSelect/runShiny.R')
 		}
 	}
-	
+	return(STUDY)
 }
 
 
