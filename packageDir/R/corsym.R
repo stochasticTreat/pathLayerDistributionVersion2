@@ -89,7 +89,10 @@ corsym<-function(symbol_set,
 											col2=col2, 
 											correctionsfile=correctionsfile)
 	}
-
+	
+	if(!is.null(dim(res))){#if the results have more than one dimension, reduce to only a vector
+		res = as.vector(res[,1])
+	}
 	return(res)
 }
 
