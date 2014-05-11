@@ -138,7 +138,7 @@ matchTabRow<-function(trow,tab){
 }
 
 getColorSequence<-function(cnames, 
-													 fname=system.file("extdata/colorMatches.txt", package = "packageDir")){
+													 fname="./reference_data/MAFcolorMatches.txt"){
 	#first check cnames, 
 	#			if colors already assigned to cnames, 
 	#					set those colors already assigned
@@ -146,6 +146,9 @@ getColorSequence<-function(cnames,
 	#					save the new set of assignments
 	#return the set of colors in the order of the cnames
 	#out will be what is returned
+	
+	fname = checkFileCopyDefault(fname=fname)
+	
 	out = rep(0,times = length(cnames))
 	names(out) = cnames
 	
@@ -383,7 +386,7 @@ FilterDuplicates<-function(tcga_som_raw, s, tracker, paths_detail){
 	########################################################
 	###### Correct gene symbols
 	########################################################
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	s = setting(s=s, prompt="Have manual gene symbol corrections already been conducted? (y/n)")
 	customCorrections = s$.text=="n"
 	if(s$.text == "n") s[["Have manual gene symbol corrections already been conducted? (y/n)"]] = NULL
@@ -473,7 +476,7 @@ processSomaticData<-function(study,
 
 	fname_base = study_name
 	tracker = list()
-# 	tracker[["Study name"]] = study_name
+	# 	tracker[["Study name"]] = study_name
 	
 	########################################################
 	############### Open the file and have a look ##########
@@ -482,6 +485,8 @@ processSomaticData<-function(study,
 	s = setting(s=s, prompt="Select a .maf file containing the data set to be analyzed.")
 	
 	fname = s$.text
+	
+	fname = checkFileCopyDefault(fname=fname)
 	
 	cat("\nLoading file:", fname,"\n")
 	tracker[["Data file name"]] = fname
@@ -632,8 +637,8 @@ processSomaticData<-function(study,
 	tracker[["Distributions of mutations before and after fitering"]]=save.plot("DistMutBeforeAferFilt")
 	somatic_summary[["Data_work_up_notes"]] = tracker
 	somatic_summary[["preFilteringGeneSummary"]] = preFilteringGeneSummary
-# 	print(names(somatic_summary$settings))
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	#	print(names(somatic_summary$settings))
+	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	return(somatic_summary)
 }#processSomaticData()
 
