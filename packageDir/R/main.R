@@ -49,6 +49,7 @@ checkLoadDependencies<-function(){
 	checkLoadLibrary(libname="hwriterPlus")
 	checkLoadLibrary(libname="tools")
 	checkLoadLibrary(libname="HGNChelper")
+	checkLoadLibrary(libname="plyr")
 }
 
 
