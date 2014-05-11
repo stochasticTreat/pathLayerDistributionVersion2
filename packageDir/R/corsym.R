@@ -162,6 +162,8 @@ correctByHgncHelper<-function(symbol_set,
 	#3: symbol incorrect, simple correction available : correct
 	#4: symbol incorrect, multiple correction options : allow user to correct or do nothing, (use the first?)
 	
+	if(!is.vector(symbol_set)) symbol_set  = symbol_set[,1,drop=T]
+	
 	ctab = getSymbolCorrectionTable(correctionsfile=correctionsfile)
 	
 	if( !exists("hgnc.table") ) data(hgnc.table)
