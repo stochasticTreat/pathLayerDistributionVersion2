@@ -131,8 +131,8 @@ loadSettings<-function(fname=NULL){
 	print("Inside loadSettings()  ... ")
 	if(is.null(fname)){
 		cat("\nLoading default summary table settings...\n")
-		warning("Loading the default summary table settings")
-# 		data("defaultSummaryTable140504", verbose=T)
+		message("Loading the default summary table settings")
+		# data("defaultSummaryTable140504", verbose=T)
 		load(file=system.file("extdata/defaultSummaryTable140504.rdata", package = "packageDir"), 
 				 verbose=T)
 		out = defaultSummaryTableSettings
