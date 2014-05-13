@@ -14,7 +14,7 @@ addCorrections(new_corrections,
   \item{correctionsfile:}{the file name of the corrections
   file}
 
-  \item{correction}{set: the original contents of the
+  \item{correction_set:}{the original contents of the
   corrections file before new corrections were made}
 }
 \description{

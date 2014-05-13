@@ -185,10 +185,11 @@ getDrugTargetTable<-function(tsyms){
 
 #'@title getAtts
 #'@description Gets all rows in the matrix, mat, with a the attribute strings(s) in atts
-#'@param mat: the matrix to be searched through; contains at least 2 columns with column to being the attributes column. 
-#'@param atts: a vector of strings; the attributes to be matched. perl compatible regular expressions are implemented for string matching
+#'@param mat the matrix to be searched through; contains at least 2 columns with column to being the attributes column. 
+#'@param atts a vector of strings; the attributes to be matched. perl compatible regular expressions are implemented for string matching
+#'@param verbose Flag indicating if extra information should be displayed.
 #'@return matrix, the subset of rows matching the strings provided in atts. 
-getAtts<-function(mat, atts,verbose=F){
+getAtts<-function(mat, atts, verbose=F){
 	omat = mat
 	mat[,2] = gsub(pattern="Drug_Target_[0-9]*_", replacement="", x=mat[,2])
 	selli = rep(F, times=nrow(mat))

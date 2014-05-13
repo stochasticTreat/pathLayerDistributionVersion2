@@ -1,19 +1,19 @@
 #PolyPhenProcessing_functions.R
 
-runOHSUPolyPhenData<-function(fname, path_detail){
-	#runOHSUPolyPhenData is the main interface for accepting polyphen data from OHSU
-	#open file
-	pdat = 
-		#process file, open up scores
-		pdatOpen = splitScoresOut(pdat)
-	#process file, make correct columns
-	
-	#process polyphen data
-	psum = processPolyPhen(polyDat=pdatOpen,paths_detail=path_detail)
-	return(psum)
-}
+# runOHSUPolyPhenData<-function(fname, path_detail){
+# 	#runOHSUPolyPhenData is the main interface for accepting polyphen data from OHSU
+# 	#open file
+# 	pdat = 
+# 		#process file, open up scores
+# 		pdatOpen = splitScoresOut(pdat)
+# 	#process file, make correct columns
+# 	
+# 	#process polyphen data
+# 	psum = processPolyPhen(polyDat=pdatOpen,paths_detail=path_detail)
+# 	return(psum)
+# }
 
-getNumericScoreColumn<-function(xcol){
+getNumericScoreColumn<-function(xcol, pdat){
 	#add column indicating numeric score for each polyphen score
 	ppmn = c("benign","probably damaging","possibly damaging","unknown", "\\N")
 	ppsc = c(1,2,3,0,-1)
@@ -25,33 +25,38 @@ getNumericScoreColumn<-function(xcol){
 	return(nscol)
 }
 
-PPMultiMapRedux<-function(pdat){
-	#takes the formatted polyphen output and reduces the rows to only include
-	# the max score for each index
-	#return: data frame, same structure as input; same data, but rows removed; no multi mapping to indexes
-	#extract the needed columns
-	xcol = pdat[,c("index","pid","Symbol","prediction")]
-	
-	numscore = getNumericScoreColumn(xcol = xcol)
-	xcol = cbind(xcol, numscore)
-	#find the unique set of indexes
-	ui = unique(xcol$index)
-	gindexes = c()
-	for(i in ui){# for each index, find the max polyphen score
-		seti = which(xcol$index == i)
-		sel = which(xcol$numscore[seti] == max(xcol$numscore[seti]))
-		gindexes = c(gindexes, seti[sel[1]])
-	}
-	redux = xcol[gindexes,]	
-	return(redux)
-}
+# PPMultiMapRedux<-function(pdat){
+# 	#takes the formatted polyphen output and reduces the rows to only include
+# 	# the max score for each index
+# 	#return: data frame, same structure as input; same data, but rows removed; no multi mapping to indexes
+# 	#extract the needed columns
+# 	cat("\nHandling situations where there is more than one variants in the same gene,\nwith those variants recieving more than one unique PolyPhen score.\nIn these cases, the gene will be assigned the score indicating maximum variant affect of all variant affects attibuted to the gene.\n")
+# 	
+# 	xcol = pdat[,c("index","pid","Symbol","prediction")]
+# 	
+# 	numscore = getNumericScoreColumn(xcol = xcol, pdat = pdat)
+# 	cat("\nPolyphen classifications traslated...")
+# 	xcol = cbind(xcol, numscore)
+# 	#find the unique set of indexes
+# 	ui = unique(xcol$index)
+# 	gindexes = c()
+# 	cat("\nFinding maximum scores..\n")
+# 	for(i in ui){# for each index, find the max polyphen score
+# 		seti = which(xcol$index == i)
+# 		sel = which(xcol$numscore[seti] == max(xcol$numscore[seti]))
+# 		gindexes = c(gindexes, seti[sel[1]])
+# 	}
+# 	redux = xcol[gindexes,]	
+# 	cat("\n.\n")
+# 	return(redux)
+# }
  
 PolyPhenFromMaf<-function(mafFname=NULL, outFname=NULL){
 	#orchestrates creation of polyphen input file from .maf file
 	#takes: mafData: name of .maf file
 	tracker = list()
 	
-	mafData = read.table(comment="",
+	mafData = read.table(comment.char="",
 											 file=mafFname,
 											 header=T,
 											 sep="\t", 
@@ -154,7 +159,7 @@ parseConsequence<-function(cons){
 }
 
 preProcessPdat<-function(fname){
-	cat('\nPreprocessing PolyPhen output... ')
+	cat('\nPreprocessing PolyPhen output from file', fname, "....")
 	#removes/corrects unwanted formatting in initial PolyPhen output and prepares file for regular input
 	prepdat = read.table(file=fname, header=F,sep="\n",comment.char="", stringsAsFactors=F)
 	#first add an extra column header to the first row
@@ -169,17 +174,17 @@ preProcessPdat<-function(fname){
 	return(newFname)
 }
 
-loadPolyPhenResults<-function(fname){
-	
-	newFname = preProcessPdat(fname)
-	pdat = read.table(file=newFname, sep="\t",header=T,comment.char="", stringsAsFactors=F)
-	#first parse out the map.col
-	mc = pdat$map.col
-	mcs = data.frame(matrix(byrow=T,data=unlist(strsplit(mc, split="\\|")), ncol=4), stringsAsFactors=F)
-	colnames(mcs)<-c("index", "Symbol", "Start.Pos", "pid")
-	pdat = cbind(pdat, mcs)
-	return(pdat)
-}
+# loadPolyPhenResults<-function(fname){
+# 	
+# 	newFname = preProcessPdat(fname)
+# 	pdat = read.table(file=newFname, sep="\t",header=T,comment.char="", stringsAsFactors=F)
+# 	#first parse out the map.col
+# 	mc = pdat$map.col
+# 	mcs = data.frame(matrix(byrow=T,data=unlist(strsplit(mc, split="\\|")), ncol=4), stringsAsFactors=F)
+# 	colnames(mcs)<-c("index", "Symbol", "Start.Pos", "pid")
+# 	pdat = cbind(pdat, mcs)
+# 	return(pdat)
+# }
 
 
 runMAFPolyPhen<-function(fname){
@@ -190,6 +195,7 @@ runMAFPolyPhen<-function(fname){
 	pdat = loadPolyPhenResults(fname=fname)
 	
 	fpdat = PPMultiMapRedux(pdat = pdat)
+	cat("\n.\n")
 	#find max for each gene/patient: for each index, find the max polyphen score
 	#possibly do this again for each patient/gene combo?
 	#change column names to make them appropriate for processPolyPhen
@@ -206,6 +212,7 @@ processPolyPhen<-function(polyDat, paths_detail, disease_type="disease type not 
 	#				disease_type: the study name/ ideally, the type of disease being examined
 	#				paths_detail: the path_detail object
 	#				thresh: 			The polyphen values accepted to indicate genes are "active"
+	cat("\nProcessing polyphen data.. \n")
 	
 	tracker = list()#establish the tracker to document data work-up
 	

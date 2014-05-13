@@ -1,13 +1,12 @@
 library('RUnit')
 
-source('~/tprog/main_131219/pathway_functions.R')
-source('~/tprog/main_131219/acc_functions.R')
-source('~/tprog/main_131219/summaryTable5.R')
-source('~/tprog/main_131219/summaryTableFunctions.R')
+# source('~/tprog/main_131219/pathway_functions.R')
+# source('~/tprog/main_131219/acc_functions.R')
+# source('~/tprog/main_131219/summaryTable5.R')
+# source('~/tprog/main_131219/summaryTableFunctions.R')
 
-getTestPaths<-function(path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt", 
+getTestPaths<-function(path_file="./reference_data/paths/Reactome.2014.04.06.12.52.27.txt", 
 											 forceReload=F){
-	
 	
 	if( !forceReload & exists("testEnv") ){
 		if(exists("path_detail",envir=testEnv)){
@@ -18,7 +17,6 @@ getTestPaths<-function(path_file="./reference_data/paths/Reactome 2014.04.06 12.
 	testEnv<<-new.env(parent=globalenv())
 	testEnv$path_detail<-getPaths(path_file=path_file)
 	return(testEnv$path_detail)
-	
 }
 
 getTestPathSummaryRunner<-function(pths=NULL){

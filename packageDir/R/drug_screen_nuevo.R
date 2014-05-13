@@ -55,7 +55,7 @@ RunDrugScreen<-function(settings, study){
 #returns: logical, indicating if data is in stacked format
 isStackedFormat<-function(fname){
 	cat("\nNote: if data is provided in stacked format, it must contain 3 columns, with the third containing the substring \"score\"\n")
-	dstab = read.table(file=fname,header=T, comment="", sep="\t", stringsAsFactors=F, nrow=4)
+	dstab = read.table(file=fname, header=T, comment.char="", sep="\t", stringsAsFactors=F,nrows=4)
 	if(sum(grepl(pattern="score",x=colnames(dstab),ignore.case=T))>0 & ncol(dstab)==3) return(T)
 	return(F)
 }
@@ -146,7 +146,7 @@ cleanSyms<-function(tab, s, symtab=NULL){
 DrugScreenFromStackedFormat<-function(s,fname=NULL){
 	cat("in DrugScreenFromStackedFormat()\n")
 	if(is.null(fname)) fname = file.choose()
-	dstab = read.table(file=fname,header=T, comment="", sep="\t", stringsAsFactors=F)
+	dstab = read.table(file=fname,header=T,comment.char="", sep="\t", stringsAsFactors=F)
 	colnames(dstab) = c("SampleID","gene","ScoreValue")
 	res = DrugMultiScoreReduce(dstab=dstab, s=s)
 	pgm = res$txt
@@ -246,7 +246,7 @@ extractCoverageSymbols<-function(s, study, fname=NULL, verbose=T){
 	if(is.null(fname)){
 		fname = "./input/Drug_screen_data_6_paired_experiments.txt"
 	}
-	dstab = read.table(file=fname,header=T, comment="", sep="\t", stringsAsFactors=F)
+	dstab = read.table(file=fname,header=T, comment.char="", sep="\t", stringsAsFactors=F)
 	#	dstab$TargetName.20.
 	#try to find colum
 	if(!"gene"%in%colnames(dstab)){#check if column 'gene' exists
@@ -483,7 +483,7 @@ runPanelAnalysis<-function(path_detail, study, s=list()){
 		targets = rownames(patient_gene_levels)
 	}else{
 		print("not in stacked format")
-		patient_gene_levels = open.PGM(fname=drug_scores_fname)
+		patient_gene_levels = openPGM(fname=drug_scores_fname)
 		approved_hugo=path_detail$symtable
 		s = setting(s=s, prompt="Have manual symbol corrections been performed yet for the current data set? (y/n)")
 		targets= corsym(symbol_set=row.names(patient_gene_levels),

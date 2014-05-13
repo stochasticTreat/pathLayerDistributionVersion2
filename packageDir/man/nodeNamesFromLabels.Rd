@@ -5,9 +5,9 @@
 nodeNamesFromLabels(w, nodeLabels)
 }
 \arguments{
-  \item{w:}{a cytoscape connection object}
+  \item{w}{a cytoscape connection object}
 
-  \item{nodeLabels:}{a vector of node labels}
+  \item{nodeLabels}{a vector of node labels}
 }
 \value{
 a vector of node names corresponding to the supplied node

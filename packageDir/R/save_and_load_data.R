@@ -165,9 +165,9 @@ test.saveDataWorkUpNotes<-function(){
 #'@description Transforms the data work up notes, from a list, as the are produced by the arms, 
 #'@description and makes them into a data fram and an automatically named set of files for any 
 #'@description tables contained in the work up notes list.
-#'@param set: the data work up notes
-#'@param fpath: the file path that any tables should be saved to.
-#'@return data frame object with two columns: the notes and the values of the notes. 
+#'@param set the data work up notes
+#'@param fpath the file path that any tables should be saved to.
+#'@return data.frame with two columns: the notes and the values of the notes. 
 #'@export
 saveDataWorkUpNotes<-function(set, fpath){
 	if(is.data.frame(set)){

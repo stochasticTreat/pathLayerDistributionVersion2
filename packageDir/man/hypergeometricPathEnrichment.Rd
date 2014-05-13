@@ -5,9 +5,9 @@
 hypergeometricPathEnrichment(pathSigRunner, paths_detail)
 }
 \arguments{
-  \item{paths_detail:}{an object of the Path_Detail class}
+  \item{paths_detail}{An object of the Path_Detail class}
 
-  \item{pathSigRunner:}{a object of the PathSummaryRunner
+  \item{pathSigRunner}{An object of the PathSummaryRunner
   reference class}
 }
 \value{

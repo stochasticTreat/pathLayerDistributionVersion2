@@ -6,7 +6,7 @@ abDrugOverlapAnalysis(study, thresh = 0.05, enrich_col = "hyperg_p_w_FDR",
   verbose = T, settings = NULL)
 }
 \arguments{
-  \item{Study}{A study object (must have results loaded for
+  \item{study}{A study object (must have results loaded for
   aberration and functional analyses)}
 
   \item{thresh}{Numeric, the threshold used to establish

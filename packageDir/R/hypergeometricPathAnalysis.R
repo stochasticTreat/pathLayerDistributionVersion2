@@ -3,8 +3,8 @@
 
 #'@title hypergeometricPathEnrichment
 #'@description provides hypergeometric test for analysis of pathway enrichment
-#'@param paths_detail: an object of the Path_Detail class
-#'@param pathSigRunner: a object of the PathSummaryRunner reference class
+#'@param paths_detail An object of the Path_Detail class
+#'@param pathSigRunner An object of the PathSummaryRunner reference class
 #'@return data.frame with two columns, one with hypergeometric p-values for each path, the other with B.H./FDR adjusted p-value.
 #'@note Implements the path test interface with one input, the path summary list, and the output, a data.frame with pathway names as row name(s) and named column(s) giving the result of the significance test. 
 #'@export

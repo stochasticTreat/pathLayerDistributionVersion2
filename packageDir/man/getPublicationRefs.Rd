@@ -5,9 +5,9 @@
 getPublicationRefs(df, tdf)
 }
 \arguments{
-  \item{df:}{the main biopax data frame}
+  \item{df}{the main biopax data frame}
 
-  \item{tdf:}{a subsegment of the biopax data frame from
+  \item{tdf}{a subsegment of the biopax data frame from
   which citations and citation dates are to be found. Must
   have columns "property", "property_value" and "id".}
 }

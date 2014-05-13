@@ -378,10 +378,7 @@ setBiologicalDataStyles<-function(pname,
 														resSetNombre = resSetName)
 			
 	}else if(grepl(x=resSetName, pattern="function", ignore.case=T)){
-		# 		w = setBorderColors(w=w,
-		# 												color_choices=c("#a0a0a0" ,"#4d94ff","#ff3d3d","#a633ff"),
-		# 												targeted=targetedSymbols, 
-		# 												active=activeSymbols)
+
 		print("found functional data")
 		setFunctionalDataStyle(pname=pname, monitoredBorder.width=20,
 													 study=study, 
@@ -663,8 +660,8 @@ setDefaultCytoscapeStyle<-function(pname, study, w){
 }
 
 #'@title nodeNamesFromLabels
-#'@param w: a cytoscape connection object
-#'@param nodeLabels: a vector of node labels
+#'@param w a cytoscape connection object
+#'@param nodeLabels a vector of node labels
 #'@return a vector of node names corresponding to the supplied node labels
 nodeNamesFromLabels<-function(w, nodeLabels){
 	dict = noa(graph=w@graph, node.attribute.name="label")
@@ -1137,6 +1134,10 @@ getNodeNames<-function(attval, attname, nodeTable){
 
 #'@title getNodePostionTable
 #'@description gets a table with the positions of all the nodes. 
+#'@param nodeTable The table of nodes
+#'@param attval Used to get positions of a subset of nodes. Ex: if the attname is cellularLocation, and the attval is cell_membrane, the nodes with the cellularLocation attribute set to cell_membrane would be returned. 
+#'@param attname The name of the attribute to filter the nodes by
+#'@param w The cytoscape window connection object. 
 #'@return data table with three columns, node id, x position, y postion
 getNodePositionTable<-function(nodeTable, attval, attname, w){
 	
@@ -1159,7 +1160,7 @@ moveNodeSet<-function(nodeTable, w,
 											attname="mitochondrial matrix", 
 											quadrent = "I"){
 	
-	nodePosTab  = getNodePositionTable(nodeTable=nodeTable, attname=attname, att=att, w=w)
+	nodePosTab  = getNodePositionTable(nodeTable=nodeTable, attname=attname, attval=att, w=w)
 	
 	cent = getCenter(w)
 	
@@ -1345,8 +1346,8 @@ getDisplayNames<-function(tdf, df, outdf){
 
 
 #'@title getPublicationRefs()
-#'@param df: the main biopax data frame
-#'@param tdf: a subsegment of the biopax data frame from which citations and citation dates are to be found. Must have columns "property", "property_value" and "id".
+#'@param df the main biopax data frame
+#'@param tdf a subsegment of the biopax data frame from which citations and citation dates are to be found. Must have columns "property", "property_value" and "id".
 #'@return data frame with columns "id"       "citation" "date"
 getPublicationRefs<-function(df, tdf){
 	
@@ -1425,7 +1426,8 @@ getPublicationRefs<-function(df, tdf){
 # }
 
 #'@title getComments()
-#'@param tdf: data frame, the section of the biopax data frame to pull comments about nodes from. Must have columns "property", "property_value" and "id"
+#'@description Gets and pastes together comments for all elements in the data.frame provided by rBiopaxParser's readBiopax function.
+#'@param tdf data frame, the section of the biopax data frame to pull comments about nodes from. Must have columns "property", "property_value" and "id"
 #'@return data frame with two columns "id" and "comment" where multiple comments are sepparated by pipes (ie, "|")
 getComments<-function(tdf){
 	#pull the comments
@@ -1794,6 +1796,9 @@ allowUserToFixBiopaxNames<-function(nodeTable, df, STUDY, pname){
 
 #'@title getAlternateNames
 #'@description looks through the data frame assocaited with biopax file for alternate names associated with a node/entity
+#'@param nodeIds The ids for the nodes whose alternate names are being searched for. 
+#'@param df The data frame containing the biopax data, as given by the rBiopaxParser package function readBiopax
+#'@return data.frame with columns nodeID and altName.
 getAlternateNames<-function(nodeIds, df){
 	ex1 = df[df$id%in%nodeIds & (df$property=="name"|df$property=="displayName"),]
 	nlist = aggregate(x=ex1$property_value, by=list(ex1$id), FUN=paste)
@@ -1871,9 +1876,9 @@ checkForDups<-function(edg){
 
 #'@title getBiopaxEdges()
 #'@description retreives edge data from the data frame part of a biopax object (the type obtained from RbiopaxParser)
-#'@param df: the biopax data frame
-#'@param connectionType: string, the type of connection/edge to be searched for
-#'@param classType: string, the class of nodes be searched through
+#'@param df the biopax data frame
+#'@param connectionTypes string, the type of connection/edge to be searched for
+#'@param classType string, the class of nodes be searched through
 #'@return matrix with columns type, participant and direction: the type of edge, the participant and the direction or type of interaction
 getBiopaxEdges<-function(df, connectionTypes, classType){
 

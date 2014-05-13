@@ -25,6 +25,13 @@ loadDataArm(mainFunction, arms, title, description,
   \item{description}{The description of the data input arm
   to be used as a main menu option. (ex: "Process drug
   screen data")}
+
+  \item{scriptFile}{A file providing the script where the
+  functions implementing the data import arm can be found.
+  Note: This allows that a script can be provied which
+  contains the definition of the function provided for the
+  mainFunction argument. Thus, this script will be executed
+  before the mainFunction is called or referened.}
 }
 \value{
 The arms list with the additional arm added.

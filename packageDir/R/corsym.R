@@ -425,9 +425,9 @@ getSymbolCorrectionTable<-function(correctionsfile){
 
 #'@title addCorrections()
 #'@description Adds corrections to the corrections file
-#'@param new_corrections: a two column matrix; column 1 = old, incorrect symbols, column 2 = new, corrected symbols
-#'@param correctionsfile: the file name of the corrections file
-#'@param correction set: the original contents of the corrections file before new corrections were made
+#'@param new_corrections a two column matrix; column 1 = old, incorrect symbols, column 2 = new, corrected symbols
+#'@param correctionsfile the file name of the corrections file
+#'@param correction_set the original contents of the corrections file before new corrections were made
 addCorrections<-function(new_corrections, correctionsfile="./reference_data/gene_symbol_corrections_list.txt", correction_set=NULL){
 	if(is.null(correction_set)){
 		if(file.exists(correctionsfile)){

@@ -152,10 +152,10 @@ loadGraphitePaths<-function(stud){
 
 #'@title extractPathNames
 #'@description extracts path names given a results set, study and limitCol
-#'@param resSetName: the name of a summary table results set
-#'@param study: a study object
-#'@param limitCol: the column the returned pathways should be limited by
-#'@param limitVal: the value in the limitCol the returned pathways should be limited to
+#'@param resSetName the name of a summary table results set
+#'@param study a study object
+#'@param limitCol the column the returned pathways should be limited by
+#'@param limitVal the value in the limitCol the returned pathways should be limited to
 #'@return vector, a list of pathways from study meeting the parameters described in the function argument
 #'@export
 extractPathNames <- function (resSetName, study, limitCol, limitVal) {
@@ -550,11 +550,12 @@ setNodeSize<-function(w, abAnalysis, defaultSize=40, maxSize=100){
 }
 
 #'@title setNodeColors()
-#'@param w: the cytoscape connection
-#'@param node_color_choices: a vector, length 3, containing the hex color codes for the targeted, the unactive and the active nodes
-#'@param targeted: the vector of nodes considered to be targeted
-#'@param active: the vector of nodes considered to be active
-#'@param default.color: the hex color used as the default color 
+#'@param w the cytoscape connection
+#'@param study A Study object. Used to access Path_Detail object, and determine which genes are in which pathways
+#'@param node_color_choices a vector, length 3, containing the hex color codes for the targeted, the unactive and the active nodes
+#'@param targeted the vector of nodes considered to be targeted
+#'@param active the vector of nodes considered to be active
+#'@param default.color the hex color used as the default color 
 #'@export
 setNodeColors<-function(w, study, node_color_choices, targeted, active=NULL, default.color=NULL){
 	
@@ -601,11 +602,11 @@ setNodeColors<-function(w, study, node_color_choices, targeted, active=NULL, def
 # 										targeted=targetedSymbols, 
 # 										active=activeSymbols)
 #'@title setBorderColors
-#'@param w: cytoscape connection object, 
-#'@param color_choices: vector of color 4 choices, the default, the targeted & not active nodes, the targeted and active nodes and the color to use if there is only coverage data
-#'@param targeted:  vector of targeted genes (all strings)
-#'@param active:  vector of active genes (all strings)
-#'@param default.color: the default
+#'@param w cytoscape connection object, 
+#'@param color_choices vector of color 4 choices, the default, the targeted & not active nodes, the targeted and active nodes and the color to use if there is only coverage data
+#'@param targeted vector of targeted genes (all strings)
+#'@param active vector of active genes (all strings)
+#'@param default.color the default
 #'@export
 setBorderColors<-function(w, 
 													color_choices, 

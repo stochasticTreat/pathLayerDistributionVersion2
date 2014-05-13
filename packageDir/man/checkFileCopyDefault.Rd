@@ -12,7 +12,8 @@ string, the file name.
 }
 \description{
 Checks if a file exists. If it doesn't, function checks for
-a default and copies the default to the location described
-by the file name passed.
+a default in the package directory's extdata/ folder and
+copies the default to the location described by the file
+name passed.
 }
 

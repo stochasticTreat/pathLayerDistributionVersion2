@@ -193,7 +193,7 @@ multiRunFromSettings<-function(study, incSettingsTable, incArmName){
 #returns: study
 #'@title runArm
 #'@description Main function for taking and running a study arm. Provides needed settings and study object, implementing the study arm interface. 
-#'@param armDescription: the desription slot from a DataArm object
+#'@param armDescription the desription slot from a DataArm object
 #'@param study A Study object.
 #'@param fromDescription Indicates if arm should be retrieved by its description or by its title. 
 #'@param interactive Indicates if arm should be run in interactive mode. 
@@ -782,3 +782,78 @@ getPatientSubset<-function(){
 }#getPatientSubset
 
 
+checkLoadDependencies<-function(){
+	
+	if (!require("ggplot2", character.only=T)){
+		mess = paste0("Library named \'","ggplot2","\' is missing")
+		stop(mess)
+	}
+	if (!require("methods", character.only=T)){
+		mess = paste0("Library named \'","methods","\' is missing")
+		stop(mess)
+	}
+	if (!require("hwriterPlus", character.only=T)){
+		mess = paste0("Library named \'","hwriterPlus","\' is missing")
+		stop(mess)
+	}
+	
+	if (!require("xtable", character.only=T)){
+		mess = paste0("Library named \'","xtable","\' is missing")
+		stop(mess)
+	}
+	
+	if (!require("graph", character.only=T)){
+		mess = paste0("Library named \'","graph","\' is missing")
+		stop(mess)
+	}
+	
+	if (!require("plyr", character.only=T)){
+		mess = paste0("Library named \'","plyr","\' is missing")
+		stop(mess)
+	}
+	
+	if (!require("HGNChelper", character.only=T)){
+		mess = paste0("Library named \'","HGNChelper","\' is missing")
+		stop(mess)
+	}
+	
+	if (!require("tools", character.only=T)){
+		mess = paste0("Library named \'","tools","\' is missing")
+		stop(mess)
+	}
+	if (!require("biomaRt", character.only=T)){
+		mess = paste0("Library named \'","biomaRt","\' is missing")
+		stop(mess)
+	}
+	
+	if (!require("RCurl", character.only=T)){
+		mess = paste0("Library named \'","RCurl","\' is missing")
+		stop(mess)
+	}
+	if (!require("calibrate", character.only=T)){
+		mess = paste0("Library named \'","calibrate","\' is missing")
+		stop(mess)
+	}
+	if (!require("VennDiagram", character.only=T)){
+		mess = paste0("Library named \'","VennDiagram","\' is missing")
+		stop(mess)
+	}
+	if (!require("tcltk", character.only=T)){
+		mess = paste0("Library named \'","tcltk","\' is missing")
+		stop(mess)
+	}
+	if (!require("RCytoscape", character.only=T)){
+		mess = paste0("Library named \'","RCytoscape","\' is missing")
+		stop(mess)
+	}
+	if (!require("graphite", character.only=T)){
+		mess = paste0("Library named \'","graphite","\' is missing")
+		stop(mess)
+	}
+	if (!require("rBiopaxParser", character.only=T)){
+		mess = paste0("Library named \'","rBiopaxParser","\' is missing")
+		stop(mess)
+	}
+	
+	
+}

@@ -19,7 +19,7 @@ SelectAndLoadPGM<-function(s,fname=NULL){
 		s = setting(s=s,prompt="Please select the patient gene matrix file")
 		fname = s$.text
 	}
-	pgm = open.PGM(fname=fname)	
+	pgm = openPGM(fname=fname)	
 	s$.text = pgm
 	return(s)
 }

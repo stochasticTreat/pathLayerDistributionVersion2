@@ -105,7 +105,7 @@ setClass("Study", representation(results="list",
 # studyClass<<-setRefClass("Study", fields=c("results","arms","studyMetaData"))
 
 #'@title DataArm
-#'@description Contains the information necessarry to connect a data input arm. 
+#'@description Contains the information necessarry to connect a data input arm to the interactive version of this program. 
 #'@slot description character. The description of the data input arm provided in the main menu.
 #'@slot title character. The title of the path analysis arm. This is the title by which the results from the analysis arm will be saved in the results list.
 #'@slot scriptFile A string providing the full or relative file path of a script file containing all functions pertinent to running the data arm. This can be omitted if all functions are already loaded into the namespace, and the mainFunction slot is filled. 
@@ -299,29 +299,7 @@ getStudyObject<-function(	study.name="",
 # 									 mainFunction=RunDrugScreen, 
 # 									 arms=arms)
 
-#'@title loadDataArm
-#'@description Connects data input arm to program, providing essential information and the main execution function. 
-#'@param mainFunction The main execution function for the arm. If the script provided, the function does not need to be loaded into memory when the call is made to loadDataArm -- the script file will be run then the function will be called upon to be placed into the mainFunction slot of a DataArm object.
-#'@param arms the list of data arms already established. This can be found in the @arms slot of the Study object. 
-#'@param title character string. The one word description of the data arm. (ex: functional_drug_screen_summary) This will be used internally to refer to any results associated with the data arm, and externally to name folders when saving data. 
-#'@param description The description of the data input arm to be used as a main menu option. (ex: "Process drug screen data")
-#'@return The arms list with the additional arm added. 
-#'@export
-loadDataArm<-function(mainFunction, 
-											arms, 
-											title, 
-											description, 
-											scriptFile="no script file provided, loading data arm main function from local environment"){
-	if(file.exists(scriptFile)) source(scriptFile)
-	tmp = new("DataArm", 
-						title=title, 
-						scriptFile=scriptFile,
-						mainFunction=mainFunction, 
-						description=description)
-	arms[[title]] = tmp
-	arms$dictionary[description] = title
-	return(arms)
-}
+
 
 isEmpty<-function(val){
 	return(length(val)==0)
@@ -336,6 +314,10 @@ Paths<-function(s){
 	return(s@studyMetaData@paths$paths)
 }
 
+#'@title FullPathObject
+#'@description retreives the full Path_Detail object from a study
+#'@param S A Study objecdt
+#'@return A Path_Detail object
 FullPathObject<-function(S){
 	return(S@studyMetaData@paths)
 }
@@ -344,3 +326,31 @@ PathMetaData<-function(s){
 	return(s@studyMetaData@paths)
 }
 
+
+
+#'@title loadDataArm
+#'@description Connects data input arm to program, providing essential information and the main execution function. 
+#'@param mainFunction The main execution function for the arm. If the script provided, the function does not need to be loaded into memory when the call is made to loadDataArm -- the script file will be run then the function will be called upon to be placed into the mainFunction slot of a DataArm object.
+#'@param arms the list of data arms already established. This can be found in the @arms slot of the Study object. 
+#'@param title character string. The one word description of the data arm. (ex: functional_drug_screen_summary) This will be used internally to refer to any results associated with the data arm, and externally to name folders when saving data. 
+#'@param description The description of the data input arm to be used as a main menu option. (ex: "Process drug screen data")
+#'@param scriptFile A file providing the script where the functions implementing the data import arm can be found. Note: This allows that a script can be provied which contains the definition of the function provided for the mainFunction argument. Thus, this script will be executed before the mainFunction is called or referened. 
+#'@return The arms list with the additional arm added. 
+#'@export
+loadDataArm<-function(mainFunction, 
+											arms, 
+											title, 
+											description, 
+											scriptFile="no script file provided, loading data arm main function from local environment"){
+	cat("\nSetting arm named '",title,"'... ")
+	if(file.exists(scriptFile)) source(scriptFile)
+	tmp = new("DataArm", 
+						title=title, 
+						scriptFile=scriptFile,
+						mainFunction=mainFunction, 
+						description=description)
+	arms[[title]] = tmp
+	arms$dictionary[description] = title
+	cat(" .. arm set.\n")
+	return(arms)
+}

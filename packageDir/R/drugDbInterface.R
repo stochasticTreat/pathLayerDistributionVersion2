@@ -49,7 +49,7 @@ getDrugTargetData<-function(hugo, fname="./reference_data/drugDB/drugbank/all_ta
 	delim=","
 	# 	fname="./drugDB/drugbank/all_target_ids_all.csv"
 
-	targtab = read.table(file=fname, sep=sep, header=header, quote=quote, stringsAsFactor=F)
+	targtab = read.table(file=fname, sep=sep, header=header, quote=quote, stringsAsFactors=F)
 	htab = targtab[targtab$Species == "Homo sapiens",]
 
 	#next, attempt-correction of gene Name column 
@@ -135,8 +135,8 @@ test.getPathIdsToTarget<-function(){
 }
 
 #'@title getPathIdsToTarget
-#'@param pathsToSearch: the set of pathways to search for targets. If this is provided, function passes this input as the output
-#'@param STUDY: the study object
+#'@param pathsToSearch the set of pathways to search for targets. If this is provided, function passes this input as the output
+#'@param STUDY the study object
 #'@return Vector of path ids/path names
 getPathIdsToTarget <- function (STUDY, pathsToSearch = NULL) {
 	#1) associate paths in overlap analysis with drugs
@@ -475,9 +475,9 @@ addNumberOfPathsTargeted<-function(STUDY, bfbTargDrugData, dtd, significanceColu
 
 #'@title whichPaths
 #'@description Indicates the set of pathways a particular set of genes belongs to
-#'@param pathList: the set of pathways to be selected from
-#'@param STUDY: the study object
-#'@param geneList: the list of genes
+#'@param pathList the set of pathways to be selected from
+#'@param STUDY the study object
+#'@param geneList the list of genes
 #'@return A vector of path IDs
 whichPaths<-function(pathList, geneList, STUDY){
 	

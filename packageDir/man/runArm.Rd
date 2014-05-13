@@ -5,7 +5,7 @@
 runArm(armDescription, study, fromDescription = T, interactive = NULL)
 }
 \arguments{
-  \item{armDescription:}{the desription slot from a DataArm
+  \item{armDescription}{the desription slot from a DataArm
   object}
 
   \item{study}{A Study object.}

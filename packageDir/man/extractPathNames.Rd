@@ -5,15 +5,15 @@
 extractPathNames(resSetName, study, limitCol, limitVal)
 }
 \arguments{
-  \item{resSetName:}{the name of a summary table results
+  \item{resSetName}{the name of a summary table results
   set}
 
-  \item{study:}{a study object}
+  \item{study}{a study object}
 
-  \item{limitCol:}{the column the returned pathways should
+  \item{limitCol}{the column the returned pathways should
   be limited by}
 
-  \item{limitVal:}{the value in the limitCol the returned
+  \item{limitVal}{the value in the limitCol the returned
   pathways should be limited to}
 }
 \value{

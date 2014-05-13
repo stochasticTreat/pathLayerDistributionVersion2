@@ -5,12 +5,12 @@
 getBiopaxEdges(df, connectionTypes, classType)
 }
 \arguments{
-  \item{df:}{the biopax data frame}
+  \item{df}{the biopax data frame}
 
-  \item{connectionType:}{string, the type of
+  \item{connectionTypes}{string, the type of
   connection/edge to be searched for}
 
-  \item{classType:}{string, the class of nodes be searched
+  \item{classType}{string, the class of nodes be searched
   through}
 }
 \value{

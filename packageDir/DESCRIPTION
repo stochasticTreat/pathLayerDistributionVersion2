@@ -4,7 +4,7 @@ Title: Tool for in silico functional analysis design and exploration of
 Description: Allows exploration of relationship between aberrational and
     functionally sensitive gene targets.
 Depends:
-    R (>= 2.10)
+    R (>= 2.50)
 Imports:
     RCytoscape,
     graphite,
@@ -16,7 +16,13 @@ Imports:
     biomaRt,
     xtable,
     hwriterPlus,
-    tools
+    tools,
+    graph,
+    plyr,
+    methods,
+    rBiopaxParser,
+    ggplot2, 
+    RUnit
 Version: 0.1
 Author: Sam Higgins <samuelhiggins@gmail.com>
 Maintainer: Sam Higgins <samuelhiggins@gmail.com>

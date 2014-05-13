@@ -361,12 +361,12 @@ test.settingList<-function(){
 }
 
 
-#'@title SettingList
+#'@title settingList
 #'@description Allows a user to select from a list of options.
 #'@description Will prompt user with a list of options and assure one of the options is selected
-#'@param s: the settings list
-#'@param prompt: The message to be prompted to the user.
-#'@param set: data frame matrix or vector: the options the user has to select amongst
+#'@param s the settings list
+#'@param prompt The message to be prompted to the user.
+#'@param set data frame matrix or vector: the options the user has to select amongst
 #'@return The settings list object is returned with the list of user selections in the prompt slot and the full list of options in a slot named prompt, '<prompt>(Full list of options.)'
 #'@export
 settingList<-function(s, prompt, set){

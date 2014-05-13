@@ -5,6 +5,21 @@ if(!exists("VERBOSE")) VERBOSE = F
 .parpin <-par()$pin
 # .pardefault <- par()
 
+simpleGGHist<-function(dataSet, xlab, ylab, mainTitle, showPlot=T){
+	
+	p = qplot(x=as.vector(dataSet), geom="histogram")+
+		theme_bw()+
+		xlab(xlab)+
+		ylab(ylab)+
+		ggtitle(mainTitle)
+	
+	if(showPlot){
+		print(p)
+	} else {
+		return(p)
+	}
+}
+
 promptNumeric <- function (prompt) {
 	while(T){
 		line=readline(prompt)
@@ -191,12 +206,12 @@ filePrompt<-function(defaultfile){
 	return(pfile)	
 }
 
-#'@title open.PGM
+#'@title openPGM
 #'@description Opens a patient gene matrix file.
 #'@param fname The file path to the patient gene matrix file.
 #'@return The patient gene matrix (logic matrix with gene identifiers given as row names and patient identifiers gien as column names)
 #'@export
-open.PGM<-function(fname = NULL){
+openPGM<-function(fname = NULL){
 	#opens a patient gene matrix file
 	#takes: 1) file name
 	#				or 2) no arg (in this case, user will be prompted to select a file)
@@ -1354,67 +1369,67 @@ addGeneInfo<-function(genelist, path_detail){
 	return(out)
 }
 
-stackedGeneBar<-function(tcga_som){
-	#stackedGeneBar
-	#takes: tcga_som: initial input .maf table, after cleaning of repeat rows and gene symbols
-	#outputs: stacked bar plot
-	ufilt = tcga_som
-	gs = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
-	top20 = head(gs[order(gs[,2],decreasing=T),],20)
-	gsnames = top20$types
-	
-	toprows = ufilt[ufilt$Hugo_Symbol%in%gsnames,]
-	
-	slimrows = toprows[,c("Hugo_Symbol","Variant_Classification")]
-	
-	#set up the output matrix
-	mtypes = unique(slimrows$Variant_Classification)
-	mmat = matrix(data=0,ncol=length(mtypes), nrow=length(gsnames), dimnames=list(gsnames, mtypes))
-	
-	for(n in gsnames){
-		#get the rows for those names
-		msum = summarize_by(col=slimrows[slimrows$Hugo_Symbol==n,"Variant_Classification"], display=F)
-		mmat[n,msum$types] = msum$counts
-	}
-	mdf  = cbind.data.frame(gene = rownames(mmat),mmat)
-	
-	par(las=2) # make label text perpendicular to axis
-	par(mar=c(4,8,3,3)) # increase y-axis margin.
-	oldmar =c(5,4,4,2)
-	oldlas = 0
-	
-	scol = 2
-	colseq = (scol:(scol + ncol(mmat)))*10 + 3
-	barplot(t(mmat), 
-					legend.text = colnames(mmat),
-					xlab="Number of mutations found in gene",
-					main="Mutation types for the top 20 most mutated genes", 
-					col=colors(distinct=T)[colseq],
-					horiz=TRUE, 
-					cex.names=0.7)
-	par(las=oldlas)
-	par(mar=oldmar)
-	#barplot(mmat, horiz=T)
-}
-
-OneColStackedBar<-function(incol=tcga_som$Variant_Classification, mainText = "Counts of mutation type across cohort"){
-	#makes stacked bar plot with one column from one row
-	#takes: one column of data
-	#outputs: stacked bar plot
-	
-	gs = summarize_by(col=incol, display=F)
-	mmat = gs[,"counts",drop=F]
-	rownames(mmat) = gs$types
-	colnames(mmat)<-""
-	mmat = t(mmat)
-	scol = 2
-	colseq = (scol:(scol + ncol(mmat)))*10 + 3
-	barplot(t(mmat), width=2, ylab="Number of mutations", args.legend = list(inset=c(.05,.02), x="bottomright", bg="white"),
-					legend = colnames(mmat),
-					main=mainText, 
-					col=colors(distinct=T)[colseq],
-					horiz=F, 
-					cex.names=0.8)
-	
-}
+# stackedGeneBar<-function(tcga_som){
+# 	#stackedGeneBar
+# 	#takes: tcga_som: initial input .maf table, after cleaning of repeat rows and gene symbols
+# 	#outputs: stacked bar plot
+# 	ufilt = tcga_som
+# 	gs = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
+# 	top20 = head(gs[order(gs[,2],decreasing=T),],20)
+# 	gsnames = top20$types
+# 	
+# 	toprows = ufilt[ufilt$Hugo_Symbol%in%gsnames,]
+# 	
+# 	slimrows = toprows[,c("Hugo_Symbol","Variant_Classification")]
+# 	
+# 	#set up the output matrix
+# 	mtypes = unique(slimrows$Variant_Classification)
+# 	mmat = matrix(data=0,ncol=length(mtypes), nrow=length(gsnames), dimnames=list(gsnames, mtypes))
+# 	
+# 	for(n in gsnames){
+# 		#get the rows for those names
+# 		msum = summarize_by(col=slimrows[slimrows$Hugo_Symbol==n,"Variant_Classification"], display=F)
+# 		mmat[n,msum$types] = msum$counts
+# 	}
+# 	mdf  = cbind.data.frame(gene = rownames(mmat),mmat)
+# 	
+# 	par(las=2) # make label text perpendicular to axis
+# 	par(mar=c(4,8,3,3)) # increase y-axis margin.
+# 	oldmar =c(5,4,4,2)
+# 	oldlas = 0
+# 	
+# 	scol = 2
+# 	colseq = (scol:(scol + ncol(mmat)))*10 + 3
+# 	barplot(t(mmat), 
+# 					legend.text = colnames(mmat),
+# 					xlab="Number of mutations found in gene",
+# 					main="Mutation types for the top 20 most mutated genes", 
+# 					col=colors(distinct=T)[colseq],
+# 					horiz=TRUE, 
+# 					cex.names=0.7)
+# 	par(las=oldlas)
+# 	par(mar=oldmar)
+# 	#barplot(mmat, horiz=T)
+# }
+# 
+# OneColStackedBar<-function(incol=tcga_som$Variant_Classification, mainText = "Counts of mutation type across cohort"){
+# 	#makes stacked bar plot with one column from one row
+# 	#takes: one column of data
+# 	#outputs: stacked bar plot
+# 	
+# 	gs = summarize_by(col=incol, display=F)
+# 	mmat = gs[,"counts",drop=F]
+# 	rownames(mmat) = gs$types
+# 	colnames(mmat)<-""
+# 	mmat = t(mmat)
+# 	scol = 2
+# 	colseq = (scol:(scol + ncol(mmat)))*10 + 3
+# 	barplot(t(mmat), width=2, ylab="Number of mutations", args.legend = list(inset=c(.05,.02), x="bottomright", bg="white"),
+# 					legend = colnames(mmat),
+# 					main=mainText, 
+# 					col=colors(distinct=T)[colseq],
+# 					horiz=F, 
+# 					cex.names=0.8)
+# 	
+# }
 

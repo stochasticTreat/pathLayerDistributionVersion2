@@ -1,15 +1,15 @@
 \name{settingList}
 \alias{settingList}
-\title{SettingList}
+\title{settingList}
 \usage{
 settingList(s, prompt, set)
 }
 \arguments{
-  \item{s:}{the settings list}
+  \item{s}{the settings list}
 
-  \item{prompt:}{The message to be prompted to the user.}
+  \item{prompt}{The message to be prompted to the user.}
 
-  \item{set:}{data frame matrix or vector: the options the
+  \item{set}{data frame matrix or vector: the options the
   user has to select amongst}
 }
 \value{

@@ -1,5 +1,124 @@
 #somatic_mutations_processing_v8.R
 
+
+debug.runSomaticMutationsProcessing<-function(){
+	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/InitiateDataStructures.R')
+	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/SettingsObjectInterface.R')
+	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/acc_functions.R')
+	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/somatic_mutations_processing_v8.R')
+
+	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/PolyPhenAppend.R')
+	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/PolyPhenProcessing_functions.R')
+
+	
+	settings = STUDY@studyMetaData@settings$somatic_mutation_aberration_summary
+	study=STUDY
+	if(settings$interactive){
+	print("Running somatic mutations processing in interactive mode")
+	}else{
+	print("Running somatic mutations processing from saved settings")
+	}
+	#initialize objects
+	path_detail = FullPathObject(S=study)
+	somatic_summary = list() #this is the main summary object that is provided in the main name space for the main function
+	settings$interactive = F
+	s = settings
+	interactiveTMP = s$interactive
+	p1 = "To load somatic mutation data: enter 1\nTo process somatic sequencing data, limiting the coverage, enter 2\nTo exit somatic mutation interface: enter 3.\n"
+	#################### readline() ####################################
+	# 		uin = readline(prompt=p1)
+	s = setting(s=s, prompt=p1)
+	uin = s$.text
+	paths_detail=path_detail
+	study_name=study@studyMetaData@studyName
+	####################################
+	#inside processSomaticData########################################################################
+	####################################
+	
+	fname_base = study_name
+		
+	tracker = list()
+	# 	tracker[["Study name"]] = study_name
+	########################################################
+	############### Open the file and have a look ##########
+	#################### readline() ########################
+	########################################################
+	s = setting(s=s, prompt="Select a .maf file containing the data set to be analyzed.")
+	fname = s$.text
+	fname = checkFileCopyDefault(fname=fname)
+	cat("\nLoading file:", fname,"\n")
+	tracker[["Data file name"]] = fname
+	tcga_som_raw = read.delim(file=fname, header=T, sep="\t", stringsAsFactors=F, na.strings="-")
+	cat("\n",nrow(tcga_som_raw),"rows read in from file.")
+	cat("\nFixing patient ids...\n")
+	pid = sapply(tcga_som_raw[,"Tumor_Sample_Barcode"], extract_pid)
+	tcga_som_raw = cbind.data.frame(pid, tcga_som_raw, stringsAsFactors=F)#append extracted pids as a sepparated column
+	cat("\n",length(unique(pid)),"unique patient sample id's found in input file.\n")
+	tracker[["Unique patient IDs found in file"]] = length(unique(pid))
+	tracker[["Rows of data read in from file"]] = nrow(tcga_som_raw)
+	hgbuild = unique(tcga_som_raw$Ncbi_Build)
+	cat("\nThe build of the human genome used to annotate the sequencing data:", hgbuild)
+	tracker[["The build of the human genome used to annotate the sequencing data:"]] = hgbuild
+	#################### readline() ####################################
+	if(length(hgbuild)>1){
+	readline("!!Warning, it appears the mutation records in the input sequencing\ndata were annotated using more than one unique build of the human geneome.\nThis may lead to spurious results!")
+	}
+	##########   process, clean the table
+	#################### readline() ####################################
+
+	filtRes = FilterDuplicates(tcga_som_raw=tcga_som_raw,
+	tracker=tracker,
+	s=s,
+	paths_detail=paths_detail)
+	tcga_som = filtRes$tcga_som
+	tracker = filtRes$tracker
+	s=filtRes$s
+	s = setting(s=s, prompt="Would you like to append dbSNP status to variant classifications? (y/n)")
+	if(s$.text=="y"){
+	tcga_som = addDbSNPToVariantClassification(maf=tcga_som)
+	}
+	###### check number of genes that then have official HUGO symbols
+	if("Status"%in%paths_detail$symtable){
+	approvedHugoSymbols = paths_detail$symtable$Approved.Symbol[paths_detail$symtable$Status == "Approved"]
+	}else{
+	approvedHugoSymbols = unique(paths_detail$symtable$Approved.Symbol)
+	}
+	 	
+	notApprovedHugoVector = tcga_som[!tcga_som[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols),"Hugo_Symbol"]
+	
+	numNotHugo = sum(!tcga_som[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols))
+	cat("\n",numNotHugo," unique mutations do not have official HUGO symbols associated\n",sep="")
+	tracker[["After symbol correction, the number of mutations without approved HUGO symbols:"]] = numNotHugo
+	approvedHugoSymbols = paths_detail$symtable$Approved.Symbol
+	tracker[["List of all symbols from the input that were not official HUGO symbols:"]] = matrix(data=tcga_som[!tcga_som[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols),"Hugo_Symbol"], ncol=1)
+	#########################################################
+	###############  Summarize patient somatic mutation stats
+	#   subset = unique(pid)
+	# 	cat("\nPatient sample identifers loaded:\n")
+	#  	print(subset)
+	# 	####extract the patient subset if a subset was established
+	cat("\nIn this set of patients", as.character(nrow(tcga_som)), "unique somatic mutations were found.\n")
+
+	# 	polyres = addPolyPhenResults(mafData=tcga_som, tracker=tracker, s=s)
+	
+	
+	mafData=tcga_som
+	s=setting(s=s, prompt="Would you like to include PolyPhen analysis results in this analysis? (y/n) ")
+	uin=s$.text
+	uin=="y"
+	s=setting(s=s,prompt="\nPlease select PolyPhen output file\n")
+	fname = s$.text
+	tracker[["PolyPhen results file used"]] = fname
+
+	cat("\ngetting PolyPhen predictions.. \n")
+	pdat = loadPolyPhenResults(fname=fname)
+	
+	#the problem happens inside this function: fpdat = PPMultiMapRedux(pdat = pdat)
+	
+
+
+}
+
 #runSomaticMutationsProcessing
 #main interface for somatic mutations input arm
 #implements armMain interface, thus this function is passed as armMain() inside the runArm() function
@@ -235,7 +354,7 @@ stackedGeneBar<-function(tcga_som){
 	par(las=oldlas)
 	par(mar = oldmar)
 	#barplot(mmat, horiz=T)
-}
+}#stackedGeneBar
 
 #remove_dbSNP
 #removes mutations with dbSNP records
@@ -395,7 +514,7 @@ FilterDuplicates<-function(tcga_som_raw, s, tracker, paths_detail){
 		
 		customCorrections = s$.text=="y"
 	}
-	tcga_som[,"Hugo_Symbol"] = corsym(tcga_som[,c("Hugo_Symbol", "Chrom")],
+	tcga_som[,"Hugo_Symbol"] = corsym(symbol_set=tcga_som[,c("Hugo_Symbol", "Chrom")],
 																		symref=paths_detail$symtable, 
 																		verbose=customCorrections)
 	#####check again for duplicates
@@ -543,10 +662,10 @@ processSomaticData<-function(study,
 	
 	#########################################################
 	###############  Summarize patient somatic mutation stats
-  subset = unique(pid)
-	cat("\nPatient sample identifers loaded:\n")
- 	print(subset)
-	####extract the patient subset if a subset was established
+#   subset = unique(pid)
+# 	cat("\nPatient sample identifers loaded:\n")
+#  	print(subset)
+# 	####extract the patient subset if a subset was established
 
 	cat("\nIn this set of patients", as.character(nrow(tcga_som)), "unique somatic mutations were found.\n")
 	

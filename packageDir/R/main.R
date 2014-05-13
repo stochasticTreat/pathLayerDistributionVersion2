@@ -3,7 +3,7 @@
 loadBasicArms<-function(STUDY){
 	
 	arms = STUDY@arms
-	
+	cat("\nLoading basic arms...\n")
 	arms = loadDataArm(description="Load drug screen data",
 										 title="functional_drug_screen_summary", 
 										 mainFunction=RunDrugScreen, 
@@ -29,28 +29,7 @@ loadBasicArms<-function(STUDY){
 	return(STUDY)
 }
 
-checkLoadLibrary<-function(libname){
-	if (!require(libname, character.only=T)){
-		mess = paste0("Library named \'",libname,"\' is missing")
-		stop(mess)
-	}
-}
 
-checkLoadDependencies<-function(){
-	checkLoadLibrary(libname="graphite")
-	checkLoadLibrary(libname="RUnit")
-	checkLoadLibrary(libname="RCytoscape")
-	checkLoadLibrary(libname="tcltk")
-	checkLoadLibrary(libname="VennDiagram")
-	checkLoadLibrary(libname="calibrate")
-	checkLoadLibrary(libname="RCurl")
-	checkLoadLibrary(libname="biomaRt")
-	checkLoadLibrary(libname="xtable")
-	checkLoadLibrary(libname="hwriterPlus")
-	checkLoadLibrary(libname="tools")
-	checkLoadLibrary(libname="HGNChelper")
-	checkLoadLibrary(libname="plyr")
-}
 
 
 #'@title runInteractivePathAnalysis()
@@ -96,17 +75,19 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 		
 		if(initResults){
 			STUDY = initiateStudy(path_detail=path_detail)
+			cat("\nStudy initiated.. \n")
 			# 		STUDY = getStudyObject(results=results)
 			results = STUDY@results
 			path_detail = FullPathObject(STUDY)
+			cat("\nPaths set.. \n")
 		}
-		
+		cat("......")
 		#establish path_detail, paths list object
 		if(is.null(path_detail)){
 			path_detail = getPaths()
 			STUDY@studyMetaData@paths = path_detail
 		}
-		
+		cat("\nReady to load basic study arms...\n")
 		#establish arms
 		STUDY = loadBasicArms(STUDY=STUDY)
 		if(class(additionalArms)=="function"){

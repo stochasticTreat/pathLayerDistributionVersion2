@@ -4,7 +4,7 @@
 \title{DataArm}
 \description{
 Contains the information necessarry to connect a data input
-arm.
+arm to the interactive version of this program.
 }
 \section{Slots}{
 
