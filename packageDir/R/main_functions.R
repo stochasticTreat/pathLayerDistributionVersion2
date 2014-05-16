@@ -826,7 +826,7 @@ checkLoadDependencies<-function(){
 		stop(mess)
 	}
 	
-	if (!require("RCurl", character.only=T)){
+	if (!require(RCurl)){
 		mess = paste0("Library named \'","RCurl","\' is missing")
 		stop(mess)
 	}

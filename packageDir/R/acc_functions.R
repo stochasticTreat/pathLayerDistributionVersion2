@@ -180,7 +180,7 @@ PGMFromVector<-function(genevector){
 #takes a vector of options to choose from (does not have to be unique set)
 #returns logic vector indicating which items in the input vector match the/those 
 #					item(s) chosen by user
-selectionList<-function(valcol){
+selectionList<-function(valcol, verbose=T){
 	usel = unique(valcol)
 	useltmp = gsub(pattern="_",replacement=" ",x=usel)
 	uselmat = matrix(data=1:length(usel), ncol=1, dimnames=list(useltmp, "selection number"))

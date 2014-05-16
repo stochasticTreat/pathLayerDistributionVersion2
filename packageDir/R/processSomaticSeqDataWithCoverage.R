@@ -135,14 +135,14 @@ processSomaticDataWithCoverage<-function(study_name="no_study_name_provided",
 	##########     Mutation type filtering
 	
 	####################### readline() ####################### 
-	filtered = filterMutationType(tcga_som, tracker, verbose, mutation_selection)
+	filtered = filterMutationType(tcga_som, tracker, verbose)
 	
 	som_select = filtered$som_select
 	tracker = filtered$tracker
 	###############################################################
 	###################   dbSNP filtering
 	
-	SNPless = remove_dbSNP(som_select, removedbSNP, tracker, verbose)
+	SNPless = remove_dbSNP(som_select, removedbSNP, tracker)
 	som_select = SNPless$som_select
 	tracker = SNPless$tracker
 	

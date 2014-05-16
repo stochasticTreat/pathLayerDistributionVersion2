@@ -26,7 +26,7 @@ CheckIntegratePolyPhen<-function(seqDat, tracker){
 		cat("\nPolyPhen column found.. \n")
 		tracker[["PolyPhen-annotated variants"]] = sum(seqDat$PolyPhen!="\\N")
 		#if there's a polyphen column, adjust the consequences
-		sd = splitScoresOut(seqDat=seqDat)
+		sd = splitScoresOut(seqdat=seqDat)
 		print("Split PolyPhen scores out")
 		sd2 = appendPPScoresOHSU(sd)
 		print(dim(sd2))
@@ -395,7 +395,7 @@ stackedGeneBarWrapper<-function(ohsuData){
 	stackedGeneBar(tcga_som=ohsuDataRedux)
 }
 
-splitScoresOut<-function(seqDat){
+splitScoresOut<-function(seqdat){
 	#takes polyphen data (data frame with PolyPhen column) as provided in OHSU data
 	#breaks out the score and polyphen category
 	#returns table with score and category appended

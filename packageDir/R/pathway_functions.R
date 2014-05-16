@@ -193,6 +193,7 @@ getPaths<-function(path_file=NULL,
 									 referenceFileName = "./reference_data/paths/pathMetaData.txt", 
 									 symtab=NULL, 
 									 verbose=T){
+	
 	if(class(path_file)=="Study") return(path_file@studyMetaData@paths)
 	#initilize
 	if(is.null(symtab)) symtab = getHugoSymbols(verbose=verbose)
@@ -239,8 +240,8 @@ getPathMetaData<-function(ref="./reference_data/paths/pathMetaData.txt"){
 		
 		if(!file.exists(dirname(path=ref))) dir.create(path=dirname(path=ref), recursive=T, showWarnings=F)
 		file.copy(from=system.file("extdata/pathMetaData.txt",package = "packageDir"), to=ref)
-		file.copy(from=system.file("extdata/Reactome 2014.04.06 12.52.27.txt",package = "packageDir"), 
-							to=paste0(dirname(ref), "/Reactome 2014.04.06 12.52.27.txt"))
+		file.copy(from=system.file("extdata/Reactome.2014.04.06.12.52.27.txt",package = "packageDir"), 
+							to=paste0(dirname(ref), "/Reactome.2014.04.06.12.52.27.txt"))
 		
 	# write.table(x=fullTab, file=ref, quote=F, sep="\t", col.names=T, row.names=F)
 		

@@ -100,7 +100,6 @@ PPMultiMapRedux<-function(pdat){
 	return(redux)
 }
 
-# scoresout = splitScoresOut(seqdat=ohsuseq)
 
 appendPPScoresOHSU<-function(oseqdat){
 	li = oseqdat$PolyPhen!=""

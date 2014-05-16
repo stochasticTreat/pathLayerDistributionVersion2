@@ -110,7 +110,6 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 		optionframe1 = as.data.frame(matrix(1:length(InputOptions),ncol=1,dimnames=list(InputOptions,"Option number")))
 		
 		ProcessingOptions = c("combine aberration data and summarize by pathway", 
-													"Examine drug screen and aberrational pathway overlap",
 													"View summary of loaded data",
 													"Compare sources of aberration data",
 													"Create network diagrams for affected pathways",
@@ -143,7 +142,7 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 		sel="Unknown input"
 		if(sel_line%in%c("q",1:nrow(optionframe))) sel = rownames(optionframe)[as.integer(sel_line)]
 		
-		if(sel=="Examine drug screen and aberrational pathway overlap" && (!"functional_drug_screen_summary"%in%names(STUDY@results)|2>length(grep(pattern="_summary",x=names(STUDY@results))))){
+		if(sel=="Run overlap analysis" && (!"functional_drug_screen_summary"%in%names(STUDY@results)|2>length(grep(pattern="_summary",x=names(STUDY@results))))){
 			readline("\n\n***Drug screen and aberration data must be loaded before overlap is examined.***\n\n")
 			sel="quit"
 		}
@@ -163,19 +162,8 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 			
 			study_stack = compareSettings(study=STUDY)
 			
-		}else if(sel=="Input user provided patient-gene-matrix of aberration data"){
-			source('./generic_aberration_summary.R')
-			gsum = RunGenericEnrichment(path_detail=path_detail)
-			results[[gsum$resTypeName]] = gsum$summary
-			STUDY@results = results
 		}else if(sel=="combine aberration data and summarize by pathway"){
 			results$combined_aberrations_summary = combineAberrationTypes(results=results)
-			STUDY@results = results
-		}else if(sel=="Examine drug screen and aberrational pathway overlap"){#Examine panelcoverage - aberrational pathway overlap  
-			
-			results = abDrugOverlapAnalysis(study=STUDY, 
-																			runEachPatient=(eaPat=="y"), 
-																			settings=STUDY@studyMetaData@settings$overlapAnalysisSettings)
 			STUDY@results = results
 		}else if(sel=="View summary of loaded data"){#View summary of loaded data 
 			DataSummary(STUDY@results)

@@ -7,14 +7,14 @@ addCorrections(new_corrections,
   correction_set = NULL)
 }
 \arguments{
-  \item{new_corrections:}{a two column matrix; column 1 =
+  \item{new_corrections}{a two column matrix; column 1 =
   old, incorrect symbols, column 2 = new, corrected
   symbols}
 
-  \item{correctionsfile:}{the file name of the corrections
+  \item{correctionsfile}{the file name of the corrections
   file}
 
-  \item{correction_set:}{the original contents of the
+  \item{correction_set}{the original contents of the
   corrections file before new corrections were made}
 }
 \description{

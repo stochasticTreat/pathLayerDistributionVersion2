@@ -1386,48 +1386,10 @@ getPublicationRefs<-function(df, tdf){
 	return(citAndDate)
 }#getPublicationRefs
 
-# 
-# #'@title getPublicationRefs()
-# #'@param df: the main biopax data frame
-# #'@param tdf: a subsegment of the biopax data frame from which citations and citation dates are to be found. Must have columns "property", "property_value" and "id".
-# #'@return data frame with columns "id"       "citation" "date"
-# getPublicationRefs<-function(df, tdf){
-# 	
-# # 	dfpex = df[df$property=="xref"&df$class=="BiochemicalReaction",]
-# 	
-# 	#first look for xref s
-# 	tdfxref = tdf[tdf$property=="xref",]
-# 	#second, see if any of the xrefs contain the paattern "#Pub"
-# 	nodeToPubRef = tdfxref[grepl(pattern="#Pub",x=tdfxref$property_attr_value),c("id","property_attr_value"),]
-# 	
-# 	#make PublicationXref dictionary
-# 	pxr = df[df$class=="PublicationXref",]
-# 	#ppxr: relates publicationXref to the citations
-# 	ppxr = aggregate(x=pxr$property_value, by=list(pxr$id), 
-# 									 FUN=function(x){paste(x, collapse=" | ", sep=" | ")})
-# 	ppxr[,1] = paste0("#", ppxr[,1])
-# 	nodeToCitation = merge(x=nodeToPubRef, y=ppxr, by.x="property_attr_value", by.y="Group.1")
-# 	
-# 	#citations pasted together
-# 	nodeToCitations = aggregate(x=nodeToCitation$x, by=list(nodeToCitation$id), 
-# 															FUN=function(x){paste(x, collapse=" || ", sep=" || ")})
-# 	colnames(nodeToCitations)<-c("id", "citation")
-# 	
-# 	#get the dates related to nodes
-# 	pxrDates = pxr[pxr$property=="year",c("id", "property_value")]
-# 	pxrDates$id = paste0("#", pxrDates$id)
-# 	nodeToDate = merge(x=nodeToPubRef, y=pxrDates, by.x="property_attr_value", by.y="id")
-# 	nodeToDates = aggregate(x=nodeToDate$property_value, by=list(nodeToDate$id), FUN=function(x){paste(x, collapse=" ; ", sep=" ; ")})
-# 	colnames(nodeToDates)<-c("id", "date")
-# 	
-# 	citAndDate = merge(x=nodeToCitations, y=nodeToDates, by="id", all.x=T)
-# 	
-# 	return(citAndDate)
-# }
 
 #'@title getComments()
 #'@description Gets and pastes together comments for all elements in the data.frame provided by rBiopaxParser's readBiopax function.
-#'@param tdf data frame, the section of the biopax data frame to pull comments about nodes from. Must have columns "property", "property_value" and "id"
+#'@param tdf data.frame, the section of the biopax data frame to pull comments about nodes from. Must have columns "property", "property_value" and "id"
 #'@return data frame with two columns "id" and "comment" where multiple comments are sepparated by pipes (ie, "|")
 getComments<-function(tdf){
 	#pull the comments

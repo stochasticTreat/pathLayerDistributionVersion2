@@ -1,11 +1,6 @@
 library('RUnit')
 
-source('~/tprog/main_131219/pathway_functions.R')
-source('~/tprog/main_131219/acc_functions.R')
-source('~/tprog/main_131219/summaryTable5.R')
-source('~/tprog/main_131219/summaryTableFunctions.R')
-
-getTestPaths<-function(path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt", 
+getTestPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.27.txt", package = "packageDir"), 
 											 forceReload=F){
 	
 	
@@ -42,12 +37,15 @@ getTestPGM<-function(){
 	#the pgm used is the abacavir metabolism pgm from the moc somatic mutation data
 	#pgm=STUDY@results$somatic_mutation_aberration_summary$patientGeneMatrix
 	#save(pgm, file="./testData/pgm.rda")
-	load(file="./testData/pgm.rda", verbose=T)
+	defname = system.file("testData/pgm.rda", package = "packageDir")
+# 	load(file="./testData/pgm.rda", verbose=T)
 	return(pgm)
 }
 
+message("Running Tests")
+
 test.suite <- defineTestSuite("example",
-															dirs = file.path("tests"),
+															dirs = system.file("unitTests", package = "packageDir"),
 															testFileRegexp = '^\\d+\\.R')
 
 test.result <- runTestSuite(test.suite)

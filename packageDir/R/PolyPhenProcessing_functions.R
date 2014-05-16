@@ -233,6 +233,7 @@ processPolyPhen<-function(polyDat, paths_detail, disease_type="disease type not 
 	
 	#### clean polyphen values, removing any that are marked "unknown" or ""
 	polyDat = splitScoresOut(seqdat=polyDat)
+	
 	#reduce coverage, removing all the genes that are "" and "unknown", as to polyphen output
 	selcover  = polyDat[!polyDat$PolyPhen%in%c("", "unknown"),]
 	
