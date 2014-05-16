@@ -6,14 +6,16 @@
 #'@slot file character. The file from which the pathway repostory was loaded
 #'@slot date character. The date the pathway repository was loaded
 #'@slot info character. Any additional information reguarding the pathway repository.
-#'@slot source character. The source of the pathway repository. (ex: Reactome, via the graphite bioconductor package )
-#'@slot graphite. Depricated. Only here for legacy purposes. 
+#'@slot source character. The source of the pathway repository. For example, Reactome, via the graphite bioconductor package )
+#'@slot graphite Depricated. Only here for legacy purposes. 
 #'@slot gene_overlap_counts Number of pathways each gene belongs to. 
 #'@slot full_path_length The number of genes annotated to each pathway.
 #'@slot symtable The official, approved set of symbols or gene identifiers and any cross references.
-#'@slot paths matrix. The actual storage of pathways in bipartate graph format, with row names as the path names, column names as gene identifiers and values logical representing gene membership in pathawys. 
-#'@slot symbol_type. character. The type of gene identiers used, for example HUGO or Uniprot.
-#'@export
+#'@slot paths matrix The actual storage of pathways in bipartate graph format, with row names as the path names, column names as gene identifiers and values logical representing gene membership in pathawys. 
+#'@slot symbol_type character. The type of gene identiers used, for example HUGO or Uniprot.
+#'@exportClass Path_Detail
+#'@rdname Path_Detail
+#'@name Path_Detail
 Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character", 
 																													file="character", 
 																													info="character", 
@@ -51,7 +53,9 @@ Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character",
 #'@slot .gene_vector Logical matrix. Row names are given as gene identifiers. Values are logical, indicating if genes are considered 'active' in current cohort (or patient, for individual patient analysis)
 #'@slot genomicnotpw matrix of character values. Values are identifiers for affected genes not found in pathways. 
 #'@slot active_genes_ea_path matrix of character values. Values are pasted together vectors of identifiers for genes found active in each pathway. Row names are given as pathway identifiers. 
-#'@export
+#'@exportClass PathSummaryRunner
+#'@rdname PathSummaryRunner
+#'@name PathSummaryRunner
 PathSummaryRunner<-setRefClass(Class="PathSummaryRunner", 
 															 fields=c('patientGeneMatrix',
 															 				 'coverage_summary',
@@ -84,7 +88,9 @@ PathSummaryRunner<-setRefClass(Class="PathSummaryRunner",
 #'@slot geneIdentifierType String. The name of the type of gene identifiers used in the study. 
 #'@slot GeneIdentifierLookup depricated. A slot for a set of official, approved gene identifiers and mappings for unofficial gene identifiers. 
 #'@slot RootFile character data. The path to folder where the study is saved. 
-#'@export
+#'@exportClass StudyMetaData
+#'@rdname StudyMetaData
+#'@name StudyMetaData
 setClass("StudyMetaData", representation(paths="Path_Detail",
 																				 settings="list",
 																				 studyName = "character",
@@ -102,7 +108,6 @@ setClass("Study", representation(results="list",
 																 arms = "list",
 																 studyMetaData = "StudyMetaData"))
 
-# studyClass<<-setRefClass("Study", fields=c("results","arms","studyMetaData"))
 
 #'@title DataArm
 #'@description Contains the information necessarry to connect a data input arm to the interactive version of this program. 
@@ -152,11 +157,6 @@ studyName<-function(s){
 isSummarySet<-function(testList){
 	coreSet=c("genesummary", "patientsums")
 	return(sum(!coreSet%in%names(testList))==0)
-}
-
-test.isSummarySet<-function(){
-	checkTrue(!isSummarySet(testList=list(genesummary="ooo")))
-	checkTrue(isSummarySet(testList=list(genesummary="ooo",patientsums="dude")))
 }
 
 testGetPathListObject<-function(){
@@ -242,7 +242,7 @@ getDefaultSettings<-function(){
 #'@param resf a results list object.
 #'@param GeneIdentifierLookup Depricated. A table of approved gene identifiers. 
 #'@param path_detail A Path_Detail object. 
-#'@param arms The arms list object. 
+#'@param arms The list of arm objects. 
 #'@param geneIdentifierType String, a one word name of the type of gene identifiers used (ex : HUGO, Uniprot)
 #'@param rootFolder character string. The file path where the study should be saved. 
 #'@export
@@ -282,24 +282,6 @@ getStudyObject<-function(	study.name="",
 	
 	return(study)
 }
-
-##loadDataArm
-#takes:	scriptFile:
-#				mainFunction: the main function for the data arm, 
-#												must implement data arm interface,
-#															taking <STUDY> and <settings> as arguments.
-#				arms: The list of arms objects
-#				title: must be one word, no special characters, used
-#				description: This is detailed description of what the data arm will do
-#
-#example usage:
-# arms = loadDataArm(description="Process drug screen data",
-# 									 title="functional_drug_screen_summary", 
-# 									 scriptFile="./drug_screen_nuevo.R", 
-# 									 mainFunction=RunDrugScreen, 
-# 									 arms=arms)
-
-
 
 isEmpty<-function(val){
 	return(length(val)==0)
