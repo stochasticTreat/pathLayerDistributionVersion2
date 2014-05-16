@@ -8,3 +8,4 @@ executionDir/
 *.gz
 packageDir/Rplots.pdf
 packageDir.Rcheck/
+./packageDir/Rplots.pdf
