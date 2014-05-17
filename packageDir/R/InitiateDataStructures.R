@@ -2,20 +2,42 @@
 
 #'@title Path_Detail class
 #'@description Contains all information relevent to cellular pathways used in pathway analysis.
-#'@slot name character. The name of the pathway repository used
-#'@slot file character. The file from which the pathway repostory was loaded
-#'@slot date character. The date the pathway repository was loaded
-#'@slot info character. Any additional information reguarding the pathway repository.
-#'@slot source character. The source of the pathway repository. For example, Reactome, via the graphite bioconductor package )
-#'@slot graphite Depricated. Only here for legacy purposes. 
-#'@slot gene_overlap_counts Number of pathways each gene belongs to. 
-#'@slot full_path_length The number of genes annotated to each pathway.
-#'@slot symtable The official, approved set of symbols or gene identifiers and any cross references.
-#'@slot paths matrix The actual storage of pathways in bipartate graph format, with row names as the path names, column names as gene identifiers and values logical representing gene membership in pathawys. 
-#'@slot symbol_type character. The type of gene identiers used, for example HUGO or Uniprot.
+#' @section Fields:
+#' \subsection{name}{
+#'	character. The name of the pathway repository used.
+#' }
+#'\subsection{file}{
+#'	character. The file from which the pathway repostory was loaded.
+#' }
+#'\subsection{date}{
+#'	character. The date the pathway repository was loaded.
+#'}
+#'\subsection{info}{
+#'	character. Any additional information reguarding the pathway repository.
+#'	}
+#'\subsection{source}{
+#'	character. The source of the pathway repository. For example, Reactome, via the graphite bioconductor package )
+#'}
+#'\subsection{graphite}{
+#'	Depricated. Only here for legacy purposes.
+#'} 
+#'\subsection{gene_overlap_counts}{
+#'	 Number of pathways each gene belongs to.
+#'	 } 
+#'\subsection{full_path_length}{
+#'	 The number of genes annotated to each pathway.
+#'	 }
+#'\subsection{symtable}{
+#'	 The official, approved set of symbols or gene identifiers and any cross references.
+#'	 }
+#'\subsection{paths}{
+#'	 matrix The actual storage of pathways in bipartate graph format, with row names as the path names, column names as gene identifiers and values logical representing gene membership in pathawys. 
+#'	 }
+#'\subsection{symbol_type}{
+#'	 character. The type of gene identiers used, for example HUGO or Uniprot.
+#'	 }
+#'@import methods 
 #'@exportClass Path_Detail
-#'@rdname Path_Detail
-#'@name Path_Detail
 Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character", 
 																													file="character", 
 																													info="character", 
@@ -31,31 +53,75 @@ Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character",
 
 #'@title PathSummaryRunner
 #'@description This reference class object is used in the pathway analysis. It provides all available data for internal functions and user-defined functions to conduct pathway analysis. 
-#'@slot patientGeneMatrix Matrix. Bipartate graph with patient ids as columns, genes as rows and values, logical indicating if gene is 'active' (drug sensitive, aberrational, etc.) in patient. 
-#'@slot coverage_summary Same data as is found in [[result]] set, only filled if analysis platform in question is coverage-limited, ie, coverage slot of PathSummaryRunner is filled. 
-#'@slot coverage Character vector containing symbols for the set of species (ie genes) covered by the analysis platform. If this is provided, pathway analysis will be limited to included only genes in the coverage set. This should be provided if an analysis platform is not considered to have full-genome coverage (ex: sequence capture data for 3000 unique genes.).
-#'@slot indPatientSummarySettings settings object for analysis of individual patients (as opposed to a full cohort). 
-#'@slot original_data_matrix Matrix. The original, untransformed data set. 
-#'@slot min_gene_frequency Numeric. The minimum frequency across the cohort for a gene to be considered as active (aberrational, drug sensitive, etc..) in the pathway analysis. (default 0 imposes no threshold)
-#'@slot min_gene_count Integer. Analogous to min_gene_frequency -- the minimum number of patients with gene in active state for it to be considered active in the pathway analysis. (default 1 imposes no threshold)
-#'@slot individualEnrichment Logical. A flag indicating if path analysis should be run for individual patients. (note, if individual patient analysis is run, min_gene_frequency and min_gene_count will automatically be set to 0 and 1, respectively)
-#'@slot .verbose Logical. Flag indicating if extra output should be shown. 
-#'@slot .significanceTests List with each slot a function. Each function implements the path test interface, accepting a PathSummaryRunner as an input, and returning a data frame with path names or identifiers as row names and values indicating pathway's significance (ex: p-values). 
-#'@slot settings The settings list object. 
-#'@slot targetname One word description of the genes affected (ex: mutated)
-#'@slot dataSetName Description of the data set analyzed by the current arm. 
-#'@slot	study The study object for the current analysis. 
-#'@slot .targetMatrix Bipartate graph matrix. This is a version of the pathway bipartate graph reduced to only contain genes considered "active" (aberrational or functionally sensitive). This is the primary matrix used in computing pathway significance. 
-#'@slot patientsum matrix of numeric values. Number of genes affected in each patient. Patient IDs are given as row names, values are the number of genes affected in each patient.
-#'@slot path_summary_each_patient List of results sets. List names are set as patient identifiers. 
-#'@slot gene_count_matrix Numeric matrix. Row names are gene identifiers. Values are the number of patients with affected gene.
-#'@slot .gene_frequency_matrix matrix The frequency across cohort that each gene is active.
-#'@slot .gene_vector Logical matrix. Row names are given as gene identifiers. Values are logical, indicating if genes are considered 'active' in current cohort (or patient, for individual patient analysis)
-#'@slot genomicnotpw matrix of character values. Values are identifiers for affected genes not found in pathways. 
-#'@slot active_genes_ea_path matrix of character values. Values are pasted together vectors of identifiers for genes found active in each pathway. Row names are given as pathway identifiers. 
+#' @section Fields:
+#' \subsection{patientGeneMatrix}{
+#'	 Matrix. Bipartate graph with patient ids as columns, genes as rows and values, logical indicating if gene is 'active' (drug sensitive, aberrational, etc.) in patient. 
+#'	 }
+#' \subsection{coverage_summary}{
+#'	 Same data as is found in [[result]] set, only filled if analysis platform in question is coverage-limited, ie, coverage slot of PathSummaryRunner is filled. 
+#'	 }
+#' \subsection{coverage}{
+#'	 Character vector containing symbols for the set of species (ie genes) covered by the analysis platform. If this is provided, pathway analysis will be limited to included only genes in the coverage set. This should be provided if an analysis platform is not considered to have full-genome coverage (ex: sequence capture data for 3000 unique genes.).
+#'	 }
+#' \subsection{indPatientSummarySettings}{
+#'	 settings object for analysis of individual patients (as opposed to a full cohort). 
+#'	 }
+#' \subsection{original_data_matrix}{
+#'	 Matrix. The original, untransformed data set. 
+#'	 }
+#' \subsection{min_gene_frequency}{
+#'	 Numeric. The minimum frequency across the cohort for a gene to be considered as active (aberrational, drug sensitive, etc..) in the pathway analysis. (default 0 imposes no threshold)
+#'	 }
+#' \subsection{min_gene_count}{
+#'	 Integer. Analogous to min_gene_frequency -- the minimum number of patients with gene in active state for it to be considered active in the pathway analysis. (default 1 imposes no threshold)
+#'	 }
+#' \subsection{individualEnrichment}{
+#'	 Logical. A flag indicating if path analysis should be run for individual patients. (note, if individual patient analysis is run, min_gene_frequency and min_gene_count will automatically be set to 0 and 1, respectively)
+#'	 }
+#' \subsection{.verbose}{
+#'	 Logical. Flag indicating if extra output should be shown. 
+#'	 }
+#' \subsection{.significanceTests}{
+#'	 List with each slot a function. Each function implements the path test interface, accepting a PathSummaryRunner as an input, and returning a data frame with path names or identifiers as row names and values indicating pathway's significance (ex: p-values). 
+#'	 }
+#' \subsection{settings}{
+#'	 The settings list object. 
+#'	 }
+#' \subsection{targetname}{
+#'	 One word description of the genes affected (ex: mutated)
+#'	 }
+#' \subsection{dataSetName}{
+#'	 Description of the data set analyzed by the current arm. 
+#'	 }
+#' \subsection{study}{
+#'	 The study object for the current analysis. 
+#'	 }
+#' \subsection{.targetMatrix}{
+#'	 Bipartate graph matrix. This is a version of the pathway bipartate graph reduced to only contain genes considered "active" (aberrational or functionally sensitive). This is the primary matrix used in computing pathway significance. 
+#'	 }
+#' \subsection{patientsum}{
+#'	 Matrix of numeric values. Number of genes affected in each patient. Patient IDs are given as row names, values are the number of genes affected in each patient.
+#'	 }
+#' \subsection{path_summary_each_patient}{
+#'	 List of results sets. List names are set as patient identifiers. 
+#'	 }
+#' \subsection{gene_count_matrix}{
+#'	 Numeric matrix. Row names are gene identifiers. Values are the number of patients with affected gene.
+#'	 }
+#' \subsection{.gene_frequency_matrix}{
+#'	 matrix The frequency across cohort that each gene is active.
+#'	 }
+#' \subsection{.gene_vector}{
+#'	 Logical matrix. Row names are given as gene identifiers. Values are logical, indicating if genes are considered 'active' in current cohort (or patient, for individual patient analysis)
+#'	 }
+#' \subsection{genomicnotpw}{
+#'	 Matrix of character values. Values are identifiers for affected genes not found in pathways.
+#'	 } 
+#' \subsection{active_genes_ea_path}{
+#'	 Matrix of character values. Values are pasted together vectors of identifiers for genes found active in each pathway. Row names are given as pathway identifiers. 
+#'	 }
+#'@import methods
 #'@exportClass PathSummaryRunner
-#'@rdname PathSummaryRunner
-#'@name PathSummaryRunner
 PathSummaryRunner<-setRefClass(Class="PathSummaryRunner", 
 															 fields=c('patientGeneMatrix',
 															 				 'coverage_summary',
@@ -88,9 +154,7 @@ PathSummaryRunner<-setRefClass(Class="PathSummaryRunner",
 #'@slot geneIdentifierType String. The name of the type of gene identifiers used in the study. 
 #'@slot GeneIdentifierLookup depricated. A slot for a set of official, approved gene identifiers and mappings for unofficial gene identifiers. 
 #'@slot RootFile character data. The path to folder where the study is saved. 
-#'@exportClass StudyMetaData
-#'@rdname StudyMetaData
-#'@name StudyMetaData
+#'@export
 setClass("StudyMetaData", representation(paths="Path_Detail",
 																				 settings="list",
 																				 studyName = "character",
@@ -121,22 +185,34 @@ setClass("DataArm", representation(description="character",
 																	 scriptFile="character", 
 																	 mainFunction="function"))
 
-# setClass("pathSummarySettings", 
-# 				 representation(#original/input data:
-# 					paths_detail = "list",
-# 					patientGeneMatrix = 'matrix',
-# 					original_data_matrix="data.frame",
-# 					target_matrix='matrix',
-# 					#settings/data descript
-# 					targetname="character",
-# 					min_gene_frequency="numeric",
-# 					min_gene_count="numeric",
-# 					dataSetName="character",
-# 					individualEnrichment='logical',
-# 					enrichment_tests="character",
-# 					#miscelanious
-# 					outputFileName="character",
-# 					verbose='logical'))
+
+#'@title loadDataArm
+#'@description Connects data input arm to program, providing essential information and the main execution function. 
+#'@param mainFunction The main execution function for the arm. If the script provided, the function does not need to be loaded into memory when the call is made to loadDataArm -- the script file will be run then the function will be called upon to be placed into the mainFunction slot of a DataArm object.
+#'@param arms The list containing all DataArm objects for the study.
+#'@param title character string. The one word description of the data arm. (ex: functional_drug_screen_summary) This will be used internally to refer to any results associated with the data arm, and externally to name folders when saving data. 
+#'@param description The description of the data input arm to be used as a main menu option. (ex: "Process drug screen data")
+#'@param scriptFile A file providing the script where the functions implementing the data import arm can be found. Note: This allows that a script can be provied which contains the definition of the function provided for the mainFunction argument. Thus, this script will be executed before the mainFunction is called or referened. 
+#'@return The arms list with the additional arm added. 
+#'@export
+loadDataArm<-function(mainFunction, 
+											arms, 
+											title, 
+											description, 
+											scriptFile="no script file provided, loading data arm main function from local environment"){
+	cat("\nSetting arm named '",title,"'... ")
+	if(file.exists(scriptFile)) source(scriptFile)
+	tmp = new("DataArm", 
+						title=title, 
+						scriptFile=scriptFile,
+						mainFunction=mainFunction, 
+						description=description)
+	arms[[title]] = tmp
+	arms$dictionary[description] = title
+	cat(" .. arm set.\n")
+	return(arms)
+}
+
 
 studyFolder<-function(s){
 	return(s@studyMetaData@RootFile)
@@ -310,29 +386,3 @@ PathMetaData<-function(s){
 
 
 
-#'@title loadDataArm
-#'@description Connects data input arm to program, providing essential information and the main execution function. 
-#'@param mainFunction The main execution function for the arm. If the script provided, the function does not need to be loaded into memory when the call is made to loadDataArm -- the script file will be run then the function will be called upon to be placed into the mainFunction slot of a DataArm object.
-#'@param arms the list of data arms already established. This can be found in the @arms slot of the Study object. 
-#'@param title character string. The one word description of the data arm. (ex: functional_drug_screen_summary) This will be used internally to refer to any results associated with the data arm, and externally to name folders when saving data. 
-#'@param description The description of the data input arm to be used as a main menu option. (ex: "Process drug screen data")
-#'@param scriptFile A file providing the script where the functions implementing the data import arm can be found. Note: This allows that a script can be provied which contains the definition of the function provided for the mainFunction argument. Thus, this script will be executed before the mainFunction is called or referened. 
-#'@return The arms list with the additional arm added. 
-#'@export
-loadDataArm<-function(mainFunction, 
-											arms, 
-											title, 
-											description, 
-											scriptFile="no script file provided, loading data arm main function from local environment"){
-	cat("\nSetting arm named '",title,"'... ")
-	if(file.exists(scriptFile)) source(scriptFile)
-	tmp = new("DataArm", 
-						title=title, 
-						scriptFile=scriptFile,
-						mainFunction=mainFunction, 
-						description=description)
-	arms[[title]] = tmp
-	arms$dictionary[description] = title
-	cat(" .. arm set.\n")
-	return(arms)
-}

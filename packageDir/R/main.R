@@ -30,8 +30,6 @@ loadBasicArms<-function(STUDY){
 }
 
 
-
-
 #'@title runInteractivePathAnalysis()
 #'@description Main function for interactive usage of package. Provides menu-based access for nearly all program functionality.
 #'@param additionalArms Optional. Function loading additional data input arms. Function should take a Study object as an argument, use the loadDataArm() to load data arms, and return the Study object with arms added.
@@ -192,7 +190,6 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 			results = compres$result
 			results[["Aberration data type comparrison"]] = compsource
 			if("y"==readline("Would you like to make an HTML summary of the data type comparrison? (y/n)")){
-				# 			checkAndSaveStudy(study=STUDY)
 				toHTML(table_list=list(comparisons=compsource),
 							 limit_col="hyperg_p_w_FDR",
 							 reorder=T,plimit=.05,maxrows=5000,

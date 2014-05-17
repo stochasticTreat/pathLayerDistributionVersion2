@@ -23,10 +23,10 @@ exportClasses(PathSummaryRunner)
 exportClasses(Path_Detail)
 exportClasses(Study)
 exportClasses(StudyMetaData)
-
 import(HGNChelper)
 import(RCurl)
 import(RCytoscape)
+import(RUnit)
 import(VennDiagram)
 import(biomaRt)
 import(calibrate)
@@ -36,10 +36,6 @@ import(hwriterPlus)
 import(methods)
 import(plyr)
 import(rBiopaxParser)
-import(xtable)
-
-import(RUnit)
 import(tcltk)
 import(tools)
-
-
+import(xtable)

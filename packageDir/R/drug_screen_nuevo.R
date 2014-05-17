@@ -1,7 +1,5 @@
 #data in: patientGeneLevels (patient gene matrix with continuous values for each gene)
 
-
-
 test.RunDrugScreen<-function(){
 	source('./defultSettings.R')
 	pdo = getDefaultPaths()
@@ -429,7 +427,7 @@ setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
 	# 					 xlab="Gene score", 
 	# 					 main="Distribution of drug sensitivity scores in all genes\nwith scores > 0, in all selected patients")
 	# 			par(mfrow=c(1,1))
-		grid.arrange(p1, p2)
+			grid.arrange(p1, p2)
 
 			
 		}, silent=T)

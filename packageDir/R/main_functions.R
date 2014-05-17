@@ -781,7 +781,23 @@ getPatientSubset<-function(){
 	return(aberration_patient_subset)
 }#getPatientSubset
 
-
+#'@title checkLoadDependencies
+#'@import HGNChelper
+#'@import RCurl
+#'@import RCytoscape
+#'@import VennDiagram
+#'@import biomaRt
+#'@import calibrate
+#'@import ggplot2
+#'@import graphite
+#'@import hwriterPlus
+#'@import methods
+#'@import plyr
+#'@import rBiopaxParser
+#'@import xtable
+#'@import RUnit
+#'@import tcltk
+#'@import tools
 checkLoadDependencies<-function(){
 	
 	if (!require("ggplot2", character.only=T)){
@@ -812,7 +828,7 @@ checkLoadDependencies<-function(){
 		stop(mess)
 	}
 	
-	if (!require("HGNChelper", character.only=T)){
+	if (!require(HGNChelper)){
 		mess = paste0("Library named \'","HGNChelper","\' is missing")
 		stop(mess)
 	}
@@ -855,5 +871,5 @@ checkLoadDependencies<-function(){
 		stop(mess)
 	}
 	
-	
 }
+
