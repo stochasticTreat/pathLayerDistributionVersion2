@@ -153,6 +153,17 @@ correctFromHelperPrevious<-function(bsub, verbose){
 	return(bsub)
 }
 
+
+
+#'@title Correct gene symbols using the HGNChelper package
+#'@description Correct gene symbols using the HGNChelper package. Provides interactive or automatic correction of gene identifiers, and corrdination of any correction between multiple calls to this functions.  
+#'@param symbol_set Vector, matrix or data.frame (if more than 2 dimensions, the symbols must be in the first column)
+#'@param symtab The table of official, orthodox gene identifiers. 
+#'@param correctionsfile A file name for a file of gene symbol corrections. This file should be tab delimited and contain two named columns: old_symbol and new_symbol. The old_symbol column contains incorrect identifiers to be corrected, and the new_symbol column contains the corrections. There should be no row names. 
+#'@param verbose A logical flag indicating if interactive mode should be run. 
+#'@return A character vector containing the identifiers for the set of genes provided in the symbol_set function argument, but with any applicable corrections made. 
+#'@import HGNChelper 
+#'@export
 correctByHgncHelper<-function(symbol_set, 
 															symtab, 
 															correctionsfile, 
@@ -173,7 +184,6 @@ correctByHgncHelper<-function(symbol_set,
 	if(sum(!goodsymsi)) cat("\n",sum(!goodsymsi), "gene symbols were found not to be approved.\n")
 	bsub = symbol_set[!goodsymsi]
 	
-
 	cat("Checking previously made corrections...\n")
 	bsub = checkPreviousCorrections(bsub=bsub, ctab=ctab)
 	

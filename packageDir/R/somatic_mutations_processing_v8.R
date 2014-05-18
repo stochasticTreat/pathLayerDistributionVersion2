@@ -119,12 +119,13 @@ debug.runSomaticMutationsProcessing<-function(){
 
 }
 
-#runSomaticMutationsProcessing
-#main interface for somatic mutations input arm
-#implements armMain interface, thus this function is passed as armMain() inside the runArm() function
-#	Takes: 	settings: a settings object
-#					study: a study object (defined in initiateDataStructures.R)
-# Returns: somatic mutations summary list of lists
+#'@title Main execution function for entry of somatic mutation data, and somatic mutations input arm of this program.
+#'@description Implements armMain interface, providing main execution function for entry of somatic mutation data, and somatic mutations input arm of this program.
+#'@note This function is passed as armMain() inside the runArm() function
+#'@param settings The settings list object for the somatic mutation interface, or a blank list. 
+#'@param study A Study object (a defined in initiateDataStructures.R)
+#'@return Somatic mutations path results set
+#'@export
 runSomaticMutationsProcessing<-function(settings, study){
 	
 	if(settings$interactive){
@@ -132,6 +133,7 @@ runSomaticMutationsProcessing<-function(settings, study){
 	}else{
 		print("Running somatic mutations processing from saved settings")
 	}
+	
 	#initialize objects
 	path_detail = FullPathObject(S=study)
 	somatic_summary = list() #this is the main summary object that is provided in the main name space for the main function

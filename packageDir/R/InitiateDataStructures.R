@@ -3,41 +3,21 @@
 #'@title Path_Detail class
 #'@description Contains all information relevent to cellular pathways used in pathway analysis.
 #' @section Fields:
-#' \subsection{name}{
-#'	character. The name of the pathway repository used.
+#' \describe{
+#' \item{\code{name}:}{Object of class \code{"character"} The name of the pathway repository used. }
+#' \item{\code{file}:}{Object of class \code{"character"} The file from which the pathway repostory was loaded.}
+#' \item{\code{date}:}{Object of class \code{"character"} The date the pathway repository was loaded.}
+#' \item{\code{info}:}{Object of class \code{"character"} Any additional information reguarding the pathway repository.}
+#' \item{\code{source}:}{Object of class \code{"character"} The source of the pathway repository. For example, Reactome, via the graphite bioconductor package )}
+#' \item{\code{graphite}:}{Depricated. Only here for legacy purposes.} 
+#' \item{\code{gene_overlap_counts}:}{Object of class \code{"matrix"} One column, with row names given as gene names. Values are the number of pathways each gene belongs to.} 
+#' \item{\code{full_path_length}:}{Object of class \code{"matrix"} One column, pathway names given as row names. Values given as the number of genes annotated to each pathway.}
+#' \item{\code{symtable}:}{Object of class \code{"data.frame"} The official, approved set of symbols or gene identifiers and any cross references.}
+#' \item{\code{paths}:}{Object of class \code{"matrix"} The actual storage of pathways in bipartate graph format, with row names as the path names, column names as gene identifiers and values logical representing gene membership in pathawys.}
+#' \item{\code{symbol_type}:}{Object of class \code{"character"} The type of gene identiers used, for example HUGO or Uniprot.}
 #' }
-#'\subsection{file}{
-#'	character. The file from which the pathway repostory was loaded.
-#' }
-#'\subsection{date}{
-#'	character. The date the pathway repository was loaded.
-#'}
-#'\subsection{info}{
-#'	character. Any additional information reguarding the pathway repository.
-#'	}
-#'\subsection{source}{
-#'	character. The source of the pathway repository. For example, Reactome, via the graphite bioconductor package )
-#'}
-#'\subsection{graphite}{
-#'	Depricated. Only here for legacy purposes.
-#'} 
-#'\subsection{gene_overlap_counts}{
-#'	 Number of pathways each gene belongs to.
-#'	 } 
-#'\subsection{full_path_length}{
-#'	 The number of genes annotated to each pathway.
-#'	 }
-#'\subsection{symtable}{
-#'	 The official, approved set of symbols or gene identifiers and any cross references.
-#'	 }
-#'\subsection{paths}{
-#'	 matrix The actual storage of pathways in bipartate graph format, with row names as the path names, column names as gene identifiers and values logical representing gene membership in pathawys. 
-#'	 }
-#'\subsection{symbol_type}{
-#'	 character. The type of gene identiers used, for example HUGO or Uniprot.
-#'	 }
-#'@import methods 
-#'@exportClass Path_Detail
+#' @import methods 
+#' @exportClass Path_Detail
 Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character", 
 																													file="character", 
 																													info="character", 
@@ -50,76 +30,77 @@ Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character",
 																													paths="matrix", 
 																													symbol_type="character"))
 
-
 #'@title PathSummaryRunner
 #'@description This reference class object is used in the pathway analysis. It provides all available data for internal functions and user-defined functions to conduct pathway analysis. 
 #' @section Fields:
-#' \subsection{patientGeneMatrix}{
-#'	 Matrix. Bipartate graph with patient ids as columns, genes as rows and values, logical indicating if gene is 'active' (drug sensitive, aberrational, etc.) in patient. 
+#' \describe{
+#' \item{\code{patientGeneMatrix}:}{
+#'	 \code{Object of class "Matrix"} Bipartate graph with patient ids as columns, genes as rows and values, logical indicating if gene is 'active' (drug sensitive, aberrational, etc.) in patient. 
 #'	 }
-#' \subsection{coverage_summary}{
-#'	 Same data as is found in [[result]] set, only filled if analysis platform in question is coverage-limited, ie, coverage slot of PathSummaryRunner is filled. 
+#' \item{\code{coverage_summary}:}{
+#'	 \code{Object of class "list"} Same data as is found in [[result]] set, only filled if analysis platform in question is coverage-limited, ie, coverage slot of PathSummaryRunner is filled. 
 #'	 }
-#' \subsection{coverage}{
-#'	 Character vector containing symbols for the set of species (ie genes) covered by the analysis platform. If this is provided, pathway analysis will be limited to included only genes in the coverage set. This should be provided if an analysis platform is not considered to have full-genome coverage (ex: sequence capture data for 3000 unique genes.).
+#' \item{\code{coverage}:}{
+#'	 \code{Object of class "Character"} A character vector containing symbols for the set of species (ie genes) covered by the analysis platform. If this is provided, pathway analysis will be limited to included only genes in the coverage set. This should be provided if an analysis platform is not considered to have full-genome coverage (ex: sequence capture data for 3000 unique genes.).
 #'	 }
-#' \subsection{indPatientSummarySettings}{
-#'	 settings object for analysis of individual patients (as opposed to a full cohort). 
+#' \item{\code{indPatientSummarySettings}:}{
+#'	 \code{Object of class "list"} Settings object for analysis of individual patients (as opposed to a full cohort). 
 #'	 }
-#' \subsection{original_data_matrix}{
-#'	 Matrix. The original, untransformed data set. 
+#' \item{\code{original_data_matrix}:}{
+#'	 \code{Object of class "matrix"} The original, untransformed data set. 
 #'	 }
-#' \subsection{min_gene_frequency}{
-#'	 Numeric. The minimum frequency across the cohort for a gene to be considered as active (aberrational, drug sensitive, etc..) in the pathway analysis. (default 0 imposes no threshold)
+#' \item{\code{min_gene_frequency}:}{
+#'	 \code{Object of class "numeric"} The minimum frequency across the cohort for a gene to be considered as active (aberrational, drug sensitive, etc..) in the pathway analysis. (default 0 imposes no threshold)
 #'	 }
-#' \subsection{min_gene_count}{
-#'	 Integer. Analogous to min_gene_frequency -- the minimum number of patients with gene in active state for it to be considered active in the pathway analysis. (default 1 imposes no threshold)
+#' \item{\code{min_gene_count}:}{
+#'	 \code{Object of class "numeric"} Analogous to min_gene_frequency -- the minimum number of patients with gene in active state for it to be considered active in the pathway analysis. (default 1 imposes no threshold)
 #'	 }
-#' \subsection{individualEnrichment}{
-#'	 Logical. A flag indicating if path analysis should be run for individual patients. (note, if individual patient analysis is run, min_gene_frequency and min_gene_count will automatically be set to 0 and 1, respectively)
+#' \item{\code{individualEnrichment}:}{
+#'	 \code{Object of class "logical"} A flag indicating if path analysis should be run for individual patients. (note, if individual patient analysis is run, min_gene_frequency and min_gene_count will automatically be set to 0 and 1, respectively, in the analysis of individual patients (though will be maintained in the analysis of any full cohort))
 #'	 }
-#' \subsection{.verbose}{
-#'	 Logical. Flag indicating if extra output should be shown. 
+#' \item{\code{.verbose}:}{
+#'	 \code{Object of class "logical"} Flag indicating if extra output should be shown. 
 #'	 }
-#' \subsection{.significanceTests}{
-#'	 List with each slot a function. Each function implements the path test interface, accepting a PathSummaryRunner as an input, and returning a data frame with path names or identifiers as row names and values indicating pathway's significance (ex: p-values). 
+#' \item{\code{.significanceTests}:}{
+#'	 \code{Object of class "list"} Each slot contains a function. Each function implements the path test interface, accepting a PathSummaryRunner as an input, and returning a data frame with path names or identifiers as row names and values indicating pathway's significance (ex: p-values). 
 #'	 }
-#' \subsection{settings}{
-#'	 The settings list object. 
+#' \item{\code{settings}:}{
+#'	  \code{Object of class "list"} The settings list object. 
 #'	 }
-#' \subsection{targetname}{
-#'	 One word description of the genes affected (ex: mutated)
+#' \item{\code{targetname}:}{
+#'	  \code{Object of class "character"} One word description of the genes affected (ex: mutated)
 #'	 }
-#' \subsection{dataSetName}{
-#'	 Description of the data set analyzed by the current arm. 
+#' \item{\code{dataSetName}:}{
+#'	  \code{Object of class "character"} Description of the data set analyzed by the current arm. 
 #'	 }
-#' \subsection{study}{
-#'	 The study object for the current analysis. 
+#' \item{\code{study}:}{
+#'	  \code{Object of class "Study"} The study object for the current analysis. 
 #'	 }
-#' \subsection{.targetMatrix}{
-#'	 Bipartate graph matrix. This is a version of the pathway bipartate graph reduced to only contain genes considered "active" (aberrational or functionally sensitive). This is the primary matrix used in computing pathway significance. 
+#' \item{\code{.targetMatrix}:}{
+#'	  \code{Object of class "matrix"} Bipartate graph matrix. This is a version of the pathway bipartate graph reduced to only contain genes considered "active" (aberrational or functionally sensitive). This is the primary matrix used in computing pathway significance. 
 #'	 }
-#' \subsection{patientsum}{
-#'	 Matrix of numeric values. Number of genes affected in each patient. Patient IDs are given as row names, values are the number of genes affected in each patient.
+#' \item{\code{patientsum}:}{
+#'	  \code{Object of class "matrix"} Numeric values indicating the number of genes affected in each patient. Patient IDs are given as row names, values are the number of genes affected in each patient.
 #'	 }
-#' \subsection{path_summary_each_patient}{
-#'	 List of results sets. List names are set as patient identifiers. 
+#' \item{\code{path_summary_each_patient}:}{
+#'	  \code{Object of class "list"} The results sets for each patient. List names are set as patient identifiers. 
 #'	 }
-#' \subsection{gene_count_matrix}{
-#'	 Numeric matrix. Row names are gene identifiers. Values are the number of patients with affected gene.
+#' \item{\code{gene_count_matrix}:}{
+#'	  \code{Object of class "matrix"} Values are \code{"numeric"} Row names are gene identifiers. Values are the number of patients with affected gene.
 #'	 }
-#' \subsection{.gene_frequency_matrix}{
-#'	 matrix The frequency across cohort that each gene is active.
+#' \item{\code{.gene_frequency_matrix}:}{
+#'	 \code{Object of class "matrix"} The frequency across cohort that each gene is active.
 #'	 }
-#' \subsection{.gene_vector}{
-#'	 Logical matrix. Row names are given as gene identifiers. Values are logical, indicating if genes are considered 'active' in current cohort (or patient, for individual patient analysis)
+#' \item{\code{.gene_vector}:}{
+#'	 \code{Object of class "matrix"} Gene identifiers are given as row names. Values are logical, indicating if genes are considered 'active' in current cohort (or patient, for individual patient analysis).
 #'	 }
-#' \subsection{genomicnotpw}{
-#'	 Matrix of character values. Values are identifiers for affected genes not found in pathways.
+#' \item{\code{genomicnotpw}:}{
+#'	 \code{Object of class "matrix"} Values are \code{"character"} identifiers for affected genes not found in pathways.
 #'	 } 
-#' \subsection{active_genes_ea_path}{
-#'	 Matrix of character values. Values are pasted together vectors of identifiers for genes found active in each pathway. Row names are given as pathway identifiers. 
+#' \item{\code{active_genes_ea_path}:}{
+#'	 \code{Object of class "matrix"} Values are pasted together \code{"character"} vectors of identifiers for genes found active in each pathway. Row names are given as pathway identifiers. 
 #'	 }
+#' }
 #'@import methods
 #'@exportClass PathSummaryRunner
 PathSummaryRunner<-setRefClass(Class="PathSummaryRunner", 
@@ -376,6 +357,7 @@ Paths<-function(s){
 #'@description retreives the full Path_Detail object from a study
 #'@param S A Study objecdt
 #'@return A Path_Detail object
+#'@export
 FullPathObject<-function(S){
 	return(S@studyMetaData@paths)
 }
