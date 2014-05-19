@@ -2,6 +2,8 @@
 
 
 debug.runSomaticMutationsProcessing<-function(){
+	
+	STUDY = runInteractivePathAnalysis()
 	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/InitiateDataStructures.R')
 	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/SettingsObjectInterface.R')
 	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/acc_functions.R')
@@ -100,22 +102,64 @@ debug.runSomaticMutationsProcessing<-function(){
 	cat("\nIn this set of patients", as.character(nrow(tcga_som)), "unique somatic mutations were found.\n")
 
 	# 	polyres = addPolyPhenResults(mafData=tcga_som, tracker=tracker, s=s)
-	
-	
-	mafData=tcga_som
-	s=setting(s=s, prompt="Would you like to include PolyPhen analysis results in this analysis? (y/n) ")
-	uin=s$.text
-	uin=="y"
-	s=setting(s=s,prompt="\nPlease select PolyPhen output file\n")
-	fname = s$.text
-	tracker[["PolyPhen results file used"]] = fname
+	####################### readline() #######################
+	###### allow PolyPhen adjustment of data
+	polyres = addPolyPhenResults(mafData=tcga_som, tracker=tracker, s=s)
+	tcga_som = polyres$mafData
+	tracker = polyres$tracker
+	s = polyres$s
+	cat(".")
+	preFilteringGeneSummary = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
+	#preFilteringWithHists = top20Hists(preFilteringGeneSummary)
+	tracker[["Mutations per gene before filtering"]] = preFilteringGeneSummary
 
-	cat("\ngetting PolyPhen predictions.. \n")
-	pdat = loadPolyPhenResults(fname=fname)
 	
-	#the problem happens inside this function: fpdat = PPMultiMapRedux(pdat = pdat)
-	
-
+	preFiltCountByPatient = summarize_by(col=tcga_som$pid, display=F)
+	pnames = preFiltCountByPatient$types
+	preFiltCountByPatient = matrix(preFiltCountByPatient$counts, dimnames=list(pnames))
+	tracker[["Mutations per patient, before any filtering"]] = as.matrix(preFiltCountByPatient)
+	tracker[["Summary of mutations per patient before filtering"]] = paste(summary(preFiltCountByPatient), collapse="", sep="")
+	###########################################################
+	##########     Mutation type filtering
+	####################### readline() #######################
+	filtered = filterMutationType(tcga_som=tcga_som, tracker=tracker, s=s)
+	som_select = filtered$som_select
+	tracker = filtered$tracker
+	s=filtered$s
+	###############################################################
+	###################   dbSNP filtering
+	SNPless = remove_dbSNP(tcga_som=som_select, tracker=tracker, s=s)
+	som_select = SNPless$som_select
+	tracker = SNPless$tracker
+	s=SNPless$s
+	###### check number of genes that then have official HUGO symbols
+	approvedHugoSymbols = paths_detail$symtable$Approved.Symbol[paths_detail$symtable$Status == "Approved"]
+	notApprovedHugoVector = som_select[!som_select[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols),"Hugo_Symbol"]
+	numNotHugo = sum(!som_select[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols))
+	cat("\nAfter filtering, there are ",numNotHugo," unique mutations that do not have official HUGO symbols.\n",sep="")
+	tracker[["Number of mutations without approved HUGO symbols (note: this was checked after filtering and symbol correction)"]] = numNotHugo
+	##############################
+	###### Filtering out mutations with HUGO symbols given as "UNKNOWN"
+	som_select = som_select[som_select[,"Hugo_Symbol"]!="UNKNOWN",]
+	tracker[["Number of unique mutations after removing records with gene identifier given as \"UNKNOWN\""]] = nrow(som_select)
+	tracker[["Number of patients with mutations not removed by the filtering steps:"]] = length(unique(som_select$Tumor_Sample_Barcode))
+	############################################################
+	###### build output           ##############################
+	############################################################
+	uniquePatientSymbolsMutated= nrow(unique(som_select[,c("pid","Hugo_Symbol")]))
+	uniquePatientSymbolsMutated2= nrow(unique(som_select[,c("Tumor_Sample_Barcode","Hugo_Symbol")]))
+	uniquePatientMutations = nrow(som_select)
+	tracker[["Number of genes across cohort that are mutated more than once in the same patient"]] = uniquePatientMutations - uniquePatientSymbolsMutated
+	tracker[["Genes are considered to be in a mutated or normal state, thus the final number of unique, mutated genes passed to the enrichment analysis is:"]] = uniquePatientSymbolsMutated
+	#########################################
+	# create the patient gene matrix.
+	#########################################
+	somatic_pgm = makePatientGeneMatrix(som_select)
+	countByPatient = t(rep(T,nrow(somatic_pgm))%*%somatic_pgm)
+	tracker[["Mutation counts by patient, after all filtering, for data set used in pathway analysis"]] = countByPatient
+	tracker[["Summary statistics for mutations per patient after all filtering (data set used in pathway analysis)"]] = paste(summary(countByPatient), collapse="", sep="")
+	tracker[["Number of mutations in final, cleaned data set used for pathway enrichment"]] = sum(somatic_pgm)
+	table_out_fname = paste("./output/",study_name,"_summary_of_somatic_mut_by_pathway.txt",collapse="",sep="")
 
 }
 
@@ -165,14 +209,14 @@ runSomaticMutationsProcessing<-function(settings, study){
 			s$interactive = interactiveTMP #not sure why I did this... 
 			return(somatic_summary)
 		}else if(uin=="2"){
-# 			if(!exists("study_name")){
-# 				study_name = "running_only_somatic_data_input"
-# 			}
-# 			htmlFname = paste("./output/",
-# 												study_name,
-# 												"_somatic_mutation_summary.html",
-# 												sep="")
-# 			htmlSummary(sumset=somatic_summary, fname=htmlFname)
+			# 			if(!exists("study_name")){
+			# 				study_name = "running_only_somatic_data_input"
+			# 			}
+			# 			htmlFname = paste("./output/",
+			# 												study_name,
+			# 												"_somatic_mutation_summary.html",
+			# 												sep="")
+			# 			htmlSummary(sumset=somatic_summary, fname=htmlFname)
 		}else if(uin=="2"){
 			source('./processSomaticSeqDataWithCoverage.R')
 			somatic_summary = processSomaticDataWithCoverage(paths_detail=path_detail, 
@@ -314,7 +358,7 @@ getColorSequence<-function(cnames,
 	return(out)
 }#getColorSequence
 
-stackedGeneBar<-function(tcga_som){
+stackedGeneBar1<-function(tcga_som){
 	print("***************creating stacked Gene Barplot***************")
 	#stackedGeneBar
 	#takes: tcga_som: initial input .maf table, after cleaning of repeat rows and gene symbols
@@ -357,6 +401,37 @@ stackedGeneBar<-function(tcga_som){
 	par(mar = oldmar)
 	#barplot(mmat, horiz=T)
 }#stackedGeneBar
+
+
+
+stackedGeneBar<-function(tcga_som, title="Mutation types for the top 20 most mutated genes"){
+	ufilt = tcga_som
+	gs = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
+	top20 = head(gs[order(gs[,2],decreasing=T),],20)
+	gsnames = top20$types
+	
+	toprows = ufilt[ufilt$Hugo_Symbol%in%gsnames,]
+	
+	slimrows = toprows[,c("Hugo_Symbol","Variant_Classification")]
+	slimrows = merge(x=slimrows, y=top20, by.x="Hugo_Symbol", by.y="types")
+	slimrows = slimrows[order(slimrows$counts),]
+	slimrows$Hugo_Symbol<-factor(slimrows$Hugo_Symbol, levels=top20$types)
+	
+	colcols = getColorSequence(cnames=unique(slimrows$Variant_Classification), 
+														 fname="./reference_data/MAFcolorMatches.txt")
+	colnames = colors()[colcols]
+	names(colnames)<-names(colcols)
+	
+	p1 = ggplot(data=slimrows, aes(x=Hugo_Symbol, fill=factor(Variant_Classification)))+
+		geom_bar(color="black")+
+		coord_flip()+
+		scale_fill_manual(values=colnames)+
+		theme_bw()+
+		theme(legend.title=element_blank())+
+		ggtitle(title)
+	
+	print(p1)
+}
 
 #remove_dbSNP
 #removes mutations with dbSNP records
@@ -401,12 +476,14 @@ filterMutationType<-function(tcga_som, tracker, s){
 
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	print("Before removal of genes marked as \"UNKNOWN\"")
-	stackedGeneBar(tcga_som)
-	tracker[["Before removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes"]]=save.plot("stackedGeneBarPreUnknownRemoval")
+	stackedGeneBar(tcga_som, title="Top mutations before removal of genes marked\"UNKNOWN\"")
+	tracker[["Before removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes"]]=save.plot(pname="stackedGeneBarPreUnknownRemoval")
 	
 	tcga_som_no_unknown = tcga_som[tcga_som$Hugo_Symbol!="UNKNOWN",]
+	
 	print("After removal of genes marked as \"UNKNOWN\"")
-	stackedGeneBar(tcga_som_no_unknown)#make another stacked gene bar after the "UNKNOWN" are removed
+	stackedGeneBar(tcga_som_no_unknown,
+								 title="Top mutations after removal of genes marked\"UNKNOWN\"")#make another stacked gene bar after the "UNKNOWN" are removed
 	tracker[["After removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes."]]=save.plot("stackedGeneBarPostUnknownRemoval")
 
 	tcga_som_sum = summarize_by(col=tcga_som[["Variant_Classification"]], left_margin_factor=1.3,
@@ -560,7 +637,7 @@ FilterDuplicates<-function(tcga_som_raw, s, tracker, paths_detail){
 		}	
 		tcga_som_dup_rem = tcga_som_dup[!1:nrow(tcga_som_dup)%in%badindexes,]
 		#now merge the filtered duplicates with the main set:
-		tcga_som = rbind(tcga_som_notdup,tcga_som_dup_rem)
+		tcga_som = rbind.data.frame(tcga_som_notdup,tcga_som_dup_rem)
 	}
 	
 	#now check that tcga_som now has the same number of unique rows as with the minimal key
@@ -734,6 +811,11 @@ processSomaticData<-function(study,
 	#########################################
 	somatic_pgm = makePatientGeneMatrix(som_select)
 
+	print("After all filtering steps")
+	stackedGeneBar(som_select,
+								 title="Top mutations after all filtering steps")
+	tracker[["After all filtering steps, distribution of mutation types in top 20 most mutated genes."]]=save.plot("stackedGeneBarPostUnknownRemoval")
+
 	countByPatient = t(rep(T,nrow(somatic_pgm))%*%somatic_pgm)
 	tracker[["Mutation counts by patient, after all filtering, for data set used in pathway analysis"]] = countByPatient
 	tracker[["Summary statistics for mutations per patient after all filtering (data set used in pathway analysis)"]] = paste(summary(countByPatient), collapse="", sep="")
@@ -749,7 +831,8 @@ processSomaticData<-function(study,
 	
 	prefilt = tracker[['Mutations per patient, before any filtering']]
 	postfilt = somatic_summary$patientsums
-	twoHistOnePlot(dataset1=prefilt, dataset2=postfilt, 
+	twoHistOnePlot(dataset1=prefilt, 
+								 dataset2=postfilt, 
 								 x_label="Number of mutations", 
 								 y_label="Number of patients",
 								 legend_titles=c("Before filtering", "After filtering"),
