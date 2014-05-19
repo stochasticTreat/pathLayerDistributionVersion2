@@ -50,42 +50,6 @@ autoRunFromSettings<-function(study, verbose=T){
 	return(study)
 }#autoRunFromSettings
 
-
-# #autoRunFromSettings
-# #runs all analyses described in settings found in meta data
-# multiRunFromSettings<-function(study, verbose=T){
-# 	
-# 	
-# 	readline("Press enter to continue and select the settings file with multiple settings.")
-# 	fname = file.choose()
-# 	bname = basename(fname)
-# 	bname = gsub(pattern=".txt", replacement="", x=bname)
-# 	
-# 	bname%in%names(study@studyMetaData@settings)
-# 	
-# 	#pull each analysis type out
-# 	allanalyses = names(study@studyMetaData@settings)	
-# 	analyses = allanalyses[!grepl(pattern="^default|^overlap_analysis", x=allanalyses, ignore.case=T)]#remove any settings starting with the string "default"
-# 	
-# 	if(length(analyses)){
-# 		cat("Settings being run for these intput arms:\n")
-# 		cat(analyses, "\n")
-# 		for(a in analyses){
-# 			
-# 			study = runArm(armDescription=a, study=study, fromDescription=F, interactive=F)
-# 			
-# 		}
-# 		if("overlap_analysis"%in%allanalyses){
-# 			study = runArm(armDescription="overlap_analysis", study=study, fromDescription=F, interactive=F)
-# 		}
-# 	}else if(verbose){
-# 		tmp = readline("Sorry, no settings could be found.\nSelect 2 from main menu to load settings from another study.\nPress enter to continue. ")
-# 	}
-# 	return(study)
-# }#autoRunFromSettings
-
-
-
 checkForceRowNames<-function(tab){
 	if(sum(rownames(tab) != as.character(1:nrow(tab)))&!is.null(rownames(tab))) return(tab)
 	rn = tab[,1]
