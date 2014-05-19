@@ -1,7 +1,7 @@
 #data in: patientGeneLevels (patient gene matrix with continuous values for each gene)
 
 test.RunDrugScreen<-function(){
-	source('./defultSettings.R')
+# 	source('./defultSettings.R')
 	pdo = getDefaultPaths()
 	settings = getDefaultDrugScreenCoverageSettings()
 	study = getStudyObject(study.name="testDrugScreen", path_detail=pdo)
@@ -10,6 +10,12 @@ test.RunDrugScreen<-function(){
 	settings = drugScreenCoverageRes$settings
 }
 
+
+test.RunDrugScreen2<-function(){
+	settings=STUDY@studyMetaData@settings$functional_drug_screen_summary
+	study=STUDY
+	
+}
 
 
 #main function for runing drug screen
@@ -389,7 +395,11 @@ getPatientSubset<-function(patient_gene_matrix, s, verbose=T, subset_id=NULL){
 #allow user to select gene score cutoff
 #takes: pgm: patient gene matrix, verbose flag, optional cutoff score, must be provided if verbose flag is FALSE
 #returns: logic pgm
+
 setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
+	require(grid)
+	require(gridExtra)
+	
 	if(!verbose&is.null(cutoffScore)){
 		print("If the verbose argument of setCutoff() is F, the cutoffScore\n argument must be provided with a numberical value")
 		return(NULL)
@@ -429,11 +439,11 @@ setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
 	# 			par(mfrow=c(1,1))
 			grid.arrange(p1, p2)
 
-			
 		}, silent=T)
 		
 		if(!is.error(tr)) break
-		blnktmp = readline("\nSorry, there was an error displaying the plot.\nPlease increase the size of the 'plots' display window\nthen press enter to try again.")
+		print(tr)
+# 		blnktmp = readline("\nSorry, there was an error displaying the plot.\nPlease increase the size of the 'plots' display window\nthen press enter to try again.")
 	}
 
 	if(verbose){
