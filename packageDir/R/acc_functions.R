@@ -449,21 +449,26 @@ summarize_by<-function(col, display=F, barPlotTitle="Counts across types", left_
 	types = out$types
 	counts = out$counts
 	if(display){
-		oldmar <- par()$mar
-		while(T){
-			res = try({
-				par(mar=c(5.1, max(4.1,max(left_margin_factor*nchar(types))/2.5) ,4.1 ,2.1))
-				#	try(displayGraph(w), silent=T)
-				barplot(counts, horiz=T, las=2, main = barPlotTitle, xlab="Number found in data set", names.arg=types)
-				par(oldmar)
-			}, silent=T)
-			# 			if(!grepl(pattern="Error", x=res)) break
-			if(is.null(res)) break
-			par(oldmar)
-			readline(prompt="There seems to have been an error with plotting the bar graph.\nPlease increase the size of the plot window, the press enter")
-		}
-		par(oldmar)
-		print(out)
+		p = ggplot(out, aes(x=types, y=counts))+
+			geom_bar(stat='identity')+
+			coord_flip()+
+			ggtitle(barPlotTitle)
+		print(p)
+		# 		oldmar <- par()$mar
+		# 		while(T){
+		# 			res = try({
+		# 				par(mar=c(5.1, max(4.1,max(left_margin_factor*nchar(types))/2.5) ,4.1 ,2.1))
+		# 				#	try(displayGraph(w), silent=T)
+		# 				barplot(counts, horiz=T, las=2, main = barPlotTitle, xlab="Number found in data set", names.arg=types)
+		# 				par(oldmar)
+		# 			}, silent=T)
+		# 			# 			if(!grepl(pattern="Error", x=res)) break
+		# 			if(is.null(res)) break
+		# 			par(oldmar)
+		# 			readline(prompt="There seems to have been an error with plotting the bar graph.\nPlease increase the size of the plot window, the press enter")
+		# 		}
+		# 		par(oldmar)
+		# 		print(out)
 	}
 	
 	return(out)
@@ -1243,30 +1248,48 @@ htmlPerPatient<-function(results, summ, fileroot, overlap=T, path_detail=NULL){
 
 #twoHistOnePlot
 #puts two histograms on the same plot, shows each with a different color, and overlap with a third color
-twoHistOnePlot<-function(dataset1,dataset2,frequency_not_density=T,main_title="main_title not set",x_label="x_label not set", y_label="Frequency",legend_titles=c("legend_titles two item vector","not included"),breaks=c(30,30)){
+twoHistOnePlot<-function(dataset1, dataset2, frequency_not_density=T, main_title="main_title not set",x_label="x_label not set", y_label="Frequency",legend_titles=c("dataset 1","dataset 2"),breaks=c(30,30)){
 	
-	pmin = min(c(dataset1, dataset2))
-	pmax = max(c(dataset1, dataset2))
+	#first combine the two data sets
+	colnames(dataset1)<-NULL
+	colnames(dataset2)<-NULL
+	stackedSet = rbind.data.frame(dataset1, dataset2)
+	idCol = c(rep(legend_titles[1],times=nrow(dataset1)), rep(legend_titles[2], times=nrow(dataset2)))
+	stackedSet = cbind.data.frame(stackedSet, idCol)
+	colnames(stackedSet)<-c("value","idCol")
 	
-	p1 <- hist(dataset1, freq=frequency_not_density,breaks=breaks[1],)                     
-	p2 <- hist(dataset2, freq=frequency_not_density,breaks=breaks[2])
+	# 	pmin = min(c(dataset1, dataset2))
+	# 	pmax = max(c(dataset1, dataset2))
+	# 	
+	# 	p1 <- hist(dataset1, freq=frequency_not_density,breaks=breaks[1],)                     
+	# 	p2 <- hist(dataset2, freq=frequency_not_density,breaks=breaks[2])
+	# 	
+	# 	hist = plot( p2, col=rgb(0,0,1,1/4), xlim=c(pmin,pmax), 
+	# 							 freq=frequency_not_density, 
+	# 							 main=main_title, 
+	# 							 xlab=x_label, 
+	# 							 ylab = y_label)  # first histogram
+	# 	hist2 = plot( p1, col=rgb(1,0,0,1/4), xlim=c(pmin,pmax), 
+	# 								add=T,
+	# 								freq=frequency_not_density)  # second
+	# 	
+	# 	if(!is.null(legend_titles)){
+	# 		legend("topright", inset=.05,
+	# 					 legend_titles, 
+	# 					 fill=c(rgb(1,0,0,1/4),rgb(0,0,1,1/4)), 
+	# 					 horiz=F)
+	# 	}
 	
-	hist = plot( p2, col=rgb(0,0,1,1/4), xlim=c(pmin,pmax), 
-							 freq=frequency_not_density, 
-							 main=main_title, 
-							 xlab=x_label, 
-							 ylab = y_label)  # first histogram
-	hist2 = plot( p1, col=rgb(1,0,0,1/4), xlim=c(pmin,pmax), 
-								add=T,
-								freq=frequency_not_density)  # second
-	
-	if(!is.null(legend_titles)){
-		legend("topright", inset=.05,
-					 legend_titles, 
-					 fill=c(rgb(1,0,0,1/4),rgb(0,0,1,1/4)), 
-					 horiz=F)
-	}
-	return(list(p1=p1, p2=p2))
+	p1 = ggplot(stackedSet, aes(x=value, fill=idCol)) + 
+							geom_histogram(alpha=0.5, position="identity", binwidth=3)+
+							ggtitle(main_title)+
+							theme_bw()+
+							theme(legend.title=element_blank())+
+							xlab(x_label)
+
+	print(p1)
+
+	return(p1)
 }
 
 scatterhist <- function(x, y, xlab="", ylab="", main=""){
