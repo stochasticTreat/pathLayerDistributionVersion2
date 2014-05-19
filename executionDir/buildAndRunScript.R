@@ -17,7 +17,8 @@ install.packages("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerD
 library("packageDir")
 STUDY = runInteractivePathAnalysis()
 
-
+library("devtools")
+load_all("packageDir")
 # PACKAGENAME="packageDir"
 # data("defaultSummaryTable140504")
 # system.file("extdata/defaultSummaryTable140504.rdata", package = "packageDir")
@@ -38,3 +39,5 @@ STUDY = runInteractivePathAnalysis()
 #'																																				arms=stud@arms)
 #'																										return(stud)
 #'																									})}
+#'																									
+
