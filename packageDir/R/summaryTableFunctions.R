@@ -84,16 +84,27 @@ is.uninitilizedNull<-function(val){
 pathAnalysisSettings <- function (psr, study, s=NULL, interactive=F, 
 																	defaultSettingsFile=NULL) {
 	print("inside pathAnalysisSettings")
+	interactiveTmp = s$interactive
+
 	if(is.null(s)){
 		s = list()
 	}else if(!is.list(s)){
 		print(s)
 	}
+	
+	if(interactiveTmp){
+		interTest = s[["Use special path significance analysis settings for this data type? (y/n)"]]
+		if(!is.null(interTest)){
+			if(interTest=="y") s$interactive = T
+		}
+	}else{
+		s[["Use special path significance analysis settings for this data type? (y/n)"]] = F
+	}
+	
 	etPrompt = "To add additional path significance tests, please select the R script file containing the interfaces to these enrichment tests"
 	s = setting(s, prompt="Use special path significance analysis settings for this data type? (y/n)")
 	specialSettingsFile = s$.text == "y"
 	
-	interactiveTmp = s$interactive
 	s$interactive = s$.text == "y"
 	if(!specialSettingsFile){
 		print("Loading default path analysis settings..")
