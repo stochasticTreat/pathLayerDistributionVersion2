@@ -561,9 +561,12 @@ initiateStudy<-function(studyFolderName=NULL,
 			folderName = studyFolderName
 		}
 		
-		res1 = loadSummary(study_name=folderName, path=root)
-		res1$study_name = gsub(pattern="^study_", replacement="", x=folderName)#put the study_name in, removing the prefix
-		res1$rootFolder = paste(root, folderName,sep="/")
+		res1 = loadSummary(path=folderName)
+		sname = basename(folderName)
+		res1$study_name = gsub(pattern="^study_", replacement="", x=sname)#put the study_name in, removing the prefix
+		res1$rootFolder = folderName
+		
+		
 	}else if(studyNameLine==""){#new study
 		# 		print("B")
 		study_name = paste("Analysis from",as.character(Sys.time()))
@@ -601,26 +604,50 @@ initiateStudy<-function(studyFolderName=NULL,
 	return(studytmp)
 }#initiateStudy
 
-#allows selection of a study file
+
+test.selectStudy<-function(){
+	
+	selected = selectStudy()
+	
+}
+
+#allows interactive selection of a study file
 #	takes: <optional> root folder of study
 #returns: nested list structre (can subsequently be processed into a study object)
 selectStudy<-function(root = "./output"){
+	require(tcltk)
 	dc = dir(root)
-	#pull the directories out
-	dc = dc[file.info(paste(root,dc,sep="/"))$isdir]
-	#pull those out with the correct heading
-	dc = dc[grep(pattern="^study_|^test", x=dc, ignore.case=T)]
-	#make the set of display names
-	prettyNames = gsub(pattern="^study_", replacement="", x=dc)
-	
-	cat("\nHere are the studies currently available:\n")
-	print(as.data.frame(matrix(prettyNames,
-														 ncol=1,
-														 dimnames=list(1:length(prettyNames),
-														 							"Study Name"))))
-	selstud = readline("Enter the number of the study to be loaded: ")
-	folderName = dc[as.integer(selstud)]
-	cat("\nLoading data tables from folder named:\n",folderName,"\n")
+	while(T){
+		if( !length(dc) ){
+			tmp = readline("Press any key to continue and select the study folder")
+			folderName  = tk_choose.dir(caption="Please select the folder containing the study you would like to load.")
+		}else{
+			
+			#pull the directories out
+			dc = dc[file.info(paste(root,dc,sep="/"))$isdir]
+			#pull those out with the correct heading
+			dc = dc[grep(pattern="^study_|^test", x=dc, ignore.case=T)]
+			#make the set of display names
+			prettyNames = gsub(pattern="^study_", replacement="", x=dc)
+			
+			cat("\nHere are the studies currently available:\n")
+			print(as.data.frame(matrix(prettyNames,
+																 ncol=1,
+																 dimnames=list(1:length(prettyNames),
+																 							"Study Name"))))
+			selstud = readline("Enter the number of the study to be loaded: ")
+			folderName = dc[as.integer(selstud)]
+			cat("\nLoading data tables from folder named:\n",folderName,"\n")
+			folderName  = paste0(root,"/",folderName)
+		}
+		if( !sum(!c("studyMetaData","results")%in%dir(folderName)) ) break
+		message("Sorry, a study could not be found in the folder selected",
+				"\n(a study should contain results and studyMetaData folders)",
+				"\nPlease try another selection.\n")
+		dc=character(0)
+		
+	}
+
 	return(folderName)
 }
 

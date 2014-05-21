@@ -66,15 +66,15 @@ test.multiRunFromSettings<-function(){
 	incArmName = "somatic_mutation_aberration_summary"
 	
 	studyFname = "./testData/studyTestDatNoPathsNoSymTab.rda"
-		sshel = getStudyObject()
-		sshel@results = study@results #study loaded with reactome pathways from graphite and small artificial data sets for drug screen and aberration
-		sshel@results$overlap_analysis=NULL
-		sshel@studyMetaData@settings = study@studyMetaData@settings
-		sshel@studyMetaData@studyName = study@studyMetaData@studyName
-		sshel@studyMetaData@geneIdentifierType = study@studyMetaData@geneIdentifierType
-		sshel@studyMetaData@RootFile = study@studyMetaData@RootFile
-		sshel@arms = study@arms
-		save(sshel, file=studyFname, compress=T)
+	sshel = getStudyObject()
+	sshel@results = study@results #study loaded with reactome pathways from graphite and small artificial data sets for drug screen and aberration
+	sshel@results$overlap_analysis=NULL
+	sshel@studyMetaData@settings = study@studyMetaData@settings
+	sshel@studyMetaData@studyName = study@studyMetaData@studyName
+	sshel@studyMetaData@geneIdentifierType = study@studyMetaData@geneIdentifierType
+	sshel@studyMetaData@RootFile = study@studyMetaData@RootFile
+	sshel@arms = study@arms
+	save(sshel, file=studyFname, compress=T)
 
 	load(file=studyFname, verbose=T) #loads sshel into namespace
 	sshel@studyMetaData@paths = getTestPaths()
@@ -129,7 +129,7 @@ multiRunFromSettings<-function(study, incSettingsTable, incArmName){
 		#load the current column of settings into the study
 		study@studyMetaData@settings[[incArmName]] = cs
 		study = runArm(armDescription=incArmName, study=study, fromDescription=F, interactive=F)
-# 		study@studyMetaData@settings$overlap_analysis = list()
+		#study@studyMetaData@settings$overlap_analysis = list()
 		if("overlap_analysis"%in%allanalyses&incArmName!="overlap_analysis"){
 			study = runArm(armDescription="overlap_analysis", study=study, fromDescription=F, interactive=F)
 		}
