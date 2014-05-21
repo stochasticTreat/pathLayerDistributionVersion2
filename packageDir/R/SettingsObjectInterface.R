@@ -403,30 +403,33 @@ settingList<-function(s, prompt, set){
 		
 		#check if the options have changed
 		forceInput = F
-		if(!is.null(s[[fullSet]])){#if there's something stored for the fullset
+		if( !is.null(s[[fullSet]]) ){#if there's something stored for the fullset
 			
 			s[[fullSet]] = strsplit(x=s[[fullSet]], split="; ")[[1]]#split what's there
 
-			if( sum((!s[[fullSet]]%in%set[,1]) | (!set[,1]%in%s[[fullSet]])) ){#if the options in the input set have changed, the user must be re-prompted
+			if( sum( (!s[[fullSet]]%in%set[,1])) | sum(!set[,1]%in%s[[fullSet]]) ){
+				#if there are any in the full set that aren't in the set or if there are any in the set that arent in the full set
+				#if the options in the input set have changed, the user must be re-prompted
+				
 				cat("\nAvailable options have changed ")
 				#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 				forceInput = T
 			} 
 		}
 		
-		if(!is.null(s[[prompt]])) cat("\nDefault value:\n", s[[prompt]], "\n")
+		if(!is.null(s[[prompt]]))     cat("\nDefault value:\n", s[[prompt]], "\n")
 		#	s[[fullSet]] = paste(set[,1], collapse="; ")
-		if(s$interactive|forceInput){
+		if( s$interactive|forceInput ){
 			#display prompt
 			cat("\n",prompt,"\n")
 			
-			if(!is.null(s[[prompt]])){
+			if( !is.null(s[[prompt]]) ){
 				
 				line = readline("Enter your selection numbers sepparated by spaces, or just press enter to use the defalt value: ")
 				while(T){#make sure everything the user enters can be used by the program
 					if(line=="") break
 					test = as.integer(strsplit(x=line,split=" ")[[1]])
-					if(!sum(test%in%1:length(set[,1]))){
+					if( sum( !test %in% 1:length(set[,1]) ) ){
 						cat("Sorry, one of the options in your entry\"", line,"\"was not an available option.\nPlease try again.\n")
 					}else{
 						break

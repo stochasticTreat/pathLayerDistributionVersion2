@@ -19,11 +19,11 @@ STUDY = runInteractivePathAnalysis()
 
 library("devtools")
 load_all("packageDir")
+
 # PACKAGENAME="packageDir"
 # data("defaultSummaryTable140504")
 # system.file("extdata/defaultSummaryTable140504.rdata", package = "packageDir")
 # system.file("extdata/mog_map.csv", package = "HGNChelper")
-
 # remove.packages("HGNChelper")
 # install.packages("~/tprog/distribution/HGNChelper_0.3.0.tar.gz", repos = NULL, type = "source")
 
