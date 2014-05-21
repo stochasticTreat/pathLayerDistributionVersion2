@@ -1,18 +1,5 @@
 #PolyPhenProcessing_functions.R
 
-# runOHSUPolyPhenData<-function(fname, path_detail){
-# 	#runOHSUPolyPhenData is the main interface for accepting polyphen data from OHSU
-# 	#open file
-# 	pdat = 
-# 		#process file, open up scores
-# 		pdatOpen = splitScoresOut(pdat)
-# 	#process file, make correct columns
-# 	
-# 	#process polyphen data
-# 	psum = processPolyPhen(polyDat=pdatOpen,paths_detail=path_detail)
-# 	return(psum)
-# }
-
 getNumericScoreColumn<-function(xcol, pdat){
 	#add column indicating numeric score for each polyphen score
 	ppmn = c("benign","probably damaging","possibly damaging","unknown", "\\N")
@@ -25,42 +12,25 @@ getNumericScoreColumn<-function(xcol, pdat){
 	return(nscol)
 }
 
-# PPMultiMapRedux<-function(pdat){
-# 	#takes the formatted polyphen output and reduces the rows to only include
-# 	# the max score for each index
-# 	#return: data frame, same structure as input; same data, but rows removed; no multi mapping to indexes
-# 	#extract the needed columns
-# 	cat("\nHandling situations where there is more than one variants in the same gene,\nwith those variants recieving more than one unique PolyPhen score.\nIn these cases, the gene will be assigned the score indicating maximum variant affect of all variant affects attibuted to the gene.\n")
-# 	
-# 	xcol = pdat[,c("index","pid","Symbol","prediction")]
-# 	
-# 	numscore = getNumericScoreColumn(xcol = xcol, pdat = pdat)
-# 	cat("\nPolyphen classifications traslated...")
-# 	xcol = cbind(xcol, numscore)
-# 	#find the unique set of indexes
-# 	ui = unique(xcol$index)
-# 	gindexes = c()
-# 	cat("\nFinding maximum scores..\n")
-# 	for(i in ui){# for each index, find the max polyphen score
-# 		seti = which(xcol$index == i)
-# 		sel = which(xcol$numscore[seti] == max(xcol$numscore[seti]))
-# 		gindexes = c(gindexes, seti[sel[1]])
-# 	}
-# 	redux = xcol[gindexes,]	
-# 	cat("\n.\n")
-# 	return(redux)
-# }
- 
+#'@title orchestrates creation of polyphen input file from .maf file
+#'@description Allows user to create valid polyphen input file from TCGAs somatic mutation data storage format, .maf.
+#'@param mafFname character string. The file name and full or relative path to the maf input file
+#'@param outFname character string. The name of the file for the polyphen input file to be saved to.
+#'@return A list of diagnostic information, with each slot containing a specific data point, such as "Rows of mutation data found in .maf file input"
+#'@export
 PolyPhenFromMaf<-function(mafFname=NULL, outFname=NULL){
 	#orchestrates creation of polyphen input file from .maf file
 	#takes: mafData: name of .maf file
 	tracker = list()
+	mafData = read.delim(file=mafFname, 
+						 header=T, 
+						 sep="\t", 
+						 stringsAsFactors=F, 
+						 na.strings="-")
 	
-	mafData = read.table(comment.char="",
-											 file=mafFname,
-											 header=T,
-											 sep="\t", 
-											 stringsAsFactors=F)
+	if(!"pid"%in%colnames(mafData)){
+		mafData = addPidColumn(tcga_data=mafData)
+	}
 	
 	tracker[["Rows of mutation data found in .maf file input"]] = nrow(mafData)
 	tracker[["Number of patient IDs found in .maf file"]] = length(unique(mafData$pid))
@@ -111,17 +81,6 @@ filtToPolyPhenTypes<-function(mafData, mutTypes = c("Missense_Mutation")){
 	return(datf1)
 }
 
-selectionList<-function(valcol, verbose=T){
-	
-	usel = unique(valcol)
-	uselmat = matrix(data=1:length(usel), ncol=1, dimnames=list(usel, "selection number"))
-	uin = readline(paste("Please enter the number(s) corresponding to the PolyPhen values you would like to consider aberrational.\n",
-											 "Press enter for the default set: (probably_damaging)"))
-	if(uin=="") uin = "1"
-	uin = as.integer(strsplit(x=uin, split=" ")[[1]])
-	lvout = valcol%in%usel[uin]
-	return(lvout)
-}
 
 splitScoresOut<-function(seqdat){
 	#takes polyphen data (data frame with PolyPhen column) as provided in OHSU data
@@ -188,76 +147,6 @@ preProcessPdat<-function(fname){
 # 	return(pdat)
 # }
 
-
-runMAFPolyPhen<-function(fname){
-	
-	#get polyphen output file
-	#re-formatt it
-	#break out the mapping
-	pdat = loadPolyPhenResults(fname=fname)
-	
-	fpdat = PPMultiMapRedux(pdat = pdat)
-	cat("\n.\n")
-	#find max for each gene/patient: for each index, find the max polyphen score
-	#possibly do this again for each patient/gene combo?
-	#change column names to make them appropriate for processPolyPhen
-	colnames(fpdat)<-c("index", "alias", "Symbol", "PolyPhen", "numscore")
-	psum = processPolyPhen(polyDat=fpdat,paths_detail=path_detail)
-	return(psum)
-}
-
-processPolyPhen<-function(polyDat, paths_detail, disease_type="disease type not given", threshold=NULL){
-	#processPolyPhen()
-	#orchestrates processing of PolyPhen data
-	#takes: polyDat: the table, in stacked format, of polyphen data
-	#									must have columns "alias", "Symbol", "PolyPhen"
-	#				disease_type: the study name/ ideally, the type of disease being examined
-	#				paths_detail: the path_detail object
-	#				thresh: 			The polyphen values accepted to indicate genes are "active"
-	cat("\nProcessing polyphen data.. \n")
-	
-	tracker = list()#establish the tracker to document data work-up
-	
-	tracker[["Number of mutation records in input data set"]] = nrow(polyDat)
-	
-	#### remove rows with "\N" as their symbol
-	badrows = grep("\\N", x=polyDat$Symbol)
-	tracker[["Number of rows/records with no gene symbol given (\"\\N\" in the place of gene symbol)"]] = length(badrows)
-	cat("\nThere were",
-			length(badrows),
-			"records which had no HUGO symbol associated,\nand had \"\\N\" in the place of a HUGO symbol.")
-	polyDat = polyDat[!(1:nrow(polyDat)%in%badrows),]
-	
-	##### check / correct gene names
-	polyDat$Symbol = corsym(symbol_set=polyDat$Symbol, 
-													verbose=T,
-													symref=path_detail$symtable)
-	
-	#### clean polyphen values, removing any that are marked "unknown" or ""
-	polyDat = splitScoresOut(seqdat=polyDat)
-	
-	#reduce coverage, removing all the genes that are "" and "unknown", as to polyphen output
-	selcover  = polyDat[!polyDat$PolyPhen%in%c("", "unknown"),]
-	
-	#select threshold/on/off set
-	logicvector = selectionList(valcol=selcover$PolyPhen, verbose=verbose)
-	
-	#now make a patient gene matrix
-	forPGM = selcover[logicvector,]
-	colnames(forPGM)[1] = "Ids"
-	ppgm = toPGM(sds=forPGM)
-	
-	targmat = getTargetMatrix(tgenes=selcover$Symbol, paths=paths_detail$paths)
-	
-	polyPhenSummary = summaryTable4(paths_detail=paths_detail,
-																	individualEnrichment=T,
-																	verbose=T,
-																	target_matrix=targmat,
-																	dataSetName=disease_type,
-																	patientGeneMatrix=ppgm, 
-																	targetname="mutated")
-	return(polyPhenSummary)
-}
 
 filePrompt<-function(defaultfile = "./input/OHSUseqPolyPhencoding_and_nodbSNP_rows.txt.reformatted.txt"){
 	#prompts user to select file for data input

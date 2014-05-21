@@ -35,27 +35,6 @@ loadPolyPhenResults<-function(fname){
 	return(pdat)
 }#loadPolyPhenResults
 
-# getMapColumn(pdat)<-function(){
-# 	
-# 	mc = cbind.data.frame(pdat$)
-# 	
-# }
-
-
-# getNumericScoreColumn<-function(xcol){
-# 	cat("recoding scores as numeric...")
-# 	#add column indicating numeric score for each polyphen score
-# 	ppmn = c("benign","probably damaging","possibly damaging","unknown", "\\N")
-# 	ppsc = c(1,3,2,0,-1)
-# 	names(ppsc)<-ppmn
-# 	nscol = rep(0, nrow(xcol))
-# 	for(n in ppmn){
-# 		nscol[grep(pattern=n, x=xcol$prediction)] = ppsc[n]
-# 	}
-# 	cat("scores recoded\n")
-# 	return(nscol)
-# }
-# 
 PPMultiMapRedux<-function(pdat){
 	cat("\nFinding max polyphen score for each gene...\n")
 	#takes the formatted polyphen output and reduces the rows to only include

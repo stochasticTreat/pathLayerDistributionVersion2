@@ -15,3 +15,5 @@ test.checkForceRowNames<-function(){
 	checkEquals(target=wrn, current=wrn2, msg="row names when there shouldn't be a change")
 	
 }
+
+

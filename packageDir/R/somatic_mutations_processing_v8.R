@@ -15,6 +15,9 @@ debug.runSomaticMutationsProcessing<-function(){
 	
 	settings = STUDY@studyMetaData@settings$somatic_mutation_aberration_summary
 	study=STUDY
+	
+	settings$"Select a .maf file containing the data set to be analyzed."="/Users/samhiggins2001_worldperks/tprog/main_131219/input/AML_all_Somatic_From_TCGA_May19_2014/genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.maf"
+	
 	if(settings$interactive){
 	print("Running somatic mutations processing in interactive mode")
 	}else{
@@ -476,7 +479,7 @@ filterMutationType<-function(tcga_som, tracker, s){
 
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	print("Before removal of genes marked as \"UNKNOWN\"")
-	stackedGeneBar(tcga_som, title="Top mutations before removal of genes marked\"UNKNOWN\"")
+	stackedGeneBar(tcga_som, title="Top mutations before\nremoval of genes marked \"UNKNOWN\"")
 	tracker[["Before removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes"]]=save.plot(pname="stackedGeneBarPreUnknownRemoval")
 	
 	tcga_som_no_unknown = tcga_som[tcga_som$Hugo_Symbol!="UNKNOWN",]
@@ -661,6 +664,7 @@ addDbSNPToVariantClassification<-function(maf){
 	return(maf)
 }
 
+
 #processSomaticData
 #takes:					paths_detail: a path list object
 #								removedbSNP: logical, T if dbSNP values should be removed
@@ -674,7 +678,6 @@ processSomaticData<-function(study,
 
 	fname_base = study_name
 	tracker = list()
-	# 	tracker[["Study name"]] = study_name
 	
 	########################################################
 	############### Open the file and have a look ##########
@@ -692,9 +695,12 @@ processSomaticData<-function(study,
 	tcga_som_raw = read.delim(file=fname, header=T, sep="\t", stringsAsFactors=F, na.strings="-")
 	
 	cat("\n",nrow(tcga_som_raw),"rows read in from file.")
-	cat("\nFixing patient ids...\n")
-	pid = sapply(tcga_som_raw[,"Tumor_Sample_Barcode"], extract_pid)
-	tcga_som_raw = cbind.data.frame(pid, tcga_som_raw, stringsAsFactors=F)#append extracted pids as a sepparated column
+
+
+# 	pid = sapply(tcga_som_raw[,"Tumor_Sample_Barcode"], extract_pid)
+# 	tcga_som_raw = cbind.data.frame(pid, tcga_som_raw, stringsAsFactors=F)#append extracted pids as a sepparated column
+# 	
+	tcga_som_raw = addPidColumn(tcga_data=tcga_som_raw)
 	
 	cat("\n",length(unique(pid)),"unique patient sample id's found in input file.\n")
 	tracker[["Unique patient IDs found in file"]] = length(unique(pid))

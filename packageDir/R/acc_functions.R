@@ -31,6 +31,19 @@ promptNumeric <- function (prompt) {
 	return(line)
 }
 
+#addPidColumn
+#extracts TCGA barcodes, and reformats them so dashes (-) are replaced with periods (.) . 
+#param tcga_data data.frame with a column containing the string Sample_Barcode (if more than one are found, the first one will be used), from which the base tcga barcode will be extracted.
+#return the tcga_data data.frame with a column appended containing the extracted pid, in the format TCGA.AB.2988, for each row. 
+addPidColumn<-function(tcga_data){
+	cat("\nFixing patient ids...\n")
+	colIndex = grep(pattern="Sample_Barcode", x=colnames(tcga_data), ignore.case=T)[1]
+	pid = sapply(as.character(tcga_data[,colIndex]), extract_pid)
+	tcga_data = cbind.data.frame(pid, tcga_data, stringsAsFactors=F)#append extracted pids as a sepparated column
+	return(tcga_data)
+}
+
+
 longTextBarPlot<-function(data, lab, main=""){
 	
 	bpdata  = barplot(data, horiz=T, main=main)
