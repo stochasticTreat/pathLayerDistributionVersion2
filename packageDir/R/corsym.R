@@ -1,5 +1,18 @@
 
 
+
+getOfficialGeneIds<-function(idSource){
+	
+	tab =NULL
+	if(class(idSource)=="Path_Detail"){
+		tab = idSource$symtable
+	}else if( class(idSource)=="Study" ){
+		tab = idSource@studyMetaData@paths$symtable
+	}
+	
+	return(tab[,"Approved.Symbol"])
+}
+
 test.corsym<-function(){
 # 		symtabFile = "~/tprog/main_131219/reference_data/current_hugo_table.txt"
 # 		symtab = read.delim(file=symtabFile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
