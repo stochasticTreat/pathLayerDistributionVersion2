@@ -449,6 +449,12 @@ remove_dbSNP<-function(tcga_som, tracker, s){
 		cat("\n", as.integer(sum(dbsnp_set)), "of the somatic mutations were found to have dbSNP records.")
 		cat("\nThese records are of types:")
 		dbsnpstatus= unique(tcga_som[dbsnp_set,"Dbsnp_Val_Status"])
+		if( sum(is.na(dbsnpstatus)) ){
+			message("It appears additional dbSNP information was not recorded in this .maf file\n(see column titled 'Dbsnp_Val_Status')")
+			tracker[["Additional dbSNP data not found"]] = "Column 'Dbsnp_Val_Status' in .maf file is empty. dbSNP filtering disabled."
+			return(list(tracker=tracker, som_select=tcga_som, s=s))
+		}
+		statsum = summarize_by(col=tcga_som[,"Dbsnp_Rs"], display=F)
 		statsum = summarize_by(col=tcga_som[,"Dbsnp_Val_Status"], display=F)
 		colnames(statsum)<-c("dbSNP val status types","Number of records with type")
 		statsum=as.matrix(statsum, quote=T)
@@ -491,7 +497,7 @@ filterMutationType<-function(tcga_som, tracker, s){
 
 	tcga_som_sum = summarize_by(col=tcga_som[["Variant_Classification"]], left_margin_factor=1.3,
 															display=T, 
-															barPlotTitle="Counts of different types of somatic mutations") #function provides user a summary of the somatic mutation data
+															barPlotTitle="Counts of different\ntypes of somatic mutations") #function provides user a summary of the somatic mutation data
 	tracker[["Distribution of variant types for all genes"]] = save.plot("Distribution of variant types for all genes")
 	tracker[["Mutation types and counts"]] = tcga_som_sum
 	#give user the option to filter it: 
@@ -791,7 +797,7 @@ processSomaticData<-function(study,
 	s=SNPless$s
 	
 	###### check number of genes that then have official HUGO symbols
-	approvedHugoSymbols = paths_detail$symtable$Approved.Symbol[paths_detail$symtable$Status == "Approved"]
+	approvedHugoSymbols =  getOfficialGeneIds(idSource=paths_detail)
 	notApprovedHugoVector = som_select[!som_select[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols),"Hugo_Symbol"]
 	numNotHugo = sum(!som_select[,"Hugo_Symbol"]%in%toupper(approvedHugoSymbols))
 	cat("\nAfter filtering, there are ",numNotHugo," unique mutations that do not have official HUGO symbols.\n",sep="")
