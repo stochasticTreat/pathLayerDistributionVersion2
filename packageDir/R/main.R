@@ -30,13 +30,13 @@ loadBasicArms<-function(STUDY){
 }
 
 
-#'@title runInteractivePathAnalysis()
+#'@title allInteractiveMainFunction Run pathLayer in interactive mode. 
 #'@description Main function for interactive usage of package. Provides menu-based access for nearly all program functionality.
 #'@param additionalArms Optional. Function loading additional data input arms. Function should take a Study object as an argument, use the loadDataArm() to load data arms, and return the Study object with arms added.
 #'@export
 #'@return The Study object for the created in runInteractivePathAnalysis
 ########################################################################
-runInteractivePathAnalysis<-function(additionalArms=NULL){
+allInteractiveMainFunction<-function(additionalArms=NULL){
 	
 	checkLoadDependencies()
 	
@@ -54,9 +54,7 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 		aberration_patient_subset = NULL
 		all_patients = NULL
 	}
-	
-	########################################################################
-	
+
 	########################################################################
 	######## main menu selection logic
 	########################################################################
@@ -156,9 +154,6 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 		}else if(sel=="Run analysis from loaded settings"){
 			STUDY = autoRunFromSettings(study=STUDY)
 			results = STUDY@results
-		}else if(sel=="Compare settings"){
-			
-			study_stack = compareSettings(study=STUDY)
 			
 		}else if(sel=="combine aberration data and summarize by pathway"){
 			results$combined_aberrations_summary = combineAberrationTypes(results=results)
@@ -184,16 +179,14 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 								 results=STUDY@results, 
 								 path_detail=path_detail)
 		}else if(sel=="Compare sources of aberration data"){
-			compres = compareSources(results)
-			cat("\nComparrison of aberration sources complete. \n")
-			compsource = compres$outtable
-			results = compres$result
-			results[["Aberration data type comparrison"]] = compsource
+			print("Comparring..")
+			STUDY = compareSources(study=STUDY)
 			if("y"==readline("Would you like to make an HTML summary of the data type comparrison? (y/n)")){
-				toHTML(table_list=list(comparisons=compsource),
+				toHTML(table_list=list(comparisons=STUDY@results[["Aberration data type comparrison"]]),
 							 limit_col="hyperg_p_w_FDR",
 							 reorder=T,plimit=.05,maxrows=5000,
-							 fname=paste("./output/",STUDY@studyMetaData@studyName,"/aberration_data_comparison.html",sep=""),path_detail=path_detail)
+							 fname=paste("./output/",STUDY@studyMetaData@studyName,"/aberration_data_comparison.html",sep=""),
+							 path_detail=path_detail)
 			}
 		}else if(sel=="Create network diagrams for affected pathways"){
 			STUDY@results = addPathwayImagesWithSelection(study=STUDY)
@@ -204,7 +197,9 @@ runInteractivePathAnalysis<-function(additionalArms=NULL){
 		}else if(sel=="Unknown input"){
 			tmp = readline(paste("\nSorry, your input, \"", sel_line,"\", was not recognized.\nPress any key to return to the main menu.", sep=""))
 		}else if(sel=="Run drug selection worksheet"){
-			source('./shinyDrugSelect/runShiny.R')
+			cat("...")
+			sfile=system.file("shinyDrugSelect/runShiny.R",package = "packageDir")
+			source(sfile)
 		}
 	}
 	return(STUDY)
