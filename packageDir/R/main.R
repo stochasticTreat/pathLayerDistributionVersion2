@@ -45,14 +45,11 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 	arms = list()
 	
 	if(!exists("path_detail")){
-		path_detail = NULL
-	}
-	if(!exists("main_ab_table")){
-		main_ab_table = NULL
-	}
-	if(!exists("aberration_patient_subset")){
-		aberration_patient_subset = NULL
-		all_patients = NULL
+		if(exists("STUDY")){
+			path_detail=STUDY@studyMetaData@paths
+		}else{
+			path_detail = NULL
+		}
 	}
 
 	########################################################################
