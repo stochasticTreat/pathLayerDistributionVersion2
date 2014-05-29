@@ -17,7 +17,6 @@ test.RunDrugScreen2<-function(){
 	
 }
 
-
 #main function for runing drug screen
 #implements armMain interface, thus this function is passed as armMain() inside the runArm() function
 RunDrugScreen<-function(settings, study){
