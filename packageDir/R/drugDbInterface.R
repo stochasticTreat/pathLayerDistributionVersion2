@@ -36,13 +36,18 @@ makeStacked<-function(dfin){
 }
 
 
-getDrugTargetData<-function(hugo, fname="./reference_data/drugDB/drugbank/all_target_ids_all.csv"){
+getDrugTargetData<-function(hugo, 
+														fname="./reference_data/drugDB/drugbank/all_target_ids_all.csv"){
 	if(!file.exists(fname)){
-		warning(paste("The drug target database file,",fname,"could not be found. \nData for this file can be downloaded from http://www.drugbank.ca/"))
+		warning(paste("The drug target database file,",
+									fname,
+									"could not be found.\nData for this file can be downloaded from http://www.drugbank.ca/", 
+									"\nCurrent working directory:",getwd()))
+		
 		return(NULL)
 	}
 	ptm<-proc.time()
-	cat("\nLoading drug data from: \n", fname, "\n")
+	cat("\nLoading drug data from: \n", fname)
 	sep=","
 	header=T
 	quote="\""
@@ -51,11 +56,10 @@ getDrugTargetData<-function(hugo, fname="./reference_data/drugDB/drugbank/all_ta
 
 	targtab = read.table(file=fname, sep=sep, header=header, quote=quote, stringsAsFactors=F)
 	htab = targtab[targtab$Species == "Homo sapiens",]
-
+	cat("... loaded\n")
 	#next, attempt-correction of gene Name column 
 	tmpName = corsym(symbol_set=htab$Gene.Name,verbose=F, symref=hugo)
 	htab$Gene.Name = tmpName
-	
 	
 	notHugoIndex = which(!tmpName%in%hugo$Approved.Symbol)
 	notHugo= htab[notHugoIndex,]
@@ -77,6 +81,15 @@ getDrugTargetData<-function(hugo, fname="./reference_data/drugDB/drugbank/all_ta
 
 #opens and returns drug meta data file
 getDrugData<-function(drugFname = "./reference_data/drugDB/drugbank/drug_links.csv"){
+	if(!file.exists(drugFname)){
+		warning(paste("The file,",
+									drugFname,
+									"could not be found.\nData for this file can be downloaded from http://www.drugbank.ca/", 
+									"\nCurrent working directory:",getwd()))
+		
+		return(NULL)
+	}
+	
 	drugTab = read.table(drugFname, sep=",", header=T, stringsAsFactors=F)
 	return(drugTab)
 }
@@ -93,7 +106,10 @@ test.makeDrugSelectionWorksheet<-function(){
 addPanelMembership<-function(dmd,dtd,STUDY){
 	
 	cat("Adding drug target counts and numbers of panel members")
-	targetTab = as.data.frame(matrix(data=0, nrow=nrow(dmd), ncol=2, dimnames=list(dmd$DrugBank.ID, c("Total_targets", "New_Targets"))), stringsAsFactors=F)
+	targetTab = as.data.frame(matrix(data=0, nrow=nrow(dmd), 
+																	 ncol=2, 
+																	 dimnames=list(dmd$DrugBank.ID, c("Total_targets", "New_Targets"))), 
+														stringsAsFactors=F)
 
 	
 	if(is.null(STUDY@results$functional_drug_screen_summary)){
@@ -107,6 +123,7 @@ addPanelMembership<-function(dmd,dtd,STUDY){
 	}
 	
 	dmd2 = cbind.data.frame(dmd, targetTab, stringsAsFactors=F)
+	cat("..\n")
 	return(dmd2)	
 }
 
@@ -149,9 +166,11 @@ getPathIdsToTarget <- function (STUDY, pathsToSearch = NULL) {
 		pathsToTarget = dark$path_id
 		print("pathsToSearch is null")
 	}else{
+		print("pathsToSearch is null and the overlap_analysis is null.. ")
 		branchName = selectBranchToFindDrugsFor(STUDY)
 		pathsToTarget = STUDY@results[[branchName]]$pathsummary$path_id
 	}
+	
 	return(pathsToTarget)
 }
 
@@ -193,6 +212,18 @@ selectBranchToFindDrugsFor<-function(study=STUDY){
 
 readClinicalTrialsFile<-function(fname){
 	cat("\nReading fie:", fname,"\n")
+	if(!file.exists(fname)){
+		warning(paste("The file,",
+									fname,
+									"could not be found.\nData for this file can be downloaded from https://clinicaltrials.gov/ct2/search/advanced",
+									"At this page, select all desired trial phases, click search, click the download button\n",
+									"and in the dialog box that comes up, select the maximum number of studies,\n",
+									"select all fields,\n",
+									"change the format to ",
+									"\nCurrent working directory:",getwd()))
+		
+		return(NULL)
+	}
 	fdat = try(read.table(file=fname, 
 												allowEscapes=F,
 												stringsAsFactors=F,
@@ -263,38 +294,7 @@ getClinicalRef_depricated<-function(){
 	return(cc1)
 }
 
-getClinicalRef<-function(){
-	
-	#pull out all the trials with 
-	
-	intervFname = "./2012 Pipe delimited text output/interventions.txt"
-	interv = readClinicalTrialsFile(fname=intervFname)
-	
-	cc1 = interv[,c("INTERVENTION_NAME", "NCT_ID")]
-	
-	intervOtherNameFname = "./2012 Pipe delimited text output/intervention_other_names.txt"
-	intervOtherName = readClinicalTrialsFile(fname=intervOtherNameFname)
-	
-	cc2 = intervOtherName[,c("OTHER_NAME", "NCT_ID")]
-	
-	intervBrowseFname = "./2012 Pipe delimited text output/intervention_browse.txt"
-	intervBrowse = readClinicalTrialsFile(fname=intervBrowseFname)
-	
-	cc3 = intervBrowse[,c("MESH_TERM", "NCT_ID")]
-	
-	colnames(cc1)[1]<-"name"
-	colnames(cc2)[1]<-"name"
-	colnames(cc3)[1]<-"name"
-	
-	cc1 = rbind(cc1, cc2[!cc2$name%in%cc1$name,])
-	
-	cc1 = rbind(cc1, cc3[!cc3$name%in%cc1$name,])
-	
-	cc1=unique(cc1)
-	
-	# 	cc1 = appendClinicalTrialPhase(tdat=cc1)
-	
-	fname="./2012 Pipe delimited text output/exported_study_fields_phase3_phase4.tsv"
+loadClinicalTrailsData<-function(fname="./reference_data/drugDB/exported_study_fields_phase3_phase4.tsv"){
 	cdat = read.table(file=fname,
 										header=T, 
 										sep="\t", 
@@ -302,25 +302,97 @@ getClinicalRef<-function(){
 										comment.char="", 
 										stringsAsFactors=F)
 	cat("\nFile read in with", ncol(cdat), "columns and", nrow(cdat),"rows.\n")
+	return(cdat)
+}
+
+appendClincalTrials<-function(dmd, fname="./reference_data/drugDB/exported_study_fields_phase3_phase4.tsv"){
 	
-	cdatex = cdat[,c("NCT.Number", "Phases")]
-	cdatex$Phases = gsub(pattern=" ", replacement="-",x=cdatex$Phases)
-	joinedPhase = cbind.data.frame(cdatex, 
-																 paste(cdatex$NCT.Number, 
-																 			cdatex$Phases, sep=":"),
-																 stringsAsFactors=F)
-	colnames(joinedPhase)<-c("NCT", "phase", "joined")
+	if(!file.exists(fname)){
+		warning(paste("The file",fname,"could not be found.\n",
+									"This file is needed to append clinical trial information.\n",
+									"This file should come from clinicaltrials.gov \n",
+									"and should contain columns:\n",
+									"Interventions\n Phases\n"))
+		return(dmd)
+	}
+	ptm<-proc.time()
+	cat("\nLoading clinical trial data...\n")
+	ctdat = loadClinicalTrailsData(fname=fname)
 	
-	
-	fullout = merge(x=joinedPhase, y=cc1, all.y=TRUE, by.x="NCT",by.y="NCT_ID")
-	
-	fullout$joined[is.na(fullout$joined)] = fullout$NCT[is.na(fullout$joined)]
-	
-	names(fullout)
-	fullout = fullout[,c("name","joined")]
-	names(fullout)<-c("name","NCT_ID")
-	return(fullout)
-}#getClinicalRef2
+	udn = dmd$"Drug name"
+	#for each drug name grep all the rows in the clinical trials data that has that drug name
+	phases = rep("", times=length(udn))
+	cat("Finding trails for all drugs...\n")
+	pb = txtProgressBar(min=1,max=length(udn), style=3)
+	for(i in 1:length(udn)){
+		dn = udn[i]
+		
+		
+		phases[i] = paste(ctdat$Phases[ grep(pattern=dn, x=ctdat$Interventions, ignore.case=T) ],sep=", ",collapse=", ")
+		setTxtProgressBar(pb, i)
+	}
+	totalTime = proc.time() - ptm
+	out = cbind(dmd, phases)
+	cat("\nFinished appending clinical trial phase (time elapsed:", totalTime[1],"seconds)")
+	return(out)
+}
+# 
+# getClinicalRef<-function(){
+# 	
+# 	#pull out all the trials with 
+# 	intervFname = "./reference_data/drugDB/interventions.txt"
+# 	interv = readClinicalTrialsFile(fname=intervFname)
+# 	
+# 	cc1 = interv[,c("INTERVENTION_NAME", "NCT_ID")]
+# 	
+# 	intervOtherNameFname = "./reference_data/drugDB/intervention_other_names.txt"
+# 	intervOtherName = readClinicalTrialsFile(fname=intervOtherNameFname)
+# 	
+# 	cc2 = intervOtherName[,c("OTHER_NAME", "NCT_ID")]
+# 	
+# 	intervBrowseFname = "./reference_data/drugDB/intervention_browse.txt"
+# 	intervBrowse = readClinicalTrialsFile(fname=intervBrowseFname)
+# 	
+# 	cc3 = intervBrowse[,c("MESH_TERM", "NCT_ID")]
+# 	
+# 	colnames(cc1)[1]<-"name"
+# 	colnames(cc2)[1]<-"name"
+# 	colnames(cc3)[1]<-"name"
+# 	
+# 	cc1 = rbind(cc1, cc2[!cc2$name%in%cc1$name,])
+# 	
+# 	cc1 = rbind(cc1, cc3[!cc3$name%in%cc1$name,])
+# 	
+# 	cc1=unique(cc1)
+# 	
+# 	# 	cc1 = appendClinicalTrialPhase(tdat=cc1)
+# 	
+# 	fname="./reference_data/drugDB/exported_study_fields_phase3_phase4.tsv"
+# 	cdat = read.table(file=fname,
+# 										header=T, 
+# 										sep="\t", 
+# 										quote="", 
+# 										comment.char="", 
+# 										stringsAsFactors=F)
+# 	cat("\nFile read in with", ncol(cdat), "columns and", nrow(cdat),"rows.\n")
+# 	
+# 	cdatex = cdat[,c("NCT.Number", "Phases")]
+# 	cdatex$Phases = gsub(pattern=" ", replacement="-",x=cdatex$Phases)
+# 	joinedPhase = cbind.data.frame(cdatex, 
+# 																 paste(cdatex$NCT.Number, 
+# 																 			cdatex$Phases, sep=":"),
+# 																 stringsAsFactors=F)
+# 	colnames(joinedPhase)<-c("NCT", "phase", "joined")
+# 	
+# 	fullout = merge(x=joinedPhase, y=cc1, all.y=TRUE, by.x="NCT",by.y="NCT_ID")
+# 	
+# 	fullout$joined[is.na(fullout$joined)] = fullout$NCT[is.na(fullout$joined)]
+# 	
+# 	names(fullout)
+# 	fullout = fullout[,c("name","joined")]
+# 	names(fullout)<-c("name","NCT_ID")
+# 	return(fullout)
+# }#getClinicalRef2
 
 
 toGSEAclinical<-function(dfin){
@@ -336,24 +408,23 @@ toGSEAclinical<-function(dfin){
 	}
 	return(dfout)
 }
+# 
+# appendClinicalTrialIDs<-function(dmeta){
+# 	cref = getClinicalRef()#get the clinical trial lookup table
+# 	#pull out only those clinical trials for which we have additional drug data on
+# 	crefpart = cref[cref$name%in%dmeta$"Drug name",]
+# 	
+# 	# 	make dictionary with values the lists of clinical trials
+# 	ctlists = toGSEAclinical(dfin=crefpart)
+# 	cids = rep("", times=nrow(dmeta)) #this will be filled with the clinical trials
+# 	fillIndex = dmeta$"Drug name"%in%ctlists$ids #the indicies to be filled
+# 	cids[fillIndex] = ctlists[dmeta$"Drug name"[fillIndex],2] #fill them
+# 	tout = cbind.data.frame(dmeta, cids, stringsAsFactors=F) #bind them to the main table
+# 	colnames(tout)[ncol(tout)]<-"clinical_trial_IDs"
+# 	return(tout)
+# }
 
-appendClinicalTrialIDs<-function(dmeta){
-	cref = getClinicalRef()#get the clinical trial lookup table
-	#pull out only those clinical trials for which we have additional drug data on
-	crefpart = cref[cref$name%in%dmeta$"Drug name",]
-	
-	# 	make dictionary with values the lists of clinical trials
-	ctlists = toGSEAclinical(dfin=crefpart)
-	cids = rep("", times=nrow(dmeta)) #this will be filled with the clinical trials
-	fillIndex = dmeta$"Drug name"%in%ctlists$ids #the indicies to be filled
-	cids[fillIndex] = ctlists[dmeta$"Drug name"[fillIndex],2] #fill them
-	tout = cbind.data.frame(dmeta, cids, stringsAsFactors=F) #bind them to the main table
-	colnames(tout)[ncol(tout)]<-"clinical_trial_IDs"
-	return(tout)
-}
-
-makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
-	
+importDrugDbData<-function(STUDY){
 	#open the data files
 	
 	dtd1 = getDrugTargetData(hugo=STUDY@studyMetaData@paths$symtable, 
@@ -367,13 +438,39 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	dtd = dtd1
 	
 	dtd = unique(dtd)
-	dmd = getDrugData()
-	colnames(dmd)[2]<-"Drug name"
-	rownames(dmd)<-dmd$DrugBank.ID
+
+	return(dtd)
+}
+
+#'@title Uses genomic data from the provided Study object to produce a table of pertinent drug-gene associations.
+#'@param STUDY A \code{Study} object
+#'@param pathsToSearch A \code{vector} of pathway names. The set of cellular pathways that is to be searched for drug targets.
+#'@return Spread sheet detailing drug which target pertinent pathways
+#'@export
+makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
+	
+	dtd0 = importDrugDbData(STUDY=STUDY)
+	dmd0 = getDrugData()
+	
+	#		This many drugs don't have drug meta data
+	#check how I'm getting the dmd and see if I can at least get the drug names. .. 
+	# 	sum(!dtd0$drugID%in%dmd0$DrugBank.ID)
+	# 	[1] 4720
+	# 	readline("some rows in output do not have drugs associated")
+	
+	colnames(dmd0)[2]<-"Drug name"
+	rownames(dmd0)<-dmd0$DrugBank.ID
+	
+	darkPaths = STUDY@results$overlap_analysis$'Aberration enriched, not drug targeted'$path_id
+	liableGenes = getGenesFromPaths(pids=darkPaths, STUDY=STUDY)
+	
+	dtd=dtd0[dtd0$geneID%in%liableGenes,]
+	dmd = dmd0[dmd0$DrugBank.ID%in%dtd$drugID,]
 	
 	ptm<-proc.time()
 	#add clinical trial information
-	dmd = appendClinicalTrialIDs(dmeta=dmd)
+	# 	dmd = appendClinicalTrialIDs(dmeta=dmd)
+	dmd = appendClincalTrials(dmd)
 	totalTime = proc.time()  - ptm
 	cat("Appending clinical trial data took", totalTime["elapsed"], "seconds.\n")
 	# 	> colnames(dmd)
@@ -403,18 +500,18 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	bfbTargDrugData = merge(x=bfbAddTargets, y=dmd, by.x="Drugbank ID", by.y="DrugBank.ID", all.x=T)
 	
 	bfbTargDrugData = addMutationCount(bfbTargDrugData=bfbTargDrugData, STUDY=STUDY)
-	
 	bfbTargDrugData = unique(bfbTargDrugData)
-	
 	bfbTargDrugData = addNumberOfPathsTargeted(STUDY=STUDY, dtd=dtd, bfbTargDrugData=bfbTargDrugData)
-	
 	bfbTargDrugData = adjustColumns(tab=bfbTargDrugData)
+	
+	bfbTargDrugData = bfbTargDrugData[!is.na(bfbTargDrugData$"Drug name"),] #remove rows with no drug name. .. . ... .. .. .. 
+	
 	print("Output tables complete, returning data...")
 	return(bfbTargDrugData)
-	
 }
 
 adjustColumns<-function(tab){
+	print("adjusting columns...")
 	corder= c("Gene symbol", 
 						"Number of dark paths containing gene", 
 						"Aberrations in gene, across cohort", 
@@ -424,6 +521,11 @@ adjustColumns<-function(tab){
 						"Total_targets",
 						"New_Targets",
 						"clinical_trial_IDs")
+	
+	foundc = corder%in%colnames(tab)
+	if(sum(!foundc)) warning("Could not find these data columns: ",paste(corder[!foundc],collpase=" "))
+	corder = corder[foundc]
+	
 	corder= c(corder, setdiff(colnames(tab), corder))
 	setdiff(corder,colnames(tab))
 	tab = tab[,corder]
@@ -434,7 +536,7 @@ adjustColumns<-function(tab){
 }
 
 addNumberOfPathsTargeted<-function(STUDY, bfbTargDrugData, dtd, significanceColumn="hyperg_p_w_FDR"){
-
+	cat("\nAddding number of paths targeted... \n")
 	ugene = unique(bfbTargDrugData$"Gene symbol")
 	udrug = unique(bfbTargDrugData$"Drugbank ID")
 	darkPathCount = rep(0, times=length(udrug))
@@ -446,7 +548,7 @@ addNumberOfPathsTargeted<-function(STUDY, bfbTargDrugData, dtd, significanceColu
 	
 	for(d in udrug){
 		if(!is.na(d)){
-			print(d)
+
 			geneSet = dtd$geneID[dtd$drugID==d]
 			targpaths = whichPaths(STUDY=STUDY, 
 														 geneList=geneSet,
@@ -460,7 +562,10 @@ addNumberOfPathsTargeted<-function(STUDY, bfbTargDrugData, dtd, significanceColu
 														 pathList=sigAbPaths)
 			abPathCount[d]=length(targpaths2)
 			
-		}#if
+		}else{
+			cat("NA value found in drug IDs.. skipping\n")
+		}
+			#if
 	}#for
 	
 	bfbTargDrugData2 = cbind.data.frame(bfbTargDrugData, 
@@ -501,7 +606,7 @@ whichPaths<-function(pathList, geneList, STUDY){
 
 
 addMutationCount<-function(bfbTargDrugData, STUDY){
-	
+	cat("\nAdding mutation counts... \n")
 	geneMuts = as.data.frame(matrix(data=0,
 																	ncol=1, 
 																	nrow=nrow(bfbTargDrugData)),
