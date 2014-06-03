@@ -117,6 +117,12 @@ switchPathSymbols<-function(po){
 	return(po)
 }
 
+#'@title Convert list of vectors to bipartate graph format. 
+#'@description Used to restructure list of vectors to bipartate graph format. 
+#'@param pth A list object, with each slot containing a vector. 
+#'@param uni The full, unique set of elements in all the vectors in the list passed in the argument, pth. If not provided this will be automatically recalculated.
+#'@return \code{matrix} object with logical values representing a bipartate graph; rows are set as the slot names of the input list. Columns are set as all the unique elements in the vectors the list contains. 
+#'@export
 list_to_table<-function(pth, uni=NULL){
 	#switch from list pathway format to logic table pathway format
 	#takes: pathways in list format
@@ -189,6 +195,15 @@ test.getPaths<-function(){
 #				 referenceFileName: the name of the path meta data file
 #				 symtab: the symbol look up table for hugo symbols 
 # returns path_detail object
+
+#'@title Get set of cellular pathways
+#'@description Get \code{Path_Detail} object, housing gene sets for cellular pathways. 
+#'@param path_file String giving path to file from which pathways should be loaded. Alternatively, a \code{Study} object can be provided here and pathways will automatically be retreived from it. 
+#'@param referenceFileName Optional. String giving path to file where pathway meta data (date loaded, path repository name, etc..) can be found. 
+#'@param symtab A gene identifier lookup table. If not provided, one will be automatically obtained (may take longer)
+#'@param verbose Logical flag indicating if interactive user prompts and additional information should be displayed. 
+#'@return \code{Path_Detail} object. 
+#'@export
 getPaths<-function(path_file=NULL, 
 									 referenceFileName = "./reference_data/paths/pathMetaData.txt", 
 									 symtab=NULL, 

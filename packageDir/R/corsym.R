@@ -176,11 +176,12 @@ correctFromHelperPrevious<-function(bsub, verbose){
 #'@param verbose A logical flag indicating if interactive mode should be run. 
 #'@return A character vector containing the identifiers for the set of genes provided in the symbol_set function argument, but with any applicable corrections made. 
 #'@import HGNChelper 
-#'@export
+#'@export correctByHgncHelper
 correctByHgncHelper<-function(symbol_set, 
 															symtab, 
 															correctionsfile, 
 															verbose=F){
+	require(HGNChelper)
 	#1: symbol correct : do nothing
 	#2: symbol incorrect, no correction available : report to user
 	#3: symbol incorrect, simple correction available : correct
@@ -435,7 +436,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 getSymbolCorrectionTable<-function(correctionsfile){
 	
 	if(!file.exists(correctionsfile)){
-		dir.create(path=basename(path=correctionsfile), recursive=T)
+		dir.create(path=basename(path=correctionsfile), recursive=T, showWarnings=F)
 		file.copy(from=system.file("extdata/gene_symbol_corrections_list.txt", package = "packageDir"),
 							to=correctionsfile)
 	}
@@ -446,7 +447,7 @@ getSymbolCorrectionTable<-function(correctionsfile){
 	
 }
 
-#'@title addCorrections()
+#'@title Function to add corrections to the corrections file. Internal, used by corsym to coordinate symbol corrections. 
 #'@description Adds corrections to the corrections file
 #'@param new_corrections a two column matrix; column 1 = old, incorrect symbols, column 2 = new, corrected symbols
 #'@param correctionsfile the file name of the corrections file
@@ -716,8 +717,15 @@ cleanGeneSymbols<-function(genes){
 #returns HUGO lookup table
 #
 #function allows re-download of hugo cross ref file. 
+
+#'@title getHugoSymbols
+#'@description obtains HGNC/HUGO symbol look up table containing official set of HUGO symbols.
+#'@param paths_detail If a \code{Path_Detail} object is provided, the symbols will be extracted from its \code{symtable} slot
+#'@param curhugofname If interactive gene symbol correction is to be used, this argument should be the file path to the HUGO table as downloaded from genenames.org.
+#'@param verbose Controlls if symbol corrections are to be interactive (if yes, curhugofname file must be supplied as it contains critical information, such as gene symbol status, past identifiers and synonyms)
+#'@return Table of symbols: either a two column data.frame, the hgnc.table provided by HGNChelper, or a data frame as provided by genenames.org. Either of which have a column titled Approved.Symbol which contains official, approved symbols.  
 getHugoSymbols<-function(paths_detail=NULL, 
-												 curhugofname=NULL, #"./reference_data/current_hugo_table_slim.txt",
+												 curhugofname=NULL,#"./reference_data/current_hugo_table_slim.txt",
 												 verbose=T){
 	if(is.null(curhugofname)){
 		data("hgnc.table")
@@ -729,7 +737,7 @@ getHugoSymbols<-function(paths_detail=NULL,
 			return(hgnc.table)
 		}
 	}
-	curhugofname = "./reference_data/current_hugo_table_slim.txt"
+	#curhugofname = "./reference_data/current_hugo_table_slim.txt"
 	if(class(paths_detail)=="Study"){
 		cat("\nGetting HUGO gene symbols from study..\n")
 		paths_detail=paths_detail@studyMetaData@paths

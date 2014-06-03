@@ -50,6 +50,13 @@ listToDf<-function(lst){
 }
 
 
+#'@title Load settings from a file folder tree into a Study object. 
+#'@description Allows loading of settigns into a \code{Study} object. If a directory path name is provided in the fname argument, settings will be loaded from that file. If no directory is provided, the user will be prompted to interactively select a settings folder. 
+#'@param study A \code{Study} object. 
+#'@param fname Optional, a \code{string} giving the absolute or relative paths of the settings to be loaded. 
+#'@param root Optional, a \code{string} giving a path to be checked for \code{Study} objects from which to retreive settings. 
+#'@return A \code{Study} object with settings loaded. 
+#'@export
 selectAndLoadSettings<-function(study, fname=NULL, root="./output/"){
 	fullPath=""
 	while(T){

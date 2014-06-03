@@ -30,6 +30,12 @@ changeStudyName<-function(study, newName){
 
 #autoRunFromSettings
 #runs all analyses described in settings found in meta data
+#'@title Automatically run set of analyses from a set of loaded settings. 
+#'@description Function searches for settings objects in the STUDY-studyMetaData-settings slot, then automatically executes the analysis for each arm described by the settings. 
+#'@param study A \code{Study} object with settings available. 
+#'@param verbose A flag indicating if analyses should be run in interactive/verbose mode, prompting user to check intermediate settings. 
+#'@return A \code{Study} object with analysis described by settings complete. 
+#'@export
 autoRunFromSettings<-function(study, verbose=T){
 	#pull each analysis type out
 	allanalyses = names(study@studyMetaData@settings)	
@@ -322,6 +328,20 @@ BangForBuck<-function(darkPaths, path_detail){
 
 
 DataSummary<-function(results){
+#'@title Display summaries of loaded data. 
+#'@description prints to the screen summary statistics for data sets from each data arm. 
+#'@param study A \code{Study} object. 
+#'@export
+#'@example
+#'	pths = getTestPaths()#path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt",force=T)
+#'	teststudy = getStudyObject(study.name="testerStudy", 
+#'														 path_detail=pths,
+#'														 settings=NULL,
+#'														 GeneIdentifierLookup=pths$HUGOtable)
+#'
+#'	DataSummary(teststudy)
+DataSummary<-function(study){
+	results=study@results
 	cat("\nDisplaying summaries for all loaded data:\n")
 	sumin = grep("summary", x=names(results),ignore.case=T)
 
@@ -354,6 +374,12 @@ bmerge<-function(x,y){
 }
 
 compareSources<-function(results=results){
+#'@title Allows comparrison of summary statistics for all loaded aberration data types. 
+#'@description The function examines and compares the pathway summaries for all loaded aberration data types
+#'@param study A \code{Study} object. More than one aberration data type needs to have been loaded before this function is run. 
+#'@return A \code{Study} object with a slot named, \code{"Aberration data type comparrison"} in the results list filled with a table comparring impacts of each aberration data type for each pathway.
+#'@export
+compareSources<-function(study){
 	#takes:		 the results list
 	#returns:	 Two item list: list(outtable=outtable, results=results)
 	#							outtable slot: 	table containing comparisons of aberration data
