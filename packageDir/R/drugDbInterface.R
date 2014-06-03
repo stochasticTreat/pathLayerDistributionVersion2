@@ -336,63 +336,6 @@ appendClincalTrials<-function(dmd, fname="./reference_data/drugDB/exported_study
 	cat("\nFinished appending clinical trial phase (time elapsed:", totalTime[1],"seconds)")
 	return(out)
 }
-# 
-# getClinicalRef<-function(){
-# 	
-# 	#pull out all the trials with 
-# 	intervFname = "./reference_data/drugDB/interventions.txt"
-# 	interv = readClinicalTrialsFile(fname=intervFname)
-# 	
-# 	cc1 = interv[,c("INTERVENTION_NAME", "NCT_ID")]
-# 	
-# 	intervOtherNameFname = "./reference_data/drugDB/intervention_other_names.txt"
-# 	intervOtherName = readClinicalTrialsFile(fname=intervOtherNameFname)
-# 	
-# 	cc2 = intervOtherName[,c("OTHER_NAME", "NCT_ID")]
-# 	
-# 	intervBrowseFname = "./reference_data/drugDB/intervention_browse.txt"
-# 	intervBrowse = readClinicalTrialsFile(fname=intervBrowseFname)
-# 	
-# 	cc3 = intervBrowse[,c("MESH_TERM", "NCT_ID")]
-# 	
-# 	colnames(cc1)[1]<-"name"
-# 	colnames(cc2)[1]<-"name"
-# 	colnames(cc3)[1]<-"name"
-# 	
-# 	cc1 = rbind(cc1, cc2[!cc2$name%in%cc1$name,])
-# 	
-# 	cc1 = rbind(cc1, cc3[!cc3$name%in%cc1$name,])
-# 	
-# 	cc1=unique(cc1)
-# 	
-# 	# 	cc1 = appendClinicalTrialPhase(tdat=cc1)
-# 	
-# 	fname="./reference_data/drugDB/exported_study_fields_phase3_phase4.tsv"
-# 	cdat = read.table(file=fname,
-# 										header=T, 
-# 										sep="\t", 
-# 										quote="", 
-# 										comment.char="", 
-# 										stringsAsFactors=F)
-# 	cat("\nFile read in with", ncol(cdat), "columns and", nrow(cdat),"rows.\n")
-# 	
-# 	cdatex = cdat[,c("NCT.Number", "Phases")]
-# 	cdatex$Phases = gsub(pattern=" ", replacement="-",x=cdatex$Phases)
-# 	joinedPhase = cbind.data.frame(cdatex, 
-# 																 paste(cdatex$NCT.Number, 
-# 																 			cdatex$Phases, sep=":"),
-# 																 stringsAsFactors=F)
-# 	colnames(joinedPhase)<-c("NCT", "phase", "joined")
-# 	
-# 	fullout = merge(x=joinedPhase, y=cc1, all.y=TRUE, by.x="NCT",by.y="NCT_ID")
-# 	
-# 	fullout$joined[is.na(fullout$joined)] = fullout$NCT[is.na(fullout$joined)]
-# 	
-# 	names(fullout)
-# 	fullout = fullout[,c("name","joined")]
-# 	names(fullout)<-c("name","NCT_ID")
-# 	return(fullout)
-# }#getClinicalRef2
 
 
 toGSEAclinical<-function(dfin){
@@ -408,21 +351,7 @@ toGSEAclinical<-function(dfin){
 	}
 	return(dfout)
 }
-# 
-# appendClinicalTrialIDs<-function(dmeta){
-# 	cref = getClinicalRef()#get the clinical trial lookup table
-# 	#pull out only those clinical trials for which we have additional drug data on
-# 	crefpart = cref[cref$name%in%dmeta$"Drug name",]
-# 	
-# 	# 	make dictionary with values the lists of clinical trials
-# 	ctlists = toGSEAclinical(dfin=crefpart)
-# 	cids = rep("", times=nrow(dmeta)) #this will be filled with the clinical trials
-# 	fillIndex = dmeta$"Drug name"%in%ctlists$ids #the indicies to be filled
-# 	cids[fillIndex] = ctlists[dmeta$"Drug name"[fillIndex],2] #fill them
-# 	tout = cbind.data.frame(dmeta, cids, stringsAsFactors=F) #bind them to the main table
-# 	colnames(tout)[ncol(tout)]<-"clinical_trial_IDs"
-# 	return(tout)
-# }
+
 
 importDrugDbData<-function(STUDY){
 	#open the data files
@@ -523,11 +452,12 @@ adjustColumns<-function(tab){
 						"clinical_trial_IDs")
 	
 	foundc = corder%in%colnames(tab)
+	
 	if(sum(!foundc)) warning("Could not find these data columns: ",paste(corder[!foundc],collpase=" "))
 	corder = corder[foundc]
 	
 	corder= c(corder, setdiff(colnames(tab), corder))
-	setdiff(corder,colnames(tab))
+	#setdiff(corder,colnames(tab))
 	tab = tab[,corder]
 	
 	colnames(tab) = gsub(pattern="[_.]", replacement=" ", x=colnames(tab))

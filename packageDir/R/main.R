@@ -1,5 +1,9 @@
 #main.R
 
+#'@title Load the basic set of analysis arms for use in a study
+#'@description This function connects the basic set of analysis arms (drug screen analysis, somatic mutation, arbitrary gene input data and overlap analysis) to a Study object. 
+#'@param STUDY A \code{Study} object.
+#'@return A \code{Study} object with study arms loaded. 
 loadBasicArms<-function(STUDY){
 	
 	arms = STUDY@arms
@@ -30,11 +34,11 @@ loadBasicArms<-function(STUDY){
 }
 
 
-#'@title allInteractiveMainFunction Run pathLayer in interactive mode. 
+#'@title Run pathMod in interactive mode. 
 #'@description Main function for interactive usage of package. Provides menu-based access for nearly all program functionality.
 #'@param additionalArms Optional. Function loading additional data input arms. Function should take a Study object as an argument, use the loadDataArm() to load data arms, and return the Study object with arms added.
 #'@export
-#'@return The Study object for the created in runInteractivePathAnalysis
+#'@return The Study object created and filled by allInteractiveMainFunction. 
 ########################################################################
 allInteractiveMainFunction<-function(additionalArms=NULL){
 	
@@ -46,8 +50,11 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 	
 	if(!exists("path_detail")){
 		if(exists("STUDY")){
+			cat("\nStudy object found in accessible envirnment\nUsing this Study\n")
+			
 			path_detail=STUDY@studyMetaData@paths
 		}else{
+			cat("\nNo Study object found, initilizing pathways.\n")
 			path_detail = NULL
 		}
 	}
@@ -74,7 +81,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			path_detail = FullPathObject(STUDY)
 			cat("\nPaths set.. \n")
 		}
-		cat("......")
+
 		#establish path_detail, paths list object
 		if(is.null(path_detail)){
 			path_detail = getPaths()
@@ -89,9 +96,6 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 		}
 		#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 		printProgramState(STUDY)
-		# 										results=STUDY@results, 
-		# 										study_name=STUDY@studyMetaData@studyName, 
-		# 										path_detail=path_detail)
 		
 		########################################################################
 		##############   main selection structure              #################
@@ -156,7 +160,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			results$combined_aberrations_summary = combineAberrationTypes(results=results)
 			STUDY@results = results
 		}else if(sel=="View summary of loaded data"){#View summary of loaded data 
-			DataSummary(STUDY@results)
+			DataSummary(STUDY)
 		}else if(sel=="Save current study"){
 			saveStudy(study=STUDY, path="./output")
 		}else if(sel=="Clear current study and study data"){
@@ -196,7 +200,9 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 		}else if(sel=="Run drug selection worksheet"){
 			cat("...")
 			sfile=system.file("shinyDrugSelect/runShiny.R",package = "packageDir")
-			source(sfile)
+			print("Runing shiny main")
+			source(sfile, local=T)
+			runShinyMain(STUDY=STUDY)
 		}
 	}
 	return(STUDY)

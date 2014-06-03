@@ -78,7 +78,7 @@ nestedListToStudy<-function(res){
 #saves all pertinent data of a study object so that it can latter be recalled
 #takes: study: study object
 #				path: the path to the location where the study folder tree should be saved
-#							if this argument is not supplied, the default, "./output/" will be used
+#							if this argument is not supplied, the default, '.output' will be used
 #returns: nothing
 #'@title saveStudy
 #'@description Function for saving study object to a human-readable format. 
@@ -546,6 +546,7 @@ initiateStudy<-function(studyFolderName=NULL,
 												path_detail=NULL, 
 												root="./output", 
 												study.name=NULL){
+	require(HGNChelper)
 	cat("\n---------------------Initilizing Study---------------------\n")
 	res1 = list()
 	studyNameLine="s"
@@ -565,7 +566,6 @@ initiateStudy<-function(studyFolderName=NULL,
 		sname = basename(folderName)
 		res1$study_name = gsub(pattern="^study_", replacement="", x=sname)#put the study_name in, removing the prefix
 		res1$rootFolder = folderName
-		
 		
 	}else if(studyNameLine==""){#new study
 		# 		print("B")
@@ -587,11 +587,7 @@ initiateStudy<-function(studyFolderName=NULL,
 																 study_name
 																 ,"/results/<data_type>) for the paths used, then press enter to continue."))
 		}
-		print("Check1")
-		# 		readline("check one, press enter1")
 		path_detail = getPaths()
-		
-
 	}else if(is.null(path_detail)){
 		print("Cellular pathway repository not assigned.. loading.. ")
 		path_detail=getPaths( path_file=as.character(studytmp@studyMetaData@paths$file))

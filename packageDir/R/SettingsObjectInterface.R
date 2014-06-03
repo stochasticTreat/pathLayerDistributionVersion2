@@ -49,25 +49,6 @@ listToDf<-function(lst){
 	return(out)
 }
 
-compareSettings<-function(study, fname=NULL){
-	
-	seldir = tk_choose.dir(default = getwd(), caption = "Select directory containing the settings you'd like to use.")
-	cat("Loading settings from", seldir,".\n")
-	sets = loadSummary(study_name="", path=seldir)
-	testind = sapply(X=sets, FUN=function(x){ifelse(test=(ncol(x)>1),yes=T, no=F)})
-	if(!sum(testind)) return()
-	
-	alternationName = names(testind)[testind]
-	nSettings = sets[[alternationName]]
-	fSettings = nSettings[,2:ncol(nSettings)]
-	rownames(fSettings)<-nSettings[,1]
-	for(i in ncol(fSettings)){
-		curSet = sets
-		curSet[[alternationName]] = fSettings[,i,drop=F]
-		study@studymetadata@settings = curSet
-		cur = autoRunFromSettings(study=study)
-	}
-}
 
 selectAndLoadSettings<-function(study, fname=NULL, root="./output/"){
 	fullPath=""
