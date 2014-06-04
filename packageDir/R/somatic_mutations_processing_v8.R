@@ -3,7 +3,7 @@
 
 debug.runSomaticMutationsProcessing<-function(){
 	
-	STUDY = runInteractivePathAnalysis()
+	STUDY = allInteractiveMainFunction()
 	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/InitiateDataStructures.R')
 	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/SettingsObjectInterface.R')
 	source('~/tprog/distribution/pathLayerDistributionVersion2/packageDir/R/acc_functions.R')
