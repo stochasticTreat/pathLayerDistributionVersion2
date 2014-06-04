@@ -73,9 +73,22 @@ clean.biopaxRecords<-function(pwrecord){
 	
 }
 
+
+#'@title Add network diagrams of affected pathways. 
+#'@description Outputs to cytoscape diagrams of affected pathways . 
+#'@param study A \code{Study} object. 
+#'@param limitCol The column from the results that is used to limit the number of path diagrams displayed. 
+#'@param limitVal The value in the limitCol used to limit the number of pathways. Net work diagrams will only be produced for pathways with values in limitCol which are smaller than limitVal. 
+#'@return A \code{Study} object will be returned with file names of network diagrams added to the imageSlots slot of the appropriate results sets. 
+#'@import RCytoscape
+#'@import rBiopaxParser
+#'@export
 addPathwayImagesWithSelection<-function(study, 
 																				limitCol="hyperg_p_w_FDR", 
 																				limitVal=0.05){
+	
+	#require(RCytoscape)
+	#require(rBiopaxParser)
 	results = study@results
 	path_detail = study@studyMetaData@paths
 	# 	if(is.null(path_detail$graphite)){
@@ -128,8 +141,8 @@ addPathwayImagesWithSelection<-function(study,
 	 }
 	
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
-	
-	return(results)
+	study@results = results
+	return(study)
 }#addPathwayImagesWithSelection()
 
 pathsAreFromGraphite<-function(stud){

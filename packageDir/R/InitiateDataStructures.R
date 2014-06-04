@@ -313,6 +313,7 @@ getStudyObject<-function(	study.name="",
 													rootFolder="./output/"){
 	
 	if(is.null(resf)) resf = list()
+	
 	settings$defaultSummaryTable=getDefaultSettings()[[1]]
 	
 	if(is.null(geneIdentifierType)) geneIdentifierType = "HUGO"
@@ -344,6 +345,11 @@ isEmpty<-function(val){
 	return(length(val)==0)
 }
 
+#'@title Get all arm descriptions
+#'@description Retreives arm descriptions from the arms slot of a Study object. This thus contains descriptions of all the arms loaded and ready for use. 
+#'@param study A \code{Study} object
+#'@return \code{vector} of study arm descriptions. 
+#'@export
 armDescriptionList<-function(study){
 	desc = names(study@arms$dictionary)
 	return(desc)

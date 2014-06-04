@@ -603,7 +603,6 @@ getEmpP<-function(path,pgm,reps=1000,paths){
 
 startHTMLPlugIns<-function(){
 
-
 	if(!require("hwriterPlus")){
 		print("Trying to install hwriterPlus so that HTML output can be generated")
 		install.packages("hwriterPlus")
@@ -1075,7 +1074,7 @@ toHTML<-function(table_list,
 				for(patsetname in names(eaPatSet)){
 					print("**********************************************************")
 					ePatRoot = paste(fnameroot,curname,patsetname,paste("overlap_analysis/"),sep="/")
-					SaveToHTML(results=eaPatSet[[patsetname]], 
+					SaveToHTML_inner(results=eaPatSet[[patsetname]], 
 										 study_name=patsetname,
 										 fileRoot=ePatRoot,
 										 selNames=names(eaPatSet[[patsetname]]))
@@ -1167,7 +1166,37 @@ toHTML<-function(table_list,
 }
 
 
-SaveToHTML<-function(results,
+#'@title Save results to an HTML page. 
+#'@description Writes data from the  \code{results} slot of a \code{Study} object to an HTML document. 
+#'@param study A \code{Study} object with results sets from one or more study arm. 
+#'@import xtable
+#'@import hwriterPlus
+#'@export
+SaveToHTML<-function(study){
+	if(!require("hwriterPlus")){
+		print("Trying to install hwriterPlus so that HTML output can be generated")
+		install.packages("hwriterPlus")
+		if(require("hwriterPlus")){
+			print("hwriterPlus installed and loaded")
+		} else {
+			stop("could not install hwriterPlus")
+		}
+	}
+	if(!require("xtable")){
+		print("Trying to install hwriterPlus so that HTML output can be generated")
+		install.packages("hwriterPlus")
+		if(require("xtable")){
+			print("xtable installed and loaded")
+		} else {
+			stop("could not install xtable")
+		}
+	}
+	SaveToHTML_inner(study_name=study@studyMetaData@studyName,
+						 results=study@results, 
+						 path_detail=STUDY@studyMetaData@paths)	
+}
+
+SaveToHTML_inner<-function(results,
 										 study_name, 
 										 selNames=NULL,
 										 fileRoot=NULL,
