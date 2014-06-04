@@ -36,12 +36,18 @@ makeStacked<-function(dfin){
 }
 
 
+#loads the drug target data files from drugbank.ca
+#returns two column matrix with columns containing 1) hugo symbols <geneID>  and drug bank internal drug ID <drugID>
 getDrugTargetData<-function(hugo, 
 														fname="./reference_data/drugDB/drugbank/all_target_ids_all.csv"){
 	if(!file.exists(fname)){
 		warning(paste("The drug target database file,",
 									fname,
-									"could not be found.\nData for this file can be downloaded from http://www.drugbank.ca/", 
+									"could not be found.\n",
+									"Data for this file can be downloaded from http://www.drugbank.ca/",
+									"\nFrom the downloads tab/section, download the links for\n",
+									"'Drug Target Identifiers', 'All Drugs'\n",
+									"'and 'Drug Enzyme Identifiers', 'All Drugs'",
 									"\nCurrent working directory:",getwd()))
 		
 		return(NULL)
@@ -85,11 +91,13 @@ getDrugData<-function(drugFname = "./reference_data/drugDB/drugbank/drug_links.c
 		warning(paste("The file,",
 									drugFname,
 									"could not be found.\nData for this file can be downloaded from http://www.drugbank.ca/", 
-									"\nCurrent working directory:",getwd()))
+									"\nBy navigating to DrugBank's 'Downloads' page, 'External Links' tab,",
+									"\nthen clicking the 'Download' button for 'Approved drugs'",
+									"\n\nCurrent working directory:",
+									getwd()))
 		
 		return(NULL)
 	}
-	
 	drugTab = read.table(drugFname, sep=",", header=T, stringsAsFactors=F)
 	return(drugTab)
 }
@@ -103,7 +111,7 @@ test.makeDrugSelectionWorksheet<-function(){
 }
 
 
-addPanelMembership<-function(dmd,dtd,STUDY){
+addPanelMembership<-function(dmd, dtd, STUDY){
 	
 	cat("Adding drug target counts and numbers of panel members")
 	targetTab = as.data.frame(matrix(data=0, nrow=nrow(dmd), 
@@ -111,9 +119,9 @@ addPanelMembership<-function(dmd,dtd,STUDY){
 																	 dimnames=list(dmd$DrugBank.ID, c("Total_targets", "New_Targets"))), 
 														stringsAsFactors=F)
 
-	
 	if(is.null(STUDY@results$functional_drug_screen_summary)){
-		stop("Cannot find summary of drug screen data.\nHas drug screen data been analysed yet?")
+		warning("Cannot find summary of drug screen data.\nHas drug screen data been analysed yet?")
+		return(dmd)
 	}
 	
 	for(dn in dmd$DrugBank.ID){
@@ -322,17 +330,22 @@ appendClincalTrials<-function(dmd, fname="./reference_data/drugDB/exported_study
 	udn = dmd$"Drug name"
 	#for each drug name grep all the rows in the clinical trials data that has that drug name
 	phases = rep("", times=length(udn))
-	cat("Finding trails for all drugs...\n")
+	cat("Finding clinical trails for drugs...\n")
 	pb = txtProgressBar(min=1,max=length(udn), style=3)
 	for(i in 1:length(udn)){
 		dn = udn[i]
 		
-		
-		phases[i] = paste(ctdat$Phases[ grep(pattern=dn, x=ctdat$Interventions, ignore.case=T) ],sep=", ",collapse=", ")
+		rowsWithDrug = grep(pattern=dn, x=ctdat$Interventions, ignore.case=T)
+		drugsTrialPhases = ctdat$Phases[rowsWithDrug] 
+		phaseNums0 = gsub(pattern="Phase ", replacement="", x=drugsTrialPhases)
+		phaseNums = as.numeric(unlist(strsplit(x=phaseNums0, split="[|]")))
+		maxPhase = max(phaseNums, na.rm=T)
+		phases[i] = paste("Phase",maxPhase)
 		setTxtProgressBar(pb, i)
 	}
 	totalTime = proc.time() - ptm
 	out = cbind(dmd, phases)
+	colnames(out)[ncol(out)] <- "Max.Phase.Clinical.Trial"
 	cat("\nFinished appending clinical trial phase (time elapsed:", totalTime[1],"seconds)")
 	return(out)
 }
@@ -374,7 +387,7 @@ importDrugDbData<-function(STUDY){
 #'@title Uses genomic data from the provided Study object to produce a table of pertinent drug-gene associations.
 #'@param STUDY A \code{Study} object
 #'@param pathsToSearch A \code{vector} of pathway names. The set of cellular pathways that is to be searched for drug targets.
-#'@return Spread sheet detailing drug which target pertinent pathways
+#'@return Spread sheet relating genes in paths to drugs and clinical trials. 
 #'@export
 makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	
