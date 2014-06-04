@@ -302,6 +302,11 @@ choosePaths<-function(ref="./reference_data/paths/pathMetaData.txt",
 		#check if the path file can be found.. 
 		outreci = which(fullTab$file==path_file)[1]
 		if(is.na(outreci)) outreci = which(basename(fullTab$Original.file.name)==basename(path_file))[1]
+		if(is.na(outreci)) outreci = which(basename(fullTab$file)==basename(path_file))[1]
+		if(is.na(outreci)){
+			warning(paste("Pathway file could not be found.... \nPath file:",path_file,"Files in pathway records:\n",paste(fullTab$file,sep="\n",collapse="\n")))
+			return(choosePaths())
+		} 
 		outRecord = fullTab[outreci,]
 	}
 	return(outRecord)
@@ -692,16 +697,7 @@ toGSEAformat<-function(bip, psetName){
 
 
 
-test.loadPathsAsSets<-function(){
-	
-	fname1 = "./reference_data/paths/Reactome 2013.12.27 18.00.18.txt"
-	psets1 = loadPathsAsSets(firstGeneColum=3, fname=fname1)
-	
-	fname2 = "./reference_data/paths/Reactome 2013.12.27 18.01.56.txt"
-	psets2 = loadPathsAsSets(firstGeneColum=3, fname=fname2)
-	
-	checkEquals(target=psets1, current=psets2)
-}
+
 
 #loadPathsAsSets()
 # loads paths from file in this format: <path name><\t><gene><space><gene>....
