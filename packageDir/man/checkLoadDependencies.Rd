@@ -1,10 +1,10 @@
 \name{checkLoadDependencies}
 \alias{checkLoadDependencies}
-\title{checkLoadDependencies}
+\title{checks for and loads all needed dependencies.}
 \usage{
 checkLoadDependencies()
 }
 \description{
-checkLoadDependencies
+checks for and loads all needed dependencies.
 }
 

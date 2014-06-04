@@ -1,6 +1,6 @@
 \name{addCorrections}
 \alias{addCorrections}
-\title{addCorrections()}
+\title{Function to add corrections to the corrections file. Internal, used by corsym to coordinate symbol corrections.}
 \usage{
 addCorrections(new_corrections,
   correctionsfile = "./reference_data/gene_symbol_corrections_list.txt",
