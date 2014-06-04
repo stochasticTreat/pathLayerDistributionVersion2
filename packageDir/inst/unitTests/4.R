@@ -8,3 +8,5 @@ test.addPidColumn<-function(){
 	checkEquals(target=c("TCGA.AB.2988","TCGA.AB.2989"), current=as.character(dfout$pid))
 	
 }
+
+

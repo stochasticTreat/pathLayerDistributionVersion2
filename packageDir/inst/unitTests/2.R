@@ -2,7 +2,7 @@
 
 makeRandomPgm<-function(npat=5, probabilities=c(1,4), targetPath="ABCA transporters in lipid homeostasis"){
 	
-	pths = getTestPaths()
+	pths = getDefaultPaths()
 	genes = getGenesFromPaths(pids=targetPath, STUDY=pths)
 	
 	patients = paste("p", 1:npat, sep="")
@@ -57,7 +57,7 @@ test.summaryTable<-function(){
 	load(file=testStudyObjectFileNamesomatic, verbose=T)
 	
 	stemp = getStudyObject()
-	stemp@studyMetaData@paths = getTestPaths()
+	stemp@studyMetaData@paths = getDefaultPaths()
 	
 	stResSomatic = summaryTable(study=stemp,
 															settings=amlSom$settings,
@@ -97,7 +97,7 @@ test.coverage.summaryTable<-function(){
 	load(file=testStudyObjectFileNamesomatic, verbose=T)
 	
 	stemp = getStudyObject()
-	stemp@studyMetaData@paths = getTestPaths()
+	stemp@studyMetaData@paths = getDefaultPaths()
 	
 	stResFunctional = summaryTable(study=stemp, 
 															coverageDataSetDescription="Drug screen coverage",
@@ -133,7 +133,7 @@ test.coverage.summaryTable<-function(){
 test.matchPath.SummayTable<-function(){
 	
 	stemp = getStudyObject()
-	stemp@studyMetaData@paths = getTestPaths()
+	stemp@studyMetaData@paths = getDefaultPaths()
 	
 	targetPath="ABCA transporters in lipid homeostasis"
 	pgm1=makeRandomPgm(npat=6, probabilities=c(1,4),targetPath=targetPath)

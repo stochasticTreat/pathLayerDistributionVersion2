@@ -83,7 +83,7 @@ test.multiRunFromSettings<-function(){
 	save(sshel, file=studyFname, compress=T)
 
 	load(file=studyFname, verbose=T) #loads sshel into namespace
-	sshel@studyMetaData@paths = getTestPaths()
+	sshel@studyMetaData@paths = getDefaultPaths()
 	
 
 	study_res = multiRunFromSettings(study=STUDY, incSettingsTable=incSettingsTable, incArmName=incArmName)
@@ -326,20 +326,17 @@ BangForBuck<-function(darkPaths, path_detail){
 
 #next, report which of the pathways interact with 
 
-
-DataSummary<-function(results){
 #'@title Display summaries of loaded data. 
 #'@description prints to the screen summary statistics for data sets from each data arm. 
 #'@param study A \code{Study} object. 
 #'@export
-#'@example
-#'	pths = getTestPaths()#path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt",force=T)
-#'	teststudy = getStudyObject(study.name="testerStudy", 
-#'														 path_detail=pths,
-#'														 settings=NULL,
-#'														 GeneIdentifierLookup=pths$HUGOtable)
-#'
-#'	DataSummary(teststudy)
+#pths = getPaths("Reactome.2014.04.06.12.52.27.txt") #path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt",force=T)
+#	teststudy = getStudyObject(study.name="testerStudy", 
+#														 path_detail=pths,
+#														 settings=NULL,
+#														 GeneIdentifierLookup=pths$HUGOtable)
+#
+#	DataSummary(teststudy)
 DataSummary<-function(study){
 	results=study@results
 	cat("\nDisplaying summaries for all loaded data:\n")
@@ -373,7 +370,6 @@ bmerge<-function(x,y){
 	return(out)
 }
 
-compareSources<-function(results=results){
 #'@title Allows comparrison of summary statistics for all loaded aberration data types. 
 #'@description The function examines and compares the pathway summaries for all loaded aberration data types
 #'@param study A \code{Study} object. More than one aberration data type needs to have been loaded before this function is run. 
@@ -384,10 +380,10 @@ compareSources<-function(study){
 	#returns:	 Two item list: list(outtable=outtable, results=results)
 	#							outtable slot: 	table containing comparisons of aberration data
 	#							results slot:		the original results list object
-	if(is.null(results[["combined_aberrations_summary"]])){
-		results[["combined_aberrations_summary"]] = combineAberrationTypes(results)
+	if(is.null(study@results[["combined_aberrations_summary"]])){
+		study@results[["combined_aberrations_summary"]] = combineAberrationTypes(study=study)
 	}
-	
+	results = study@results
 	cat("\nSelecting columns for output table..\n")
 	#columns in output: <the overall analysis> <number of nodes contributed from each> <pvalue from each
 	#put first 10 columns of the  onto the outtable
@@ -414,7 +410,12 @@ compareSources<-function(study){
 	#reorder outtable by the proportion aberrational: 
 	outtable = outtable[order(outtable[,5],decreasing=F),]
 	cat("\nReturning from compareSources()\n")
-	return(list(outtable=outtable, results=results))
+	
+	cat("\nComparrison of aberration sources complete. \n")
+	study@results = result
+	study@results[["Aberration data type comparrison"]] = outtable
+	
+	return(study)
 }#compareSources
 
 combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
@@ -770,96 +771,97 @@ getPatientSubset<-function(){
 	}
 	return(aberration_patient_subset)
 }#getPatientSubset
-
-#'@title checkLoadDependencies
-#'@import HGNChelper
-#'@import RCurl
-#'@import RCytoscape
-#'@import VennDiagram
-#'@import biomaRt
-#'@import calibrate
-#'@import ggplot2
-#'@import graphite
-#'@import hwriterPlus
-#'@import methods
-#'@import plyr
-#'@import rBiopaxParser
-#'@import xtable
-#'@import RUnit
-#'@import tcltk
-#'@import tools
-checkLoadDependencies<-function(){
-	
-	if (!require("ggplot2", character.only=T)){
-		mess = paste0("Library named \'","ggplot2","\' is missing")
-		stop(mess)
-	}
-	if (!require("methods", character.only=T)){
-		mess = paste0("Library named \'","methods","\' is missing")
-		stop(mess)
-	}
-	if (!require("hwriterPlus", character.only=T)){
-		mess = paste0("Library named \'","hwriterPlus","\' is missing")
-		stop(mess)
-	}
-	
-	if (!require("xtable", character.only=T)){
-		mess = paste0("Library named \'","xtable","\' is missing")
-		stop(mess)
-	}
-	
-	if (!require("graph", character.only=T)){
-		mess = paste0("Library named \'","graph","\' is missing")
-		stop(mess)
-	}
-	
-	if (!require("plyr", character.only=T)){
-		mess = paste0("Library named \'","plyr","\' is missing")
-		stop(mess)
-	}
-	
-	if (!require(HGNChelper)){
-		mess = paste0("Library named \'","HGNChelper","\' is missing")
-		stop(mess)
-	}
-	
-	if (!require("tools", character.only=T)){
-		mess = paste0("Library named \'","tools","\' is missing")
-		stop(mess)
-	}
-	if (!require("biomaRt", character.only=T)){
-		mess = paste0("Library named \'","biomaRt","\' is missing")
-		stop(mess)
-	}
-	
-	if (!require(RCurl)){
-		mess = paste0("Library named \'","RCurl","\' is missing")
-		stop(mess)
-	}
-	if (!require("calibrate", character.only=T)){
-		mess = paste0("Library named \'","calibrate","\' is missing")
-		stop(mess)
-	}
-	if (!require("VennDiagram", character.only=T)){
-		mess = paste0("Library named \'","VennDiagram","\' is missing")
-		stop(mess)
-	}
-	if (!require("tcltk", character.only=T)){
-		mess = paste0("Library named \'","tcltk","\' is missing")
-		stop(mess)
-	}
-	if (!require("RCytoscape", character.only=T)){
-		mess = paste0("Library named \'","RCytoscape","\' is missing")
-		stop(mess)
-	}
-	if (!require("graphite", character.only=T)){
-		mess = paste0("Library named \'","graphite","\' is missing")
-		stop(mess)
-	}
-	if (!require("rBiopaxParser", character.only=T)){
-		mess = paste0("Library named \'","rBiopaxParser","\' is missing")
-		stop(mess)
-	}
-	
-}
+# 
+# #'@title checks for and loads all needed dependencies. 
+# #'@import HGNChelper
+# #'@import RCurl
+# #'@import RCytoscape
+# #'@import VennDiagram
+# #'@import biomaRt
+# #'@import calibrate
+# #'@import ggplot2
+# #'@import graphite
+# #'@import hwriterPlus
+# #'@import methods
+# #'@import plyr
+# #'@import rBiopaxParser
+# #'@import xtable
+# #'@import RUnit
+# #'@import tcltk
+# #'@import tools
+# #'@export
+# checkLoadDependencies<-function(){
+# 	
+# 	if (!require("ggplot2", character.only=T)){
+# 		mess = paste0("Library named \'","ggplot2","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("methods", character.only=T)){
+# 		mess = paste0("Library named \'","methods","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("hwriterPlus", character.only=T)){
+# 		mess = paste0("Library named \'","hwriterPlus","\' is missing")
+# 		stop(mess)
+# 	}
+# 	
+# 	if (!require("xtable", character.only=T)){
+# 		mess = paste0("Library named \'","xtable","\' is missing")
+# 		stop(mess)
+# 	}
+# 	
+# 	if (!require("graph", character.only=T)){
+# 		mess = paste0("Library named \'","graph","\' is missing")
+# 		stop(mess)
+# 	}
+# 	
+# 	if (!require("plyr", character.only=T)){
+# 		mess = paste0("Library named \'","plyr","\' is missing")
+# 		stop(mess)
+# 	}
+# 	
+# 	if (!require(HGNChelper)){
+# 		mess = paste0("Library named \'","HGNChelper","\' is missing")
+# 		stop(mess)
+# 	}
+# 	
+# 	if (!require("tools", character.only=T)){
+# 		mess = paste0("Library named \'","tools","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("biomaRt", character.only=T)){
+# 		mess = paste0("Library named \'","biomaRt","\' is missing")
+# 		stop(mess)
+# 	}
+# 	
+# 	if (!require(RCurl)){
+# 		mess = paste0("Library named \'","RCurl","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("calibrate", character.only=T)){
+# 		mess = paste0("Library named \'","calibrate","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("VennDiagram", character.only=T)){
+# 		mess = paste0("Library named \'","VennDiagram","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("tcltk", character.only=T)){
+# 		mess = paste0("Library named \'","tcltk","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("RCytoscape", character.only=T)){
+# 		mess = paste0("Library named \'","RCytoscape","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("graphite", character.only=T)){
+# 		mess = paste0("Library named \'","graphite","\' is missing")
+# 		stop(mess)
+# 	}
+# 	if (!require("rBiopaxParser", character.only=T)){
+# 		mess = paste0("Library named \'","rBiopaxParser","\' is missing")
+# 		stop(mess)
+# 	}
+# 	
+# }
 

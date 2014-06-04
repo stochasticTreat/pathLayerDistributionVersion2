@@ -17,3 +17,14 @@ test.checkForceRowNames<-function(){
 }
 
 
+test.loadPathsAsSets<-function(){
+	
+	#fname1 = "./reference_data/paths/Reactome.2013.12.27.18.00.18.txt"
+	#psets1 = loadPathsAsSets(firstGeneColum=3, fname=fname1)
+	
+	fname2 = "./reference_data/paths/Reactome.2014.04.06.12.52.27.txt"
+	psets2 = loadPathsAsSets(firstGeneColum=3, fname=fname2)
+	
+	checkEquals(target=1459, current=length(psets2))
+	checkEquals(target=4, current=length(psets2[[1]]))
+}

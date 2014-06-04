@@ -3,6 +3,9 @@ library('RUnit')
 getTestPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.27.txt", package = "packageDir"), 
 											 forceReload=F){
 	
+	if(!exists("testEnv")){
+		testEnv<<-new.env(parent=globalenv())
+	}
 	
 	if( !forceReload & exists("testEnv") ){
 		if(exists("path_detail",envir=testEnv)){
@@ -10,8 +13,7 @@ getTestPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.
 		}
 	}
 	
-	testEnv<<-new.env(parent=globalenv())
-	testEnv$path_detail<-getPaths(path_file=path_file)
+	testEnv$path_detail<-getPaths(path_file=path_file, verbose=F)
 	return(testEnv$path_detail)
 	
 }
