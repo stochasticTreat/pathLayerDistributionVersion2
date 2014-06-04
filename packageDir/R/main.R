@@ -190,7 +190,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 							 path_detail=path_detail)
 			}
 		}else if(sel=="Create network diagrams for affected pathways"){
-			STUDY@results = addPathwayImagesWithSelection(study=STUDY)
+			STUDY = addPathwayImagesWithSelection(study=STUDY)
 		}else if(sel=="Change study name"){
 			STUDY = changeStudyNamePrompt(study=STUDY)
 		}else if(sel=="Clear all loaded settings"){
