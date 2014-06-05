@@ -7,9 +7,15 @@ prepDrugSelect<-function(){
 	source(serverf)
 }
 
-runShinyMain<-function(STUDY=STUDY){
+#'@title Run the drug selection worksheet.
+#'@description Running this function will open up an HTML page allowing interactive selection and exploration of targeted drugs. Information is supplied to link genes to drugs and filter by clinical trial phase, gene mutation in a cohort and cellular pathways. 
+#'@param STUDY A \code{Study} object into which experimental data has been loaded. 
+#'@return The \code{data.frame} displayed in the drug selection worksheet, relating drug targets, drugs, clinical trial phase, and other data. 
+#'@export
+#'@import shiny
+runDrugWorksheet<-function(STUDY=STUDY){
 	print("inside runShinyMain")
-	library("shiny")
+	# library("shiny")
 	# setwd("..")
 	
 	bfbTargDrugData=NULL
