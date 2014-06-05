@@ -303,6 +303,9 @@ getDefaultSettings<-function(){
 #'@param geneIdentifierType String, a one word name of the type of gene identifiers used (ex : HUGO, Uniprot)
 #'@param rootFolder character string. The file path where the study should be saved. 
 #'@export
+#'@examples
+#'study = getStudyObject() #this will give a study object with no pathways loaded (pathways must first be loaded for analyses to take place)
+#'study2 = getStudyObject(study.name="testStudy", path_detail=getDefaultPaths())
 getStudyObject<-function(	study.name="",
 												 	settings=list(), 
 													resf=list(), 

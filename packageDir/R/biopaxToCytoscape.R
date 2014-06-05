@@ -687,6 +687,16 @@ getPathwaysRecords<-function(pwrecord.fileName=NULL){
 		return(pwrecord2)
 }
 
+
+
+#'@title Download biopax files for reactome pathways. 
+#'@description Attempts to download biopax files for reactome pathways. First, pathway's individual database identifiers are obtained from bioMART, then restful calls are made to Reactome's restful interface. A record of successfully downloaded pathways is made in the file "./reference_data/paths/biopax/record_of_biopax_pathways.txt" so that pathways will not be repeatedly downloaded. 
+#'@param study A \code{Study} object. 
+#'@param pathNames The names of the pathways the program should attempt to download. 
+#'@return Character vector containing the names of any pathways that could not be downloaded.
+#'@export
+#'@import RCurl
+#'@import biomaRt
 getReactomeBiopax<-function(study, pathNames){
 	
 	biopax.dir = "./reference_data/paths/biopax/"
@@ -1715,45 +1725,45 @@ getProteinReferenceTable<-function(nodeIDs, df){
 	return(protrefs[,c("protein_id","property_value")])
 }
 
-allowUserToFixBiopaxNames<-function(nodeTable, df, STUDY, pname){
-	#for each non-matched name from the path, give the user
-	#the genes remainig in the path
-	#the set of alternate names
-	#an option to input a new name
-	pRem = setdiff(pathGenes, nodeTable$displayName)
-	if(!length(pRem)) return(nodeTable)
-	cat("\nThese genes in the current pathway do not have exact matches in the biopax file:\n")
-	print(prem)
-	symbolCorrectionsTable = matrix(data="",nrow=0,ncol=2)
-	colnames(symbolCorrectionsTable)<-c("oldSymbol", "newSymbol")
-	
-	for(i in 1:length(pRem)){#for each index in the genes remaining in the pathway
-		cat("Does the gene symbol,", pRem[i], ", from the current pathway\n",
-				pname,
-				"\nmatch any of the above described nodes in the biopax file?")
-		print()
-		
-		uin = promptNumeric(prompt="If you find a match, enter the number corresponding to the match here.\nIf a match cannot be found enter a blank line.")
-		if(uin==""){
-			#if the user enters a blank, dont make a correction
-		}else{
-			#if the user enters a number make the corresponding correction
-			badSym = nonHugoSymbols[uin]
-			nonHugoSymbols[uin] = pRem[i]
-			#then add to symbol corrections table
-			symbolCorrectionsTable = rbind(symbolCorrectionsTable, c(badSym, nonHugoSymbols[uin]))
-		}
-	}
-	if(nrow(symbolCorrectionsTable)){
-		cat("\nThis is the list of symbols that were corrected\n")
-		print(symbolCorrectionsTable)
-		if(readline("Would you like to save this set of gene symbol corrections? \n(enter y to save, anything else not to save)")=="y"){
-			#save the new corrections to the main symbol correction table
-			addCorrections(new_corrections=symbolCorrectionsTable,correctionsfile="./testCorrectionsFile.txt")
-		}
-		
-	}
-}
+# allowUserToFixBiopaxNames<-function(nodeTable, df, STUDY, pname){
+# 	#for each non-matched name from the path, give the user
+# 	#the genes remainig in the path
+# 	#the set of alternate names
+# 	#an option to input a new name
+# 	pRem = setdiff(pathGenes, nodeTable$displayName)
+# 	if(!length(pRem)) return(nodeTable)
+# 	cat("\nThese genes in the current pathway do not have exact matches in the biopax file:\n")
+# 	print(prem)
+# 	symbolCorrectionsTable = matrix(data="",nrow=0,ncol=2)
+# 	colnames(symbolCorrectionsTable)<-c("oldSymbol", "newSymbol")
+# 	
+# 	for(i in 1:length(pRem)){#for each index in the genes remaining in the pathway
+# 		cat("Does the gene symbol,", pRem[i], ", from the current pathway\n",
+# 				pname,
+# 				"\nmatch any of the above described nodes in the biopax file?")
+# 		print()
+# 		
+# 		uin = promptNumeric(prompt="If you find a match, enter the number corresponding to the match here.\nIf a match cannot be found enter a blank line.")
+# 		if(uin==""){
+# 			#if the user enters a blank, dont make a correction
+# 		}else{
+# 			#if the user enters a number make the corresponding correction
+# 			badSym = nonHugoSymbols[uin]
+# 			nonHugoSymbols[uin] = pRem[i]
+# 			#then add to symbol corrections table
+# 			symbolCorrectionsTable = rbind(symbolCorrectionsTable, c(badSym, nonHugoSymbols[uin]))
+# 		}
+# 	}
+# 	if(nrow(symbolCorrectionsTable)){
+# 		cat("\nThis is the list of symbols that were corrected\n")
+# 		print(symbolCorrectionsTable)
+# 		if(readline("Would you like to save this set of gene symbol corrections? \n(enter y to save, anything else not to save)")=="y"){
+# 			#save the new corrections to the main symbol correction table
+# 			addCorrections(new_corrections=symbolCorrectionsTable,correctionsfile="./testCorrectionsFile.txt")
+# 		}
+# 		
+# 	}
+# }
 
 
 #'@title getAlternateNames

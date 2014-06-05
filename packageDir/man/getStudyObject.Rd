@@ -31,4 +31,8 @@ getStudyObject(study.name = "", settings = list(), resf = list(),
 \description{
 Function to initilize a new study object.
 }
+\examples{
+study = getStudyObject() #this will give a study object with no pathways loaded (pathways must first be loaded for analyses to take place)
+study2 = getStudyObject(study.name="testStudy", path_detail=getDefaultPaths())
+}
 

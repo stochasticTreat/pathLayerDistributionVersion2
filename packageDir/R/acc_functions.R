@@ -450,6 +450,7 @@ test.summarize_by<-function(){
 #'@param barPlotTitle The title that should be given to the bar plot
 #'@param left_margin_factor A numerical factor expanding the left margin of the bar plot. Used to adjust in situations where there is insufficient room to display the text of each bar's label
 #'@return A two column data.frame with columns "types", the different levels and "counts", the different numer of times each level occurs
+#'@import ggplot2
 summarize_by<-function(col, display=F, barPlotTitle="Counts across types", left_margin_factor=1)
 {
 	
@@ -600,7 +601,7 @@ getEmpP<-function(path,pgm,reps=1000,paths){
 # Number of unique pathways targeted by aberrations or drugs : 							98 
 # List of genes targeted, but not found in current set of pathways
 # AAK1 ACVRL1 ADCK3 ADCK4 ALK ANKK1 NUAK1 AURKB AURKC AXL BMP2K BLK BMX BRSK1 BRSK2 CAMK1 CAMK1D CAMK1G CDK11B CDK11A CDK19 CDK3 CDK8 CDK9 CIT CLK1 CLK2 CLK3 CLK4 DCLK1 DCLK2 DCLK3 DDR1 DDR2 DMPK CDC42BPG STK17A STK17B DYRK1B MAPK6 MAPK4 MAPK15 FRK GAK LATS1 LATS2 STK10 LTK MAP4K5 MARK1 MARK2 MARK3 MARK4 MELK MERTK MAP3K9 MAP3K10 CDC42BPA CDC42BPB MST1 STK24 MST4 MUSK MYO3A MYO3B STK38L NEK1 NEK2 NEK5 NEK6 NEK7 NEK9 CDK16 CDK17 CDK18 CDK14 PIM3 PKN1 PKN2 PLK3 PLK4 PRKD1 PRKD2 PRKD3 PTK6 RIOK3 ROS1 MYLK4 NUAK2 SIK1 SIK2 SRMS SRPK1 SRPK2 STK16 STK33 TESK1 TIE1 TLK1 TLK2 TNIK TNK1 TNK2 TNNI3K TSSK1B TYRO3 STK32B STK32C STK25 ZAK
-
+# 
 startHTMLPlugIns<-function(){
 
 	if(!require("hwriterPlus")){
@@ -610,6 +611,15 @@ startHTMLPlugIns<-function(){
 			print("hwriterPlus installed and loaded")
 		} else {
 			stop("could not install hwriterPlus")
+		}
+	}
+	if(!require("hwriter")){
+		print("Trying to install hwriterPlus so that HTML output can be generated")
+		install.packages("hwriter")
+		if(require("hwriter")){
+			print("hwriter installed and loaded")
+		} else {
+			stop("could not install hwriter")
 		}
 	}
 	if(!require("xtable")){
@@ -702,7 +712,7 @@ htmlSummary<-function(sumset,
 	cat("\nFile name of HTML summary:\n")
 	print(fname)
 	
-	startHTMLPlugIns()
+	#startHTMLPlugIns()
 	targetType=sumset$summarystats[2,2]
 	headings = c()
 	
@@ -970,12 +980,12 @@ toHTML<-function(table_list,
 								 fname="./test.html",
 								 plimit=.05,
 								 maxrows=100,
-								 reorder=NULL, 
+								 reorderTables=NULL, 
 								 pagetitle=NULL, 
 								 limit_col=NULL, 
 								 path_detail=NULL){
 	cat("____________________________Saving HTML page to :",fname,"\n")
-	startHTMLPlugIns()
+	#startHTMLPlugIns()
 	fnameroot = paste(strsplit(fname, split="/")[[1]][1:(length(strsplit(fname, split="/")[[1]])-1)],sep="/",collapse="/")
 	print(fnameroot)
 	print(fname)
@@ -1097,7 +1107,7 @@ toHTML<-function(table_list,
 							 table_list=table_list[[i]], 
 							 limit_col=limit_col,
 							 pagetitle=paste(pagetitle, curname,sep=":"),
-							 reorder=reorder,
+							 reorderTables=reorderTables,
 							 fname=listfname, 
 							 plimit=plimit, 
 							 maxrows=maxrows)
@@ -1123,9 +1133,9 @@ toHTML<-function(table_list,
 								curindex = as.double(curtab[,c])<plimit
 								tmptab=curtab[curindex,]
 								curorder = 1:length(tmptab)
-								if(!is.null(reorder)){
-									print("reorder")
-									curorder = order(tmptab[,c],decreasing=reorder)
+								if(!is.null(reorderTables)){
+									print("reorderTables")
+									curorder = order(tmptab[,c],decreasing=reorderTables)
 								}
 								colnames(tmptab)<-gsub(pattern="_",replacement=" ",x=colnames(tmptab))
 								hwrite(paste(curname,"limited to ",c,"<",as.character(plimit),"(", as.character(nrow(tmptab)), "records exist, showing top", as.character(min(maxrows,nrow(tmptab))) ," )"), p, heading=2)
@@ -1140,7 +1150,7 @@ toHTML<-function(table_list,
 					}else{ #if there are no columns to limit the output by
 						
 						curtab = curtab[1:min(maxrows,nrow(curtab)),,drop=F]#limit the number of rows
-						if(!is.null(reorder)){#order the rows if wanted
+						if(!is.null(reorderTables)){#order the rows if wanted
 							curtab = curtab[order(curtab[,5],decreasing=T),,drop=F]
 						}
 						title = paste("(", as.character(nrow(initial_table)), "records, showing top", as.character(nrow(curtab)) ,")")
@@ -1171,29 +1181,30 @@ toHTML<-function(table_list,
 #'@param study A \code{Study} object with results sets from one or more study arm. 
 #'@import xtable
 #'@import hwriterPlus
+#'@import hwriter
 #'@export
 SaveToHTML<-function(study){
-	if(!require("hwriterPlus")){
-		print("Trying to install hwriterPlus so that HTML output can be generated")
-		install.packages("hwriterPlus")
-		if(require("hwriterPlus")){
-			print("hwriterPlus installed and loaded")
-		} else {
-			stop("could not install hwriterPlus")
-		}
-	}
-	if(!require("xtable")){
-		print("Trying to install hwriterPlus so that HTML output can be generated")
-		install.packages("hwriterPlus")
-		if(require("xtable")){
-			print("xtable installed and loaded")
-		} else {
-			stop("could not install xtable")
-		}
-	}
+# 	if(!require("hwriterPlus")){
+# 		print("Trying to install hwriterPlus so that HTML output can be generated")
+# 		install.packages("hwriterPlus")
+# 		if(require("hwriterPlus")){
+# 			print("hwriterPlus installed and loaded")
+# 		} else {
+# 			stop("could not install hwriterPlus")
+# 		}
+# 	}
+# 	if(!require("xtable")){
+# 		print("Trying to install hwriterPlus so that HTML output can be generated")
+# 		install.packages("hwriterPlus")
+# 		if(require("xtable")){
+# 			print("xtable installed and loaded")
+# 		} else {
+# 			stop("could not install xtable")
+# 		}
+# 	}
 	SaveToHTML_inner(study_name=study@studyMetaData@studyName,
 						 results=study@results, 
-						 path_detail=STUDY@studyMetaData@paths)	
+						 path_detail=study@studyMetaData@paths)	
 }
 
 SaveToHTML_inner<-function(results,
@@ -1237,9 +1248,9 @@ SaveToHTML_inner<-function(results,
 			sumfname = paste(root2,n,"_ViewableSummary.html",sep="")
 			# 			readline("enter to continue")
 			htmlSummary(path_detail=path_detail, sumset=ssum, fname=sumfname, pagetitle=n)
-			htmlPerPatient(results, summ=n, fileroot=root2, overlap=F, path_detail=path_detail)
+			htmlPerPatient(results=results, summ=n, fileroot=root2, overlap=F, path_detail=path_detail)
 		}else if(grepl(pattern="overlap_analysis$", x=n, ignore.case=T)){
-			print("chose overlap")
+			print("overlap analysis selected")
 			
 			root2 = paste(fileRoot,"/",n,"/",sep="")
 			dir.create(root2,recursive=T,showWarnings=F)
@@ -1252,23 +1263,6 @@ SaveToHTML_inner<-function(results,
 						 fname=outHTMLname, 
 						 maxrows=10000, 
 						 pagetitle=n)
-		}else if(grepl(pattern="overlap_analysis_each_patient$", x=n, ignore.case=T)){
-			
-			root2 = paste(fileRoot,"/", n, "/", sep="")
-			for(pn in names(summ)){
-				print(pn)
-				print(root2)
-				root3 =paste(root2, pn, "/overlap_analysis/", sep="")
-				print(root3)
-				dir.create(root3, recursive=T, showWarnings=F)
-				outHTMLname = paste(root3, "overlap_analysis.html",sep="")
-				print(outHTMLname)
-				# 				readline("enter to continue")
-				#for each name in overlap analysis each patient
-				#pull the patient
-				curpat = summ[[p]]
-				toHTML(path_detail=path_detail, table_list=curpat, fname=outHTMLname, maxrows=10000, pagetitle=n)
-			}
 		}
 	}
 }
@@ -1289,8 +1283,25 @@ htmlPerPatient<-function(results, summ, fileroot, overlap=T, path_detail=NULL){
 }
 
 #twoHistOnePlot
-#puts two histograms on the same plot, shows each with a different color, and overlap with a third color
-twoHistOnePlot<-function(dataset1, dataset2, frequency_not_density=T, main_title="main_title not set",x_label="x_label not set", y_label="Frequency",legend_titles=c("dataset 1","dataset 2"),breaks=c(30,30)){
+#
+#'@title Puts two histograms on the same plot.
+#'@description Puts two histograms on the same plot, shows each with a different color, and overlap with a third color.
+#'@param dataset1 A numeric data set; \code{data.frame or matrix} with one column.
+#'@param dataset2 A numeric data set; \code{data.frame or matrix} with one column.
+#'@param frequency_not_density Depricated. 
+#'@param main_title The main title for the plot.
+#'@param x_label The label to be put along the x axis. 
+#'@param y_label The label to be put along the y axis. 
+#'@param legend_titles Character vector, length 2, giving the names of the data in dataset1 and dataset2. 
+#'@param breaks Depricated. 
+#'@import ggplot2
+twoHistOnePlot<-function(dataset1, dataset2, 
+												 frequency_not_density=T, 
+												 main_title="main_title not set",
+												 x_label="x_label not set", 
+												 y_label="Frequency",
+												 legend_titles=c("dataset 1","dataset 2"),
+												 breaks=c(30,30)){
 	
 	#first combine the two data sets
 	colnames(dataset1)<-NULL

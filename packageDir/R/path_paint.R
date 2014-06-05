@@ -1,18 +1,18 @@
 #paint_path.R
 
 
-#this function takes patient gene matracies, 
-#then, via the graphite and RCytoscape packages, 
-#outputs a path to cytoscape
-attributeDataSet<-function(g, attributeName){
-	
-	#first get the names of the nodes
-	
-	#nodeData(<graph_object>, <node_name>, <attribute_name>) = value
-	nodeData(g, "A", "lfc") = -3
-	nodeData(g, "B", "lfc") = 0
-	nodeData(g, "C", "lfc") = 3	
-}
+# #this function takes patient gene matracies, 
+# #then, via the graphite and RCytoscape packages, 
+# #outputs a path to cytoscape
+# attributeDataSet<-function(g, attributeName){
+# 	
+# 	#first get the names of the nodes
+# 	
+# 	#nodeData(<graph_object>, <node_name>, <attribute_name>) = value
+# 	nodeData(g, "A", "lfc") = -3
+# 	nodeData(g, "B", "lfc") = 0
+# 	nodeData(g, "C", "lfc") = 3	
+# }
 
 test.checkCurrentBiopax<-function(){
 	biopax.dir = "./reference_data/paths/biopax/"
@@ -82,11 +82,13 @@ clean.biopaxRecords<-function(pwrecord){
 #'@return A \code{Study} object will be returned with file names of network diagrams added to the imageSlots slot of the appropriate results sets. 
 #'@import RCytoscape
 #'@import rBiopaxParser
+#'@import graphite
+#'@import graph
 #'@export
 addPathwayImagesWithSelection<-function(study, 
 																				limitCol="hyperg_p_w_FDR", 
 																				limitVal=0.05){
-	
+	study_name = study@studyMetaData@studyName
 	#require(RCytoscape)
 	#require(rBiopaxParser)
 	results = study@results
@@ -126,7 +128,8 @@ addPathwayImagesWithSelection<-function(study,
 			results = paintOverlap(results=results, paths_detail=path_detail)
 		}else{
 			dir.create(path=paste("./output/", study_name,"/",resSetName,"/","imageSlots/", sep=""),recursive=T,showWarnings=F)
-			results=addPathwayImages(results=results, 
+			results=addPathwayImages(study_name=study_name, 
+															 results=results, 
 															 path_detail=path_detail,
 															 resSetName=resSetName,
 															 sigtest=limitCol, 
@@ -151,9 +154,7 @@ pathsAreFromGraphite<-function(stud){
 
 
 loadGraphitePaths<-function(stud){
-	
 
-		
 	repset = list(Reactome=reactome, NCI=nci, KEGG=kegg)
 	
 	selPaths = repset[[stud@studyMetaData@paths$name]]
@@ -212,6 +213,7 @@ extractPathNames <- function (resSetName, study, limitCol, limitVal) {
 }
 
 addPathwayImages<-function(results, 
+													 study_name,
 													 path_detail=path_detail, 
 													 sigtest="hyperg_p_w_FDR", 
 													 siglimit=0.05,

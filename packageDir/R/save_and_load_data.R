@@ -542,11 +542,12 @@ checkSetDirectoryStructure<-function(verbose=T){
 #'@param study.name The name of the study to be initiated
 #'@return The initiated Study object. 
 #'@export
+#'@import HGNChelper
 initiateStudy<-function(studyFolderName=NULL, 
 												path_detail=NULL, 
 												root="./output", 
 												study.name=NULL){
-	require(HGNChelper)
+
 	cat("\n---------------------Initilizing Study---------------------\n")
 	res1 = list()
 	studyNameLine="s"
@@ -610,8 +611,9 @@ test.selectStudy<-function(){
 #allows interactive selection of a study file
 #	takes: <optional> root folder of study
 #returns: nested list structre (can subsequently be processed into a study object)
+#'@import tcltk
 selectStudy<-function(root = "./output"){
-	require(tcltk)
+	#require(tcltk)
 	dc = dir(root)
 	while(T){
 		if( !length(dc) ){

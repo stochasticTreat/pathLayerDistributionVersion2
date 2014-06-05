@@ -772,24 +772,7 @@ getPatientSubset<-function(){
 	return(aberration_patient_subset)
 }#getPatientSubset
 # 
-# #'@title checks for and loads all needed dependencies. 
-# #'@import HGNChelper
-# #'@import RCurl
-# #'@import RCytoscape
-# #'@import VennDiagram
-# #'@import biomaRt
-# #'@import calibrate
-# #'@import ggplot2
-# #'@import graphite
-# #'@import hwriterPlus
-# #'@import methods
-# #'@import plyr
-# #'@import rBiopaxParser
-# #'@import xtable
-# #'@import RUnit
-# #'@import tcltk
-# #'@import tools
-# #'@export
+
 # checkLoadDependencies<-function(){
 # 	
 # 	if (!require("ggplot2", character.only=T)){

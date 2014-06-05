@@ -395,9 +395,18 @@ getPatientSubset<-function(patient_gene_matrix, s, verbose=T, subset_id=NULL){
 #takes: pgm: patient gene matrix, verbose flag, optional cutoff score, must be provided if verbose flag is FALSE
 #returns: logic pgm
 
+#'@title Set the cutoff for drug screen score
+#'@description Anything above cutoff will be considered to be drug-sensitive.
+#'@param pgm A patient gene matrix: bipartate graph with patient ids as columns, genes as rows and cell values the drug screen score. 
+#'@param s A settings list object. 
+#'@param verbose A logical flag indicating if additional information should be displayed. 
+#'@param cutoffScore Optional, the score, above which genes will be considered sensitive. If not provided, interactive prompt will be shown to the user. 
+#'@return \code{list} with slots pgm, a logical patient gene matrix and \code{s} the settings list object. 
+#'@import grid
+#'@import gridExtra
 setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
-	require(grid)
-	require(gridExtra)
+	#require(grid)
+	#require(gridExtra)
 	
 	if(!verbose&is.null(cutoffScore)){
 		print("If the verbose argument of setCutoff() is F, the cutoffScore\n argument must be provided with a numberical value")

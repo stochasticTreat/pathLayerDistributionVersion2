@@ -1,6 +1,22 @@
 #pathway_functions.R
 ####################
 
+
+
+#'@title Retreive the default set of cellular pathways. 
+#'@description Retreives the default set of cellular pathways. These are the gene sets for all Reactome pathways as downloaded on 4/6/14 . 
+#'@param path_file string giving the relative or absolute file path to an accessible set of cellular pathways. Set of pathways must first have been recorded in the reference_data/paths/pathMetaData.txt file. 
+#'@return A \code{Path_Detail} object. 
+#'@export
+#'@examples
+#'cellularPathwayGeneSets = getDefaultPaths()
+getDefaultPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.27.txt", package = "packageDir")){
+
+	path_detail_tmp<-getPaths(path_file=path_file, verbose=F)
+	return(path_detail_tmp)
+	
+}
+
 #pathsFromGraphite function
 #takes path name
 #returns nodes as HUGO symbols

@@ -181,7 +181,7 @@ correctByHgncHelper<-function(symbol_set,
 															symtab, 
 															correctionsfile, 
 															verbose=F){
-	require(HGNChelper)
+
 	#1: symbol correct : do nothing
 	#2: symbol incorrect, no correction available : report to user
 	#3: symbol incorrect, simple correction available : correct
@@ -724,10 +724,13 @@ cleanGeneSymbols<-function(genes){
 #'@param curhugofname If interactive gene symbol correction is to be used, this argument should be the file path to the HUGO table as downloaded from genenames.org.
 #'@param verbose Controlls if symbol corrections are to be interactive (if yes, curhugofname file must be supplied as it contains critical information, such as gene symbol status, past identifiers and synonyms)
 #'@return Table of symbols: either a two column data.frame, the hgnc.table provided by HGNChelper, or a data frame as provided by genenames.org. Either of which have a column titled Approved.Symbol which contains official, approved symbols.  
+#'@import HGNChelper
 getHugoSymbols<-function(paths_detail=NULL, 
 												 curhugofname=NULL,#"./reference_data/current_hugo_table_slim.txt",
 												 verbose=T){
+
 	if(is.null(curhugofname)){
+		library("HGNChelper")
 		data("hgnc.table")
 		if(verbose){
 			if(readline("Would you like to use interactive gene symbol correciton? (enter y or n) ")=="n"){

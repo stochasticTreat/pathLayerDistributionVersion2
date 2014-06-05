@@ -20,6 +20,7 @@ RunOverlapAnalysis<-function(settings, study){
 #'@param settings List obejct. This contains the settings used in the overlap analysis. Use getDefaultOverlapSettings()
 #'@return Study object with overlap analysis in results list added or replaced 
 #'@export
+#'@import VennDiagram
 abDrugOverlapAnalysis<-function(study,
 																thresh=0.05,
 																enrich_col="hyperg_p_w_FDR",
