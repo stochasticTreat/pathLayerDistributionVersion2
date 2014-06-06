@@ -40,7 +40,7 @@ PolyPhenFromMaf<-function(mafFname=NULL, outFname=NULL){
 	datf1 = addMappingColumn(datf1)
 	ppcols = makePolyPhenCols(datf1)
 	if(is.null(outFname)){
-		outFname = strsplit(fname, split="/")[[1]][length(strsplit(fname, split="/")[[1]])]
+		outFname = strsplit(mafFname, split="/")[[1]][length(strsplit(mafFname, split="/")[[1]])]
 		outFname = paste("./output/", outFname, ".polyphenInput.txt", sep="")
 	}
 	write.table(x=ppcols, file=outFname, sep=" ", quote=F, row.names=F,col.names=F)
