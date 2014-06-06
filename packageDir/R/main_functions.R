@@ -216,8 +216,13 @@ runArm<-function(armDescription,
 	res = armMain(settings=curSettings, study=study)
 	
 	if(!is.null(res)){
-		study@results[[armName]] = res
-		study@studyMetaData@settings[[armName]] = res$settings
+		if(is.null(res$resTypeName)){
+			study@results[[armName]] = res
+			study@studyMetaData@settings[[armName]] = res$settings
+		}else{#if the arm is generic gene data input arm, there will be something in the resTypeName slot
+			study@results[[res$resTypeName]] = res$summary
+			study@studyMetaData@settings[[res$resTypeName]] = res$settings
+		}
 	}else{
 		cat("\nNothing returned from analysis. Returning to main menu.\n")
 	}
@@ -370,6 +375,7 @@ bmerge<-function(x,y){
 	return(out)
 }
 
+
 #'@title Allows comparrison of summary statistics for all loaded aberration data types. 
 #'@description The function examines and compares the pathway summaries for all loaded aberration data types
 #'@param study A \code{Study} object. More than one aberration data type needs to have been loaded before this function is run. 
@@ -412,7 +418,8 @@ compareSources<-function(study){
 	cat("\nReturning from compareSources()\n")
 	
 	cat("\nComparrison of aberration sources complete. \n")
-	study@results = result
+	
+	study@results = results
 	study@results[["Aberration data type comparrison"]] = outtable
 	
 	return(study)
@@ -576,7 +583,8 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 	return(combined_aberrations_summary)	
 }#combineAberrationTypes2()
 
-combineAberrationTypes<-function(study, s=NULL, results=results, runEachPatient=F, overlapPatients=NULL){
+combineAberrationTypes<-function(study, s=NULL, results=NULL, runEachPatient=F, overlapPatients=NULL){
+	if(is.null(results)) results = study@results
 	if(is.null(s)){
 		s = pickSettings(study=study, settingType="aberration")
 	}

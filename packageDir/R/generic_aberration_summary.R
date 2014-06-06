@@ -69,18 +69,32 @@ RunGenericEnrichment<-function(settings, study){
 	s = setting(s=s,prompt="Did the gene analysis only examine a subset of genes out of the genome? (y/n)")
 	subset  = s$.text
 	
+	while(T){
+		s = setting(s=s, prompt="Is the data from functional analysis (ex: drug screen or RNAi)\nor from aberration analysis (ex: somatic mutation or copy nubmer changes)?\n(please enter f or a)")
+		funab = s$.text
+		if(funab%in%c("f","a")) break
+		message("Sorry, that input was not understood, please try again.")
+	}
+
 	target_list=NULL
 	
 	if(subset=="y"){
 		s=setting(s=s,prompt="Please select the file of gene symbols that the analysis was limited to.")
 		target_list = read.table(file=s$.text, sep="\t", header=F, stringsAsFactors=F, quote="")
-# 		target_matrix = getTargetMatrix(tgenes=target_matrix_list[,1], paths=study@studyMetaData@paths$paths)
+		# target_matrix = getTargetMatrix(tgenes=target_matrix_list[,1], paths=study@studyMetaData@paths$paths)
 	}
 	
-# 	s = setting(s=s, prompt="Please select the file containing the list of genes you would like to analyze.")
-# 	genevector_input = read.table(file=s$.text, sep="\t", header=F, stringsAsFactors=F, quote="")
-# 	genevector=genevector_input
-# 	pgm = NULL
+	# 	s = setting(s=s, prompt="Please select the file containing the list of genes you would like to analyze.")
+	# 	genevector_input = read.table(file=s$.text, sep="\t", header=F, stringsAsFactors=F, quote="")
+	# 	genevector=genevector_input
+	# 	pgm = NULL
+	
+	aberration_data_type = gsub(pattern=" ", replacement="_", 
+															x=paste(aberration_data_type, ifelse(test=(funab=="f"),
+																							yes="functional",
+																							no="aberration"), 
+																			  "summary"))
+	
 	print("Running main generic aberraion analysis function:")
 	res = RunGenericEnrichment_main(aberration_data_type=aberration_data_type,
 																	study=study,
@@ -203,16 +217,9 @@ RunGenericEnrichment_main<-function(path_detail,
 											pgm=pgm,
 											dataSetDescription=dataSetName,
 											activeGeneDescription=targetName)
+
 	
-# 	gsum = summaryTable4(paths_detail=path_detail, 
-# 									target_matrix=target_matrix,
-# 								individualEnrichment=T,
-# 								verbose=T,
-# 								dataSetName=dataSetName,
-# 								patientGeneMatrix=pgm, 
-# 								targetname=targetName)
-	
-	typeName=paste(aberration_data_type, "_aberration_summary", sep="")
+	typeName=aberration_data_type
 	
 	glist = list(summary=gsum, resTypeName=typeName, settings=s)
 	
