@@ -42,8 +42,6 @@ loadBasicArms<-function(STUDY){
 ########################################################################
 allInteractiveMainFunction<-function(additionalArms=NULL){
 	
-	checkLoadDependencies()
-	
 	#initiate variables
 	prevCohortFile = NULL
 	arms = list()
@@ -157,8 +155,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			results = STUDY@results
 			
 		}else if(sel=="combine aberration data and summarize by pathway"){
-			results$combined_aberrations_summary = combineAberrationTypes(results=results)
-			STUDY@results = results
+			STUDY = combineAberrationTypes(study=STUDY)
 		}else if(sel=="View summary of loaded data"){#View summary of loaded data 
 			DataSummary(STUDY)
 		}else if(sel=="Save current study"){
@@ -176,16 +173,14 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 		}else if(sel=="Save a data summary to HTML"){
 			#list summaries available to save
 			# 		checkAndSaveStudy(study=STUDY)
-			SaveToHTML(study_name=STUDY@studyMetaData@studyName,
-								 results=STUDY@results, 
-								 path_detail=path_detail)
+			SaveToHTML(study=STUDY)
 		}else if(sel=="Compare sources of aberration data"){
 			print("Comparring..")
 			STUDY = compareSources(study=STUDY)
 			if("y"==readline("Would you like to make an HTML summary of the data type comparrison? (y/n)")){
 				toHTML(table_list=list(comparisons=STUDY@results[["Aberration data type comparrison"]]),
 							 limit_col="hyperg_p_w_FDR",
-							 reorder=T,plimit=.05,maxrows=5000,
+							 reorderTables=T,plimit=.05,maxrows=5000,
 							 fname=paste("./output/",STUDY@studyMetaData@studyName,"/aberration_data_comparison.html",sep=""),
 							 path_detail=path_detail)
 			}
@@ -202,7 +197,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			sfile=system.file("shinyDrugSelect/runShiny.R",package = "packageDir")
 			print("Runing shiny main")
 			source(sfile, local=T)
-			runShinyMain(STUDY=STUDY)
+			drugSelectionTable = runDrugWorksheet(STUDY=STUDY)
 		}
 	}
 	return(STUDY)
