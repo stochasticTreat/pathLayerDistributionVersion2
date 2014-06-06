@@ -1,5 +1,10 @@
 #3.R
 
+test.fail<-function(){
+	
+	stop("Checking that the unit test work")
+	
+}
 
 test.checkForceRowNames<-function(){
 	fname = system.file("testData/test.checkForceRowNames.rda", package = "packageDir")
@@ -27,4 +32,13 @@ test.loadPathsAsSets<-function(){
 	
 	checkEquals(target=1459, current=length(psets2))
 	checkEquals(target=4, current=length(psets2[[1]]))
+}
+
+
+test.getDefaultPaths<-function(){
+	cellular_pathways = getDefaultPaths()
+	checkEquals(target="Path_Detail", current=class(cellular_pathways)[1])
+	checkEquals(target="Reactome", current=cellular_pathways$source)
+	checkTrue(expr=(nrow(cellular_pathways$paths)>1 & ncol(cellular_pathways$paths)>1))
+	checkEquals(target="matrix", current=class(cellular_pathways$paths))
 }
