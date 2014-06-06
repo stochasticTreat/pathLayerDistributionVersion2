@@ -23,7 +23,9 @@ Imports:
     rBiopaxParser,
     ggplot2,
     RUnit,
-    gridExtra
+    gridExtra,
+    shiny, 
+    hwriter
 Version: 0.1
 Author: Sam Higgins <samuelhiggins@gmail.com>
 Maintainer: Sam Higgins <samuelhiggins@gmail.com>
