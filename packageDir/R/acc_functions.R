@@ -1340,6 +1340,10 @@ twoHistOnePlot<-function(dataset1, dataset2,
 							theme(legend.title=element_blank())+
 							xlab(x_label)
 
+	if(min(stackedSet)>=0){
+		p1 = p1+scale_x_continuous(limits=c( min(stackedSet[,"value"]), max(stackedSet[,"value"]) ))
+	}
+	
 	print(p1)
 
 	return(p1)

@@ -24,9 +24,7 @@ STUDY = allInteractiveMainFunction()
 library("devtools")
 load_all(pkg="packageDir", export_all=T, reset=T)
 
-
 packageDir:list_to_table()
-
 
 # PACKAGENAME="packageDir"
 # data("defaultSummaryTable140504")
