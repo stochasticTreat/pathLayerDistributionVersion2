@@ -300,10 +300,10 @@ getPanelCoverage<-function(path_detail, study, alreadyRun=NULL, s=list()){
 		##################             examine coverage for a panel not yet run, from a drug list
 		########################################################################
 		s=setting(s=s,prompt="\nPlease enter file name for drug target matrix , or press enter to use the default, ./input/drug_targets_2.txt\n")
-		dtm = s$.text
+		drugTargetsMatrix = s$.text
 
 		s=setting(s=s,prompt="\nPlease enter drug panel file name, or press enter to use the default, ./input/exp006_extract_for_db.txt\n")
-		dp=s$.text
+		panelFile=s$.text
 
 		tracker[["Drug screen coverage data file used"]] = panelFile
 		tracker[["time stamp of drug screen data file"]] = as.character(file.info(panelFile)$mtime)
