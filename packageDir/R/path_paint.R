@@ -122,10 +122,10 @@ addPathwayImagesWithSelection<-function(study,
 	
  if(pathsAreFromGraphite(study)){
 		
-		if(!length(path_detail$graphite)) path_detail$graphite = loadGraphitePaths(study)
+		if(!length(path_detail$graphite)) path_detail$graphite = .loadGraphitePaths(study)
 
 		if(resSetName=="overlap_analysis"){
-			results = paintOverlap(results=results, paths_detail=path_detail)
+			results = paintOverlap(results=results, study_name=study@studyMetaData@studyName, paths_detail=path_detail)
 		}else{
 			dir.create(path=paste("./output/", study_name,"/",resSetName,"/","imageSlots/", sep=""),recursive=T,showWarnings=F)
 			results=addPathwayImages(study_name=study_name, 
@@ -152,8 +152,16 @@ pathsAreFromGraphite<-function(stud){
 	return(sum(grepl(pattern="graphite", x=stud@studyMetaData@paths$source, ignore.case=T))>0)
 }
 
-
-loadGraphitePaths<-function(stud){
+#'@title load graphite-supplied pathways
+#'@description Internal function used to ensure graphite supplied network diagrams are loaded and made available for cell network display.
+#'@param stud The \code{Study} object
+#'@return The pathway repository selected. 
+#'@importFrom graphite reactome
+#'@importFrom graphite spike
+#'@importFrom graphite nci
+#'@importFrom graphite kegg
+#'@importFrom graphite biocarta
+.loadGraphitePaths<-function(stud){
 
 	repset = list(Reactome=reactome, NCI=nci, KEGG=kegg)
 	
@@ -286,14 +294,14 @@ addPathwayImages<-function(results,
 }
 
 
-paintOverlap<-function(results, paths_detail, specificPath=NULL){
+paintOverlap<-function(results, study_name, paths_detail, specificPath=NULL){
 	
 	cat("\nOutputting network diagrams for pathway overlap analysis..\n")
 	if(is.null(results$overlap_analysis)){
 		cat("\n!!! Must run over lap analysis first (Choose \"Examine drug screen and aberrational pathway overlap\" from the main menu)\n")
 		return(results)
 	}
-	graph_set = path_detail$graphite
+	graph_set = paths_detail$graphite
 	
 	if(is.null(specificPath)){
 		### from overlap table, get overlapping pathways
@@ -385,7 +393,7 @@ paintPath<-function(graphitePathway, ab_analysis, paths_detail, drug_analysis=NU
 	g <- buildGraphNEL(nodes=nodes(pathway), 
 										 edges=edges(pathway), 
 										 sym=FALSE)#, ...)
-	nodes(g)<-corsym(symbol_set=g@nodes, symref=path_detail$symtable,verbose=F)
+	nodes(g)<-corsym(symbol_set=g@nodes, symref=paths_detail$symtable,verbose=F)
 	cat(".")
 	g <- markMultiple(g)#marks edgeType attribute
 	cat(".")
