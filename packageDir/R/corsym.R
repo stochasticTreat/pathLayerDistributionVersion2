@@ -176,6 +176,7 @@ correctFromHelperPrevious<-function(bsub, verbose){
 #'@param verbose A logical flag indicating if interactive mode should be run. 
 #'@return A character vector containing the identifiers for the set of genes provided in the symbol_set function argument, but with any applicable corrections made. 
 #'@import HGNChelper 
+#'@importFrom HGNChelper hgnc.table
 #'@export correctByHgncHelper
 correctByHgncHelper<-function(symbol_set, 
 															symtab, 
@@ -191,7 +192,7 @@ correctByHgncHelper<-function(symbol_set,
 	
 	ctab = getSymbolCorrectionTable(correctionsfile=correctionsfile)
 	
-	if( !exists("hgnc.table") ) data(hgnc.table)
+	if( !exists("hgnc.table") ) data("hgnc.table", package=HGNChelper)
 
 	goodsymsi  = symbol_set%in%hgnc.table$Approved.Symbol
 	
@@ -256,7 +257,8 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 	}else if(is.character(symref)){#if symref is a character, it is a file name; open the file
 		cref=getHugoSymbols(curhugofname=symref)#the direct passing of a hugo file name.  . .not sure if we're doing that any more...
 	}else if(class(symref)=="Study"){
-		if(STUDY@studyMetaData@geneIdentifierType!="HUGO"){
+		study=symref
+		if(study@studyMetaData@geneIdentifierType!="HUGO"){
 			message("Checking and correction of non-HUGO symbols not implemented.")
 			return(symbol_set)
 		} 
@@ -725,13 +727,14 @@ cleanGeneSymbols<-function(genes){
 #'@param verbose Controlls if symbol corrections are to be interactive (if yes, curhugofname file must be supplied as it contains critical information, such as gene symbol status, past identifiers and synonyms)
 #'@return Table of symbols: either a two column data.frame, the hgnc.table provided by HGNChelper, or a data frame as provided by genenames.org. Either of which have a column titled Approved.Symbol which contains official, approved symbols.  
 #'@import HGNChelper
+#'@importFrom HGNChelper hgnc.table
 getHugoSymbols<-function(paths_detail=NULL, 
 												 curhugofname=NULL,#"./reference_data/current_hugo_table_slim.txt",
 												 verbose=T){
 
 	if(is.null(curhugofname)){
 		library("HGNChelper")
-		data("hgnc.table")
+		data("hgnc.table", package="HGNChelper")
 		if(verbose){
 			if(readline("Would you like to use interactive gene symbol correciton? (enter y or n) ")=="n"){
 				return(hgnc.table)
