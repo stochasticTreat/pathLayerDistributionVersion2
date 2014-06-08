@@ -149,38 +149,37 @@ test.getAtts<-function(){
 }
 
 
-getDrugTargetTable<-function(tsyms){
-	eavtab=loadDrugEAVtable()
-	
-	# 	> dim(eavtab)
-	# 	[1] 933299      3
-	
-
-	targrec = getDrugTargetRecords(eavtab=eavtab)
-
-	# 	> dim(targrec)
-	# 	[1] 452414      3
+# getDrugTargetTable<-function(tsyms){
+# 	eavtab=loadDrugEAVtable()
+# 	
+# 	# 	> dim(eavtab)
+# 	# 	[1] 933299      3
+# 	
 # 	targrec = getDrugTargetRecords(eavtab=eavtab)
-	
-	#first get the unique drugs
-	udrugs = unique(targrec$entity)
-	
-# 	1999 Jul;22(3):231-8. 1349838 Iwahana
-# 	regpat = "[0-9]{4} [a-zA-Z]+( [0-9]+)*[;]"#"#[(][0-9]+[)]:[0-9]+-[0-9]+[.] [0-9]+ [A-Za-z]+"
-	regpat = ";"
-	
-	for(d in udrugs){
-		drecs = targrec[targrec$entity==d,]#pull out the records for the drug
-		#for each drug get all the targets
-		targSyms = getAtts(mat=drecs, atts="Gene_Name:$")
-		targets = targSyms$value
-		#for each target, get any references
-		targRefs = getAtts(mat=drecs, atts="General_References:$")
-		refsstrsplit(x=targRefs$value, split=regpat, perl=T)
-	}
-	
-	
-}
+# 
+# 	# 	> dim(targrec)
+# 	# 	[1] 452414      3
+# # 	targrec = getDrugTargetRecords(eavtab=eavtab)
+# 	
+# 	#first get the unique drugs
+# 	udrugs = unique(targrec$entity)
+# 	
+# # 	1999 Jul;22(3):231-8. 1349838 Iwahana
+# # 	regpat = "[0-9]{4} [a-zA-Z]+( [0-9]+)*[;]"#"#[(][0-9]+[)]:[0-9]+-[0-9]+[.] [0-9]+ [A-Za-z]+"
+# 	regpat = ";"
+# 	
+# 	for(d in udrugs){
+# 		drecs = targrec[targrec$entity==d,]#pull out the records for the drug
+# 		#for each drug get all the targets
+# 		targSyms = getAtts(mat=drecs, atts="Gene_Name:$")
+# 		targets = targSyms$value
+# 		#for each target, get any references
+# 		targRefs = getAtts(mat=drecs, atts="General_References:$")
+# 		refs = strsplit(x=targRefs$value, split=regpat, perl=T)
+# 	}
+# 	
+# 	
+# }
 
 
 #'@title getAtts
