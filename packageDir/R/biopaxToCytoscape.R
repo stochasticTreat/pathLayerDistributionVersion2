@@ -746,20 +746,46 @@ getReactomeBiopax<-function(study, pathNames){
 		if(is.error.message(biopaxFile)){
 			cat("\nError, could not dl the path ", p, "at the URL", pwUrl,"... Skipping to the next..\n")
 		}else{
-			write.table(file=paste(biopax.dir,dbid,".owl",sep=""),x=biopaxFile, sep="", row.names=F, col.names=F, quote=F)
-			pwrecord=rbind(pwrecord,
-										 c(dbid,
-										 	p,
-										 	as.character(Sys.time())))
-			colnames(pwrecord)<-c("dbID", "path_name", "download_date")
-			#save the pwrecord
-			write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
-			
+			addBiopaxPath(pname=p, dbid=dbid, biopaxDat=biopaxFile)
 		}
 	}
 	return(notAvailableDbIds)
 }#getReactomeBiopax
 
+
+addBiopaxPath<-function(pname, dbid, biopaxDat, dldate = as.character(Sys.time())){
+	
+	dbid = gsub(pattern=".owl|.OWL", replacement="", x=dbid)
+	biopax.dir = "./reference_data/paths/biopax/"
+	
+	if(!file.exists(biopax.dir)) dir.create(path=biopax.dir, recursive=T, showWarnings=F)
+	# find which pathways are needed
+	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
+	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
+	
+	if(sum(pname%in%pwrecord$path_name)){ #remove the biopax file if it's already there
+		pwrecord = pwrecord[!(pwrecord$path_name==pname),]
+	}
+	
+	if(is.null(dim(biopaxDat))){#just a file name, so copy the file
+		dbid = basename(path=dbid)
+		sourcePath  = basename(biopaxDat)
+		bpath = dirname(pwrecord.fileName)
+		file.copy(from=biopaxDat, to=paste0(bpath, "/",sourcePath))
+		
+	}else{#a whole biopax record
+		write.table(file=paste(biopax.dir, dbid, ".owl",sep=""),
+								x=biopaxDat, sep="", row.names=F, col.names=F, quote=F)
+	}
+	pwrecord=rbind(pwrecord,
+								 c(dbid,
+								 	pname,
+								 	dldate))
+	colnames(pwrecord)<-c("dbID", "path_name", "download_date")
+	#save the pwrecord
+	write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
+	
+}
 
 printNotAvailable<-function(notAvail){
 	cat("\nBiopax files for these pathways could not be downloaded:\n")
@@ -774,12 +800,6 @@ printNotAvailable<-function(notAvail){
 			"display can be re-run and the pathways will be displayed.")
 }
 
-missingFromBiomart<-function(paths=STUDY@studyMetaData@paths){
-	
-	readline("please inform developer, missingFromBiomart() is incomplete..")
-	# 	paths$all_repositories$
-	
-}
 
 getBiomartDbIds<-function(){
 	
@@ -831,13 +851,90 @@ biopaxFileNameFromPathName<-function(pathNames, pwrecord.file = "./reference_dat
 
 # Metabolism of nucleotides    pathway
 
+test.UserProvidedBiopax<-function(){
+	
+	#first delete everything in the directory
+	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
+	for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
+	
+	#user provided biopax tests:
+	#1) just supply path names and require the user select the files to go with
+	checkEquals(target=character(0), current=UserProvidedBiopax(pathNames="Abacavir metabolism"))
+
+
+	for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
+	
+	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
+	
+	checkEquals(target=character(0), 
+							current=UserProvidedBiopax(pathNames="Abacavir metabolism", 
+																				 pathMetaDataFile="~/tprog/main_131219/reference_data/paths/biopax/record_of_biopax_pathways.txt"))
+	
+	write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
+	
+	
+}
+
+UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
+	neededPaths=character(0)
+	if(is.null(pathMetaDataFile)){
+		for(pn in pathNames){
+			
+			blnk = readline(paste("Please select the biopax file for the pathway '",
+														pn,
+														"'\n(Press enter to continue to file selection prompt,\nor enter s to skip this path)"))
+			if(blnk=="s"){
+				neededPaths = c(neededPaths, pn)
+			}else{
+				fname = file.choose()
+				
+				addBiopaxPath(dbid=fname, 
+											biopaxDat=fname,
+											pname=pn, 
+											dldate=file.info(fname)$mtime)
+			}
+		}
+	}else{
+		
+		#open the pathway record
+		pwrecord = getPathwaysRecords(pwrecord.fileName=pathMetaDataFile)
+
+		#check that the pw record has correct formatting.. .
+		if( sum(!c("dbID","path_name")%in%colnames(pwrecord)) ) stop(paste0("Missing columns from biopax pathway record file\n",
+																																										"Columns found:\n", 
+																																										paste(colnames(pwrecord),collapse=" "),
+																																										"\nColumns needed:\ndbID path_name\n",
+																																										"file name\n",pathMetaDataFile))
+		#check the file names of the .owl files
+		pwrecord$dbID = gsub(pattern=".owl$|.OWL$", replacement="", x=pwrecord$dbID)
+		
+		#copy each of the pathway files to the correct directory
+		sourcePath  = dirname(pathMetaDataFile)
+		bpath = dirname(pwrecord.fileName)
+		if(!file.exists(bpath)) dir.create(path=bpath, recursive=T, showWarnings=F)
+		
+		for(partname in pwrecord$dbID){
+			curfname = paste0(bpath,"/", partname, ".owl")
+			cursourcename = paste0(sourcePath, "/", partname, ".owl")
+			file.copy(from=cursourcename, to=curfname)
+		}
+		
+		neededPaths = pathNames[!toupper(x=pathNames)%in%toupper(x=pwrecord$path_name)]
+		#copy pathway record file and all .owl files to correct directory
+		pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
+		write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
+		
+	}
+	return(neededPaths)
+}
+
 pathwaysFromBiopax<-function(study, pathNames, resSetName){
 	
 	#check if they can be obtained from Reactome, and try to get them if they are
 	if(fromReactome(study)){
 		notAvailablePaths = getReactomeBiopax(study=study, pathNames=pathNames)
 	}else{
-		UserProvidedBiopax(study=study, pathNames=pathNames)
+		UserProvidedBiopax(pathNames=pathNames)
 	}
 	
 	availablePaths = setdiff(pathNames, notAvailablePaths)
@@ -921,7 +1018,6 @@ placeNodesInOrgans<-function(organLayout, nodeTable, tw){
 
 }
 
-
 expandToFill<-function(tw, nodePosTab, toBounds=list(x=c(1000,2000),y=c(1000,2000))){
 	
 	xrange = range(nodePosTab$x)
@@ -934,20 +1030,20 @@ expandToFill<-function(tw, nodePosTab, toBounds=list(x=c(1000,2000),y=c(1000,200
 	
 }
 
-getCanvasSize<-function(w){
-	
-	nodesPos = getNodePosition(obj=w, node.names=rownames(nodeTable))
-	
-	nodePosTab = matrix(data="", nrow=length(nodesPos), ncol=3, dimnames=list(names(nodesPos), c("id","x","y")))
-	
-	for(nn in names(nodesPos)){
-		nodePosTab[nn,] = c(nn,nodesPos[[nn]]$x, nodesPos[[nn]]$y)
-	}
-	nodePosTab = as.data.frame(nodePosTab, stringsAsFactors=F)
-	nodePosTab$x = as.numeric(nodePosTab$x)
-	nodePosTab$y = as.numeric(nodePosTab$y)
-	
-}
+# getCanvasSize<-function(w){
+# 	
+# 	nodesPos = getNodePosition(obj=w, node.names=rownames(nodeTable))
+# 	
+# 	nodePosTab = matrix(data="", nrow=length(nodesPos), ncol=3, dimnames=list(names(nodesPos), c("id","x","y")))
+# 	
+# 	for(nn in names(nodesPos)){
+# 		nodePosTab[nn,] = c(nn,nodesPos[[nn]]$x, nodesPos[[nn]]$y)
+# 	}
+# 	nodePosTab = as.data.frame(nodePosTab, stringsAsFactors=F)
+# 	nodePosTab$x = as.numeric(nodePosTab$x)
+# 	nodePosTab$y = as.numeric(nodePosTab$y)
+# 	
+# }
 
 #get a table with the position of all nodes in the graph w
 getNodePostionTable<-function(w){
