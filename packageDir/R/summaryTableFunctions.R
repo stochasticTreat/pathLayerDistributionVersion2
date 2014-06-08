@@ -1,12 +1,12 @@
-pathTestInterface<-function(){
-	
-	pathSigRunner = list(paths=paths,
-										 original_data_matrix=original_data_matrix,
-										 coverage=coverage,
-										 gene_vector=gene_vector,
-										 pathTargetMatrix=pathTargetMatrix)
-	
-}
+# pathTestInterface<-function(){
+# 	
+# 	pathSigRunner = list(paths=paths,
+# 										 original_data_matrix=original_data_matrix,
+# 										 coverage=coverage,
+# 										 gene_vector=gene_vector,
+# 										 pathTargetMatrix=pathTargetMatrix)
+# 	
+# }
 
 
 #ut1
