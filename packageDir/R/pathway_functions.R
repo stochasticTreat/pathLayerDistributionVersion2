@@ -26,7 +26,20 @@ getNodes<-function(path){
 }
 
 # importAllGraphite()
-importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, nci=nci, kegg=kegg, biocarta=biocarta), symtab=NULL, verbose=F){
+#'@title Import all pathway repositories from the graphite package to this package. 
+#'@description Gives options to import pathway repositories from Reactome, Spike, NCI, KEGG and Biocarta. 
+#'@param repositories A \code{list} object, each slot containing a pathway repository from graphite that is to be imported
+#'@param symtab A HUGO symbol look up table, as provided by the package HGNChelper or from genenames.org. 
+#'@import graphite
+#'@import tools
+#'@importFrom graphite reactome
+#'@importFrom graphite spike
+#'@importFrom graphite nci
+#'@importFrom graphite kegg
+#'@importFrom graphite biocarta
+importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, nci=nci, kegg=kegg, biocarta=biocarta), 
+														symtab=NULL, 
+														verbose=F){
 	if(is.null(symtab)) symtab = getHugoSymbols()
 	if(verbose){
 		print(matrix(data=names(repositories), ncol=1, dimnames=list(1:length(repositories), "Repository Name")))
@@ -533,7 +546,7 @@ importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
 manualPathMetaData<-function(preped_paths, symtab=NULL, symbol_type="HUGO"){
 	if(is.null(symtab)) symtab = getHugoSymbols()
 	pathsFolder = "./reference_data/paths/"
-
+	
 # 	allSlots = c("paths","name", "file", "info", "date", "source", "gene_overlap_counts", "full_path_length", "symtable", "original_file_or_source", "original_file_creation_date")
 	neededSlots = c("name", "date", "source")
 	missingSlots = neededSlots[!neededSlots%in%names(preped_paths)]
