@@ -68,8 +68,7 @@ runSomaticMutationsProcessing<-function(settings, study){
 
 top20Hists<-function(unfilteredData,fileroot){
 
-
-# 	unfilteredData=results$somatic_mutation_aberration_summary$unfiltered_data
+	# 	unfilteredData=results$somatic_mutation_aberration_summary$unfiltered_data
 	
 	#get the top 20 mutations
 	stacked = unfilteredData[,c("pid","Hugo_Symbol")]
@@ -84,7 +83,7 @@ top20Hists<-function(unfilteredData,fileroot){
 	
 	for(i in 1:30){
 		cn = rownames(top30)[i]
-# 		start_positions = unfilteredData$Start_Position[unfilteredData$Hugo_Symbol==cn]#find all the start positions with Symbol == cn
+		# 		start_positions = unfilteredData$Start_Position[unfilteredData$Hugo_Symbol==cn]#find all the start positions with Symbol == cn
 		print(cn)		
 		curgenmat = unfilteredData[unfilteredData$Hugo_Symbol==cn,,drop=F]
 		postype2 = curgenmat

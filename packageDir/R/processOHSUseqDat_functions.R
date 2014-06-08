@@ -334,7 +334,7 @@ formatIDs<-function(patIDs){
 	}
 	#second, extract Tyner et al patient IDs
 	
-	if(length(grep("AML", pathIDs))){
+	if(length(grep("AML", patIDs))){
 		#get AML ds patients
 		amlpatIDs = patIDs[grep(pattern="AML", x=patIDs)]
 		
