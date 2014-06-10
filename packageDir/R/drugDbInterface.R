@@ -175,7 +175,7 @@ getPathIdsToTarget <- function (STUDY, pathsToSearch = NULL) {
 		print("pathsToSearch is null")
 	}else{
 		print("pathsToSearch is null and the overlap_analysis is null.. ")
-		branchName = selectBranchToFindDrugsFor(STUDY)
+		branchName = selectBranchToFindDrugsFor(study=STUDY)
 		pathsToTarget = STUDY@results[[branchName]]$pathsummary$path_id
 	}
 	
@@ -188,7 +188,7 @@ test.selectBranchToFindDrugsFor<-function(){
 	
 }
 
-selectBranchToFindDrugsFor<-function(study=STUDY){
+selectBranchToFindDrugsFor<-function(study){
 	
 	snames = names(study@results)
 	snames = snames[!snames%in%"overlap_analysis"]

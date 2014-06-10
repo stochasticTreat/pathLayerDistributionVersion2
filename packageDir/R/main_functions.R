@@ -706,13 +706,6 @@ combineAberrationTypes<-function(study, s=NULL, results=NULL, runEachPatient=F, 
 		combined_aberrations_summary = list()
 	}
 	
-	#determine if a combination should be done for each patient
-	if(runEachPatient&(length(overlapPatients)>1)){
-		print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-		print("Running combined aberrations summary for each patient/sample..")
-		combined_aberrations_summary$path_summary_each_patient = RunCombinedAbAnalysisPerSample(results=results,
-																																														overlap_patients=overlapPatients)
-	}
 	return(combined_aberrations_summary)	
 }#combineAberrationTypes()
 

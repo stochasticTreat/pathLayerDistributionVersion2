@@ -15,7 +15,8 @@
 # }
 
 
-checkCurrentBiopax<-function(pathNames,	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"){
+checkCurrentBiopax<-function(pathNames,	
+														 pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"){
 	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
 	neededPaths = pathNames[!pathNames%in%pwrecord$path_name]
 	return(neededPaths)

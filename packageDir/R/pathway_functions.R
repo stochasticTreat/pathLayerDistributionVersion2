@@ -944,7 +944,7 @@ test.prepPathListForSave<-function(){
 #'@examples 
 #'library(graphite)
 #'plistsAsDataFrame = prepPathListForSave(gset=reactome, path_source="Reactome pathway")
-prepPathListForSave<-function(gset = reactome, path_source="Reactome pathway"){
+prepPathListForSave<-function(gset, path_source="Reactome pathway"){
 	names(gset)
 	pasted =sapply(X=gset, FUN=function(x){paste(nodes(x), sep="", collapse="\t")})
 	dout = c()
@@ -955,7 +955,3 @@ prepPathListForSave<-function(gset = reactome, path_source="Reactome pathway"){
 	}
 	return(matrix(data=dout, ncol=1))
 }#prepPathListForSave
-
-
-
-

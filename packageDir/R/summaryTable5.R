@@ -5,7 +5,7 @@
 # 			 file=testStudyObjectFileNamesomatic, 
 # 			 compress=T)
 
-saveDefaultSettings<-function(){
+saveDefaultSettings<-function(psr){
 	toSave =psr$settings
 	fname="./reference_data/defaultSettings/defaultSummaryTableSettings.txt"
 	dflist = saveSettings(set=toSave)

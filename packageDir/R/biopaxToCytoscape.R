@@ -110,12 +110,14 @@ placeDrugs<-function(sif, w, drugColor="#ffa500"){
 	return(w)
 }
 
-stylizeDrugs<-function(w,dnames){
+stylizeDrugs<-function(tw,dnames){
+	
+	nodeTable = inferPositions(w=tw, nodeTable=nodeTable)
+	opos = getSpaceDividers(nodeTable=nodeTable,w=tw)
 	
 	lockNodeDimensions(obj=tw, new.state=FALSE)
 	
 	setNodeWidthDirect(obj=tw, node.names=opos$names, new.widths=as.numeric(opos$width))
-	
 	setNodeHeightDirect(obj=tw, node.names=opos$names, new.heights=opos$height)
 	
 	setNodeShapeDirect(obj=tw, node.names=opos$names, new.shapes="round_rect")
@@ -123,7 +125,11 @@ stylizeDrugs<-function(w,dnames){
 	tmp = noa(graph=tw@graph, node.attribute.name="nodeType")
 	tmp[tmp==""] = "cellularCompartment"
 	# noa(graph=tw@graph, node.attribute.name="nodeType")<-tmp
-	setNodeAttributesDirect(obj=tw, attribute.name="nodeType", attribute.type='char', node.names=names(tmp), values=tmp)
+	setNodeAttributesDirect(obj=tw, 
+													attribute.name="nodeType", 
+													attribute.type='char', 
+													node.names=names(tmp), 
+													values=tmp)
 	
 	setNodeOpacityDirect(obj=tw, node.names=opos$names, new.values=0)
 	setNodeBorderOpacityDirect(obj=tw, node.names=opos$names, new.values=255)
@@ -244,10 +250,11 @@ setAberrationDataStyles<-function(pname, resSetNombre,
 	#### check if there is a coverage issue to handle
 	if(!is.null(resSet$coverage_summary$genesummary)){
 		readline("unit test the coverage coloration")
-		#if there is a coverage issue, find the set difference between the covered nodes and the nodes already in the nameVector
-		#these will get the "normalProteinColor"
+		#if there is a coverage issue, find the set difference between the covered
+		#nodes and the nodes already in the nameVector (abInGraph?) these will get the
+		#"normalProteinColor"
 		coveredGenes = resSet$coverage_summary$genesummary
-		coveredNormal = setdiff(coveredGenes, nameVector)
+		coveredNormal = setdiff(coveredGenes, abInGraph)
 		style=addToStyle(style=style, geneNames=coveredNormal, value=normalProteinColor)
 	}else{#if there's no coverage issue, assign all remaining as normal
 		#### Assign the color for the normal, non-ab proteins
@@ -264,7 +271,6 @@ setAberrationDataStyles<-function(pname, resSetNombre,
 									 control.points=style$names,
 									 node.attribute.name="label",
 									 obj=w)
-		
 }
 
 setFunctionalDataStyle<-function(pname, study, w, resSet, resSetNombre,
@@ -669,17 +675,21 @@ nodeNamesFromLabels<-function(w, nodeLabels){
 	return(retvals)
 }
 
+#'@title getPathwaysRecords
+#'@description Opens or creates record of downlaoded biopax pathways
+#'@param pwrecord.fileName the file name for the pathway records file. 
+#'@return data frame with columns: dbID, path_name and download_date
 getPathwaysRecords<-function(pwrecord.fileName=NULL){
-	#'@title getPathwaysRecords
-		#'@description Opens or creates record of downlaoded biopax pathways
-		#'@param pwrecord.fileName: the file name for the pathway records file. 
-		#'@return data frame with columns: dbID, path_name and download_date
-		if(file.exists(pwrecord.fileName)){ pwrecord = read.table(file=pwrecord.fileName, strip.white=T,
-																															quote="",
-																															comment.char="",
-																															stringsAsFactors=F,
-																															header=T,sep="\t")
+
+		if(file.exists(pwrecord.fileName)){ 
+			pwrecord = read.table(file=pwrecord.fileName, 
+														strip.white=T,
+														quote="",
+														comment.char="",
+														stringsAsFactors=F,
+														header=T,sep="\t")
 		}else{
+			cat("\nPathway record file not found.\n")
 			pwrecord=data.frame(matrix(nrow=0,ncol=3,dimnames=c(list(NULL,c("dbID", "path_name", "download_date")))), 
 													stringsAsFactors=F)
 		}
@@ -761,31 +771,37 @@ addBiopaxPath<-function(pname, dbid, biopaxDat, dldate = as.character(Sys.time()
 	if(!file.exists(biopax.dir)) dir.create(path=biopax.dir, recursive=T, showWarnings=F)
 	# find which pathways are needed
 	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
-	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
-	
-	if(sum(pname%in%pwrecord$path_name)){ #remove the biopax file if it's already there
-		pwrecord = pwrecord[!(pwrecord$path_name==pname),]
-	}
-	
-	if(is.null(dim(biopaxDat))){#just a file name, so copy the file
+	addToBiopaxRecord(pname=pname, dbid=dbid, dldate=dldate)
+	if(is.null(dim(biopaxDat))){#if just a file name, copy the file
+		
 		dbid = basename(path=dbid)
 		sourcePath  = basename(biopaxDat)
 		bpath = dirname(pwrecord.fileName)
 		file.copy(from=biopaxDat, to=paste0(bpath, "/",sourcePath))
 		
-	}else{#a whole biopax record
+	}else{#if it's a whole biopax record, write the file
+		
 		write.table(file=paste(biopax.dir, dbid, ".owl",sep=""),
 								x=biopaxDat, sep="", row.names=F, col.names=F, quote=F)
+		
 	}
-	pwrecord=rbind(pwrecord,
+	
+}
+
+addToBiopaxRecord<-function(pname, dbid, dldate, pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"){
+	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
+	if(sum(pname%in%pwrecord$path_name)){ #remove the biopax file if it's already there
+		pwrecord = pwrecord[!(pwrecord$path_name==pname),]
+	}
+	pwrecord=rbind.data.frame(pwrecord,
 								 c(dbid,
 								 	pname,
 								 	dldate))
 	colnames(pwrecord)<-c("dbID", "path_name", "download_date")
 	#save the pwrecord
-	write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
-	
+	write.table(x=pwrecord, file=pwrecord.fileName, quote=F, sep="\t", row.names=F, col.names=T)
 }
+
 
 printNotAvailable<-function(notAvail){
 	cat("\nBiopax files for these pathways could not be downloaded:\n")
@@ -851,33 +867,11 @@ biopaxFileNameFromPathName<-function(pathNames, pwrecord.file = "./reference_dat
 
 # Metabolism of nucleotides    pathway
 
-test.UserProvidedBiopax<-function(){
-	
-	#first delete everything in the directory
-	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
-	for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
-	
-	#user provided biopax tests:
-	#1) just supply path names and require the user select the files to go with
-	checkEquals(target=character(0), current=UserProvidedBiopax(pathNames="Abacavir metabolism"))
-
-
-	for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
-	
-	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
-	
-	checkEquals(target=character(0), 
-							current=UserProvidedBiopax(pathNames="Abacavir metabolism", 
-																				 pathMetaDataFile="~/tprog/main_131219/reference_data/paths/biopax/record_of_biopax_pathways.txt"))
-	
-	write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
-	
-	
-}
-
 UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
+	
 	neededPaths=character(0)
-	if(is.null(pathMetaDataFile)){
+	
+	if(is.null(pathMetaDataFile)){ #if there's no path meta data file, just add the single path
 		for(pn in pathNames){
 			
 			blnk = readline(paste("Please select the biopax file for the pathway '",
@@ -887,18 +881,22 @@ UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
 				neededPaths = c(neededPaths, pn)
 			}else{
 				fname = file.choose()
-				
 				addBiopaxPath(dbid=fname, 
 											biopaxDat=fname,
 											pname=pn, 
 											dldate=file.info(fname)$mtime)
 			}
 		}
-	}else{
+	}else{ #path meta data passed, copy all files accordingly 
 		
 		#open the pathway record
 		pwrecord = getPathwaysRecords(pwrecord.fileName=pathMetaDataFile)
-
+		#clean the record: remove quotes
+		pwrecord$path_name = gsub(pattern="\"",replacement="",x=pwrecord$path_name)
+		#remove any duplicated records
+		pwrecord = pwrecord[order(as.Date(pwrecord$download_date)),]
+		pwrecord = pwrecord[!duplicated(pwrecord$dbID, fromLast=T),]
+		
 		#check that the pw record has correct formatting.. .
 		if( sum(!c("dbID","path_name")%in%colnames(pwrecord)) ) stop(paste0("Missing columns from biopax pathway record file\n",
 																																										"Columns found:\n", 
@@ -923,7 +921,6 @@ UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
 		#copy pathway record file and all .owl files to correct directory
 		pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
 		write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
-		
 	}
 	return(neededPaths)
 }
