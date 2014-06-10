@@ -35,6 +35,7 @@ loadCoverageData<-function(path_detail, fname=NULL, verbose=F){
 #								verbose:		 logical, if true gives extra output
 #								study_name: 	the study name included, used as a file name prefix
 processSomaticDataWithCoverage<-function(study_name="no_study_name_provided", 
+																				 settings=list(),
 																				 study,
 														 paths_detail,
 														 removedbSNP=F,
@@ -104,14 +105,14 @@ processSomaticDataWithCoverage<-function(study_name="no_study_name_provided",
 	print(subset)
 	####extract the patient subset if a subset was established
 	
-	if(!is.null(p_subset)){
-		subset = pid[pid%in%p_subset]
-		cat("***The",length(subset),"patients in the ",patient_set_name,"cohort will be examined.***\n")
-		cat("\nTo examine all patients, press escape to cancel, then select all patients from main program interface,", 
-				" or reboot R or clear workspace and re-run the somatic mutations processing interface.")
-		adjusted_rows = tcga_som[["pid"]]%in%subset
-		tcga_som = tcga_som[adjusted_rows,]
-	}
+	# 	if(!is.null(p_subset)){
+	# 		subset = pid[pid%in%p_subset]
+	# 		cat("***The",length(subset),"patients in the ", patient_set_name, "cohort will be examined.***\n")
+	# 		cat("\nTo examine all patients, press escape to cancel, then select all patients from main program interface,", 
+	# 				" or reboot R or clear workspace and re-run the somatic mutations processing interface.")
+	# 		adjusted_rows = tcga_som[["pid"]]%in%subset
+	# 		tcga_som = tcga_som[adjusted_rows,]
+	# 	}
 	
 	cat("\nIn this set of patients", as.character(nrow(tcga_som)), "unique somatic mutations were found.\n")
 	
@@ -179,11 +180,11 @@ processSomaticDataWithCoverage<-function(study_name="no_study_name_provided",
 		
 		covmat = summaryTable(study=study)
 		
-# 		covmat = summaryTable4(paths_detail=paths_detail,
-# 																		verbose=F,
-# 																		targetname="sequenced",
-# 																		dataSetName="somatic mutation coverage data",
-# 																		patientGeneMatrix=covpgm)
+		# 		covmat = summaryTable4(paths_detail=paths_detail,
+		# 																		verbose=F,
+		# 																		targetname="sequenced",
+		# 																		dataSetName="somatic mutation coverage data",
+		# 																		patientGeneMatrix=covpgm)
 		
 	}
 	
@@ -207,13 +208,32 @@ processSomaticDataWithCoverage<-function(study_name="no_study_name_provided",
 	tracker[["Number of mutations in final, cleaned data set used for pathway enrichment"]] = sum(somatic_pgm)
 	table_out_fname = paste("./output/",study_name,"_summary_of_somatic_mut_by_pathway.txt",collapse="",sep="")
 	
-	somatic_summary = summaryTable4(paths_detail=paths_detail,
-																	target_matrix=tm,
-																	verbose=T,
-																	targetname="mutated",
-																	dataSetName="somatic mutation data",
-																	patientGeneMatrix=somatic_pgm, 
-																	outputFileName=table_out_fname)
+	# 	somatic_summary = summaryTable4(paths_detail=paths_detail,
+	# 																	target_matrix=tm,
+	# 																	verbose=T,
+	# 																	targetname="mutated",
+	# 																	dataSetName="somatic mutation data",
+	# 																	patientGeneMatrix=somatic_pgm, 
+	# 																	outputFileName=table_out_fname)
+	som_select = som_select[som_select$Hugo_Symbol%in%covSet$cov,]
+	
+	covpgm = PGMFromVector(genevector=covSet$cov)
+	
+	# 		covmat = summaryTable4(paths_detail=paths_detail,
+	# 																		verbose=F,
+	# 																		targetname="sequenced",
+	# 																		dataSetName="somatic mutation coverage data",
+	# 																		patientGeneMatrix=covpgm)
+
+	somatic_summary = summaryTable(study=study,
+																 settings=settings,
+																 coverage=covSet$cov,
+																 coverageDataSetDescription="somatic mutation coverage data",
+																 coverageGeneDescription="sequenced",
+																 pgm=somatic_pgm,
+																 dataSetDescription="somatic mutation data",
+																 activeGeneDescription="mutated")
+	
 	#returns: list(pathsummary=ordered_table_out, summarystats=sumStatTab, genelist=patientGeneMatrix)
 	somatic_summary[["coverage_summary"]] = covmat
 	prefilt = tracker[['Mutations per patient, before any filtering']]

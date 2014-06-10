@@ -46,19 +46,11 @@ runSomaticMutationsProcessing<-function(settings, study){
 			s$interactive = interactiveTMP #not sure why I did this... 
 			return(somatic_summary)
 		}else if(uin=="2"){
-			# 			if(!exists("study_name")){
-			# 				study_name = "running_only_somatic_data_input"
-			# 			}
-			# 			htmlFname = paste("./output/",
-			# 												study_name,
-			# 												"_somatic_mutation_summary.html",
-			# 												sep="")
-			# 			htmlSummary(sumset=somatic_summary, fname=htmlFname)
-		}else if(uin=="2"){
 			source('./processSomaticSeqDataWithCoverage.R')
-			somatic_summary = processSomaticDataWithCoverage(paths_detail=path_detail, 
+			somatic_summary = processSomaticDataWithCoverage(study=study,settings=s,
+																											 paths_detail=path_detail, 
 																											 verbose=T, 
-																											 study_name=study_name)
+																											 study_name=study@studyMetaData@studyName)
 		}else if(uin=="3"){
 			break
 		}

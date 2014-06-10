@@ -435,11 +435,12 @@ processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose
 	
 	covDatm = matrix(data=rep(T, length(covDat)), ncol=1, dimnames=list(covDat))
 	
-	seqCaptureCoverageSummary = summaryTable4(paths_detail=paths_detail, 
-																						enrichment_tests=c(),
-																						dataSetName="Sequence Capture Coverage",
-																						targetname="sequenced",
-																						patientGeneMatrix=covDatm)
+	# 	seqCaptureCoverageSummary = summaryTable4(paths_detail=paths_detail, 
+	# 																						enrichment_tests=c(),
+	# 																						dataSetName="Sequence Capture Coverage",
+	# 																						targetname="sequenced",
+	# 																						patientGeneMatrix=covDatm)
+	
 	ohsuseq = read.table(file=seqfname, 
 											 sep="\t", 
 											 header=T, 
@@ -500,18 +501,28 @@ processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose
 	colnames(ohsuFilteredSubset)<-c("Ids", "Symbol")
 	cat("\nBuilding enrichment function input files\n")
 	pgm = toPGM(sds=ohsuFilteredSubset)
-	tm = getTargetMatrix(tgenes=covDat, paths=path_detail$paths)
 	
-	seqCaptureSummary = summaryTable4(targetname="variant",
-																		verbose=verbose,
-																		individualEnrichment=T,
-																		target_matrix=tm,
-																		dataSetName=paste("Sequence capture data,",study_name),
-																		patientGeneMatrix=pgm, 
-																		paths_detail=paths_detail)
+	# 	tm = getTargetMatrix(tgenes=covDat, paths=paths_detail$paths)
+	# 	seqCaptureSummary = summaryTable4(targetname="variant",
+	# 																		verbose=verbose,
+	# 																		individualEnrichment=T,
+	# 																		target_matrix=tm,
+	# 																		dataSetName=paste("Sequence capture data,",study_name),
+	# 																		patientGeneMatrix=pgm, 
+	# 																		paths_detail=paths_detail)
+	
+	tmpStudy = getStudyObject(study.name=study_name, path_detail=paths_detail)
+	seqCaptureSummary = summaryTable(study=tmpStudy,
+																	 coverage=covDatm,
+																	 pgm=pgm,
+																	 dataSetDescription=paste("Sequence capture data,",study_name),
+																	 activeGeneDescription="variant",
+																	 coverageDataSetDescription="Sequence Capture Coverage", 
+																	 coverageGeneDescription="sequenced")
+	
 	seqCaptureSummary[["Data_work_up_notes"]] = tracker
-	seqCaptureSummary$coverage_summary = seqCaptureCoverageSummary
-	system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	# 	seqCaptureSummary$coverage_summary = seqCaptureCoverageSummary
+	
 	return(seqCaptureSummary)
 }#processSequenceCaptureData()
 
