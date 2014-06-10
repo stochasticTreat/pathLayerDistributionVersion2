@@ -232,7 +232,8 @@ stackedGeneBar1<-function(tcga_som){
 
 
 
-stackedGeneBar<-function(tcga_som, title="Mutation types for the top 20 most mutated genes"){
+stackedGeneBar<-function(tcga_som, 
+												 title="Mutation types for the top 20 most mutated genes"){
 	ufilt = tcga_som
 	gs = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
 	top20 = head(gs[order(gs[,2],decreasing=T),],20)
@@ -250,7 +251,8 @@ stackedGeneBar<-function(tcga_som, title="Mutation types for the top 20 most mut
 	colnames = colors()[colcols]
 	names(colnames)<-names(colcols)
 	
-	p1 = ggplot(data=slimrows, aes(x=Hugo_Symbol, fill=factor(Variant_Classification)))+
+	p1 = ggplot(data=slimrows, aes(x=Hugo_Symbol, 
+																 fill=factor(Variant_Classification)))+
 		geom_bar(color="black")+
 		coord_flip()+
 		scale_fill_manual(values=colnames)+
