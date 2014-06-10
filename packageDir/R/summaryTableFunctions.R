@@ -154,11 +154,6 @@ pathAnalysisSettings <- function (psr, study, s=NULL, interactive=F,
 	return(psr)
 }
 
-test.addSignificanceTests<-function(){
-	
-	fnames = psr$"To add additional path significance tests, please select the R script file containing the interfaces to these enrichment tests"
-
-}
 
 #adds paths significance test from the file names provided in the argument, fnames
 addSignificanceTests<-function(fnames, defaultTest = hypergeometricPathEnrichment){

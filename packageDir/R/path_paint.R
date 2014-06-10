@@ -14,11 +14,6 @@
 # 	nodeData(g, "C", "lfc") = 3	
 # }
 
-test.checkCurrentBiopax<-function(){
-	biopax.dir = "./reference_data/paths/biopax/"
-	pathNames = c("p53-Dependent G1 DNA Damage Response", "Not a pathway name")
-	checkEquals(target="Not a pathway name", current=checkCurrentBiopax(pathNames=pathNames,	biopax.dir))
-}
 
 checkCurrentBiopax<-function(pathNames,	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"){
 	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
@@ -26,16 +21,7 @@ checkCurrentBiopax<-function(pathNames,	pwrecord.fileName = "./reference_data/pa
 	return(neededPaths)
 }
 
-
-test.getReactomeBiopax<-function(){
-	tpnames = c("Abacavir metabolism", "Transcriptional Regulation of White Adipocyte Differentiation")
-	getReactomeBiopax(study=NULL, pathNames=tpnames)
-	
-}
-
-
 is.error.message<-function(biopaxFile){
-	
 	if(grepl(pattern="error$",x=class(biopaxFile), ignore.case=T)){
 		return(T)
 	}
@@ -45,24 +31,6 @@ is.error.message<-function(biopaxFile){
 fromReactome<-function(study){
 	res = grepl(pattern="reactome", x=study@studyMetaData@paths$source, ignore.case=T)
 	return(res)
-}
-
-test.biopaxFileNameFromPathName<-function(){
-	#unit test test.biopaxFileNameFromPathName()
-	print("test.biopaxFileNameFromPathName()")
-	#positive control
-	tpnames = c("Abacavir metabolism", 
-							"Transcriptional Regulation of White Adipocyte Differentiation")
-	bpnames = biopaxFileNameFromPathName(pathNames=tpnames)
-	checkEquals(target=2, current=length(bpnames))
-	
-	#negative control
-	tpnames2 = c("Abacavir metabolism", 
-							 "not a pathway")
-	bpnames2 = biopaxFileNameFromPathName(pathNames=tpnames2)
-	
-	checkEquals(target=1, current=length(bpnames2))
-	
 }
 
 clean.biopaxRecords<-function(pwrecord){

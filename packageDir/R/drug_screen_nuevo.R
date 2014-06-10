@@ -1,21 +1,6 @@
 #data in: patientGeneLevels (patient gene matrix with continuous values for each gene)
 
-test.RunDrugScreen<-function(){
-# 	source('./defultSettings.R')
-	pdo = getDefaultPaths()
-	settings = getDefaultDrugScreenCoverageSettings()
-	study = getStudyObject(study.name="testDrugScreen", path_detail=pdo)
-	
-	drugScreenCoverageRes = RunDrugScreen(settings=settings, study=study)
-	settings = drugScreenCoverageRes$settings
-}
 
-
-test.RunDrugScreen2<-function(){
-	settings=STUDY@studyMetaData@settings$functional_drug_screen_summary
-	study=STUDY
-	
-}
 
 #main function for runing drug screen
 #implements armMain interface, thus this function is passed as armMain() inside the runArm() function

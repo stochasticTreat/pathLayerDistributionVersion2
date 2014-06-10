@@ -35,14 +35,6 @@ getTestPathSummaryRunner<-function(pths=NULL){
 	return(psr)
 }
 
-getTestPGM<-function(){
-	#the pgm used is the abacavir metabolism pgm from the moc somatic mutation data
-	#pgm=STUDY@results$somatic_mutation_aberration_summary$patientGeneMatrix
-	#save(pgm, file="./testData/pgm.rda")
-	defname = system.file("testData/pgm.rda", package = "packageDir")
-# 	load(file="./testData/pgm.rda", verbose=T)
-	return(pgm)
-}
 
 message("Running Tests")
 
