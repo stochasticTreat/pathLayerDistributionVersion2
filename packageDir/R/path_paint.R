@@ -155,12 +155,7 @@ pathsAreFromGraphite<-function(stud){
 #'@title load graphite-supplied pathways
 #'@description Internal function used to ensure graphite supplied network diagrams are loaded and made available for cell network display.
 #'@param stud The \code{Study} object
-#'@return The pathway repository selected. 
-#'@importFrom graphite reactome
-#'@importFrom graphite spike
-#'@importFrom graphite nci
-#'@importFrom graphite kegg
-#'@importFrom graphite biocarta
+#'@return The pathway repository selected.
 .loadGraphitePaths<-function(stud){
 
 	repset = list(Reactome=reactome, NCI=nci, KEGG=kegg)

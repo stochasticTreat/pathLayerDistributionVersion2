@@ -1,6 +1,6 @@
 \name{summaryTable}
 \alias{summaryTable}
-\title{summaryTable}
+\title{Main pathway analysis function.}
 \usage{
 summaryTable(study, activeGeneDescription = "active_gene",
   dataSetDescription = "analysis of undefined active genes", pgm = NULL,
@@ -34,10 +34,10 @@ summaryTable(study, activeGeneDescription = "active_gene",
   path analysis will be conducted. Default given by call to
   getDefaultSettings()$defaultSummaryTable .}
 
-  \item{coverage}{character vector of gene names. Should be
-  provided if coverage provided by the analysis platform
-  used to proved gene data is not considered to have full
-  genome coverage.}
+  \item{coverage}{\code{character vector} of gene names.
+  Should be provided if coverage provided by the analysis
+  platform used to produce gene data entered into this
+  function is not considered to have full genome coverage.}
 
   \item{coverageGeneDescription}{The description of genes
   that are covered be the analysis platform (ex:
@@ -50,7 +50,23 @@ summaryTable(study, activeGeneDescription = "active_gene",
   pathway analysis should be run for individual patients.}
 }
 \description{
-The main function for conducting and pathway analysis for a
+The main function for conducting a pathway analysis on a
 set of gene data.
+}
+\examples{
+studyObject = getStudyObject(study.name="testStudy", path_detail=getDefaultPaths())
+
+#conduct an analysis of pathway coverage only.
+targetlist  = c("NT5C2", "GUK1",  "ADAL",  "PCK1")
+coverageAnalysis = summaryTable(study=studyObject,
+					coverageGeneDescription="testCoverageGene",
+					coverageDataSetDescription="test coverage analysis",
+					coverage=targetlist)
+
+#conduct full pathway analysis
+pathwayAnalysis = summaryTable(study=studyObject,
+																pgm=getTestPGM(),
+																dataSetDescription="test analysis of gene data",
+																activeGeneDescription="analyzed_gene")
 }
 

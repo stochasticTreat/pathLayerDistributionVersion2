@@ -30,13 +30,9 @@ getNodes<-function(path){
 #'@description Gives options to import pathway repositories from Reactome, Spike, NCI, KEGG and Biocarta. 
 #'@param repositories A \code{list} object, each slot containing a pathway repository from graphite that is to be imported
 #'@param symtab A HUGO symbol look up table, as provided by the package HGNChelper or from genenames.org. 
+#'@param verbose A flag indicating if this function should be run in an interactive mode. This allows individual pathway repositories to be selected, insted of automatically selecting all pathways.
 #'@import graphite
 #'@import tools
-#'@importFrom graphite reactome
-#'@importFrom graphite spike
-#'@importFrom graphite nci
-#'@importFrom graphite kegg
-#'@importFrom graphite biocarta
 importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, nci=nci, kegg=kegg, biocarta=biocarta), 
 														symtab=NULL, 
 														verbose=F){
@@ -944,6 +940,7 @@ test.prepPathListForSave<-function(){
 #'       Abacavir metabolism	Reactome pathway	UniProt:P49902	UniProt:Q16774
 #'@return one column matix, with each row containing the tab-delimited set: path name, path source and path members
 #'@export
+#'@import graphite
 #'@examples 
 #'library(graphite)
 #'plistsAsDataFrame = prepPathListForSave(gset=reactome, path_source="Reactome pathway")

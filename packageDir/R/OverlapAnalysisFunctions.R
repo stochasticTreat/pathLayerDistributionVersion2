@@ -21,6 +21,7 @@ RunOverlapAnalysis<-function(settings, study){
 #'@return Study object with overlap analysis in results list added or replaced 
 #'@export
 #'@import VennDiagram
+#'@importFrom calibrate textxy
 abDrugOverlapAnalysis<-function(study,
 																thresh=0.05,
 																enrich_col="hyperg_p_w_FDR",

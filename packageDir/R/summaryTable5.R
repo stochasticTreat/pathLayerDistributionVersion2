@@ -14,16 +14,15 @@ saveDefaultSettings<-function(){
 }
 
 
-
-#'@title summaryTable
-#'@description The main function for conducting and pathway analysis for a set of gene data.
+#'@title Main pathway analysis function. 
+#'@description The main function for conducting a pathway analysis on a set of gene data.
 #'@param study A Study object. 
 #'@param activeGeneDescription One word description of how the 'active' genes should be described (ex: mutated, amplified, drug_sensitive)
 #'@param dataSetDescription Description of the data set provided for the pathway analysis. (ex: "Somatically mutated genes")
 #'@param pgm The patient gene matrix for the patient data. Bipartate graph with row names set as gene names, column names set as patient IDs and values logical indicating if gene is considered "active" in patient.
 #'@param originalDataMatrix The original data matrix. Makes this available for novel types of pathway analysis, not treating genes as discretely "on" or "off"
 #'@param settings A settings list object controling how the path analysis will be conducted. Default given by call to getDefaultSettings()$defaultSummaryTable . 
-#'@param coverage character vector of gene names. Should be provided if coverage provided by the analysis platform used to proved gene data is not considered to have full genome coverage. 
+#'@param coverage \code{character vector} of gene names. Should be provided if coverage provided by the analysis platform used to produce gene data entered into this function is not considered to have full genome coverage. 
 #'@param coverageGeneDescription The description of genes that are covered be the analysis platform (ex: drug_targeted or sequenced)
 #'@param coverageDataSetDescription A longer description of the set of genes provided in the coverage analysis
 #'@param individualEnrichment logical. A flag indicating if pathway analysis should be run for individual patients. 
