@@ -1,10 +1,11 @@
 
 
+
 test.hypergeometricPathEnrichment<-function(){
 	
 	pths = getDefaultPaths()
 	
-	psr = getDefaultPathsummaryRunner(pths=pths)
+	psr = getTestPathSummaryRunner(pths=pths)
 	
 	hpres1 = hypergeometricPathEnrichment(pathSigRunner=psr, 
 																					 paths_detail=pths) 
@@ -20,7 +21,7 @@ test.hypergeometricPathEnrichment<-function(){
 test.getActiveGenesEachPath<-function(){
 	
 	pths = getDefaultPaths()
-	psr = getDefaultPathsummaryRunner(pths=pths)
+	psr = getTestPathSummaryRunner(pths=pths)
 	
 	agep1 = getActiveGenesEachPath(psr=psr)
 	agepTestDataFile = system.file("testData/abacavirActiveGenesEachPath.rda", package = "packageDir")
@@ -33,9 +34,9 @@ test.getActiveGenesEachPath<-function(){
 
 test.getBasicPathInformation<-function(){
 	
-	psr = getDefaultPathsummaryRunner()
-	
 	pths = getDefaultPaths()#path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt",force=T)
+	
+	psr = getTestPathSummaryRunner(pths=pths)
 	
 	psr$study = getStudyObject(study.name="testerStudy", 
 														 path_detail=pths,
@@ -73,7 +74,7 @@ test.getBasicPathInformation<-function(){
 
 test.generalSummary<-function(){
 	
-	psr = getDefaultPathsummaryRunner()
+	psr = getTestPathSummaryRunner()
 	pths = getDefaultPaths()
 	
 	psr$patientsum = t((rep(x=1,times=nrow(psr$patientGeneMatrix))%*%psr$patientGeneMatrix)) #patientsum: matrix with the number of active genes found in each patient

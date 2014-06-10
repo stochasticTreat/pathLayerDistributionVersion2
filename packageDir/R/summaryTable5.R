@@ -27,6 +27,21 @@ saveDefaultSettings<-function(psr){
 #'@param coverageDataSetDescription A longer description of the set of genes provided in the coverage analysis
 #'@param individualEnrichment logical. A flag indicating if pathway analysis should be run for individual patients. 
 #'@export
+#'@examples
+#'studyObject = getStudyObject(study.name="testStudy", path_detail=getDefaultPaths())
+#'
+#'#conduct an analysis of pathway coverage only. 
+#'targetlist  = c("NT5C2", "GUK1",  "ADAL",  "PCK1")
+#'coverageAnalysis = summaryTable(study=studyObject, 
+#'					coverageGeneDescription="testCoverageGene", 
+#'					coverageDataSetDescription="test coverage analysis", 
+#'					coverage=targetlist)
+#'
+#'#conduct full pathway analysis
+#'pathwayAnalysis = summaryTable(study=studyObject, 
+#'																pgm=getTestPGM(),
+#'																dataSetDescription="test analysis of gene data",
+#'																activeGeneDescription="analyzed_gene")
 summaryTable<-function(study, 
 											 activeGeneDescription="active_gene", 
 											 dataSetDescription="analysis of undefined active genes",
@@ -239,3 +254,5 @@ summaryTableInner<-function(psr, paths_detail){
 							active_genes_not_in_paths=psr$genomicnotpw, #list of active genes not in the pathways
 							patientList = colnames(psr$patientGeneMatrix)))  #list of patient ids
 }#summaryTable4
+
+
