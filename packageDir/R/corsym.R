@@ -13,64 +13,27 @@ getOfficialGeneIds<-function(idSource){
 	return(tab[,"Approved.Symbol"])
 }
 
-test.corsym<-function(){
-# 		symtabFile = "~/tprog/main_131219/reference_data/current_hugo_table.txt"
-# 		symtab = read.delim(file=symtabFile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
-# 		
-# 		#first remove all the unapproved symbols
-# 		withRows = grepl(pattern="~", x=symtab$Approved.Symbol)
-# 		
-# 		apptab = symtab[!withRows,]
-# 		
-# 		extab = apptab[,c("Approved.Symbol","Previous.Symbols")]
-# 	
-	
-	
-# 	syms2  = rownames(STUDY@results$somatic_mutation_aberration_summary$genesummary)
-# 	save(syms2, file="./testData/")
-#		save(syms2, file="~/tprog/distribution/pathLayerDistributionVersion2/packageDir/inst/testData/amlSymbolsUncorrected.rda")
-# 	system.file("extdata/gene_symbol_corrections_list.txt", package = "packageDir")
-# 	load("./testData/amlSymbolsUncorrected.rda", verbose=T)
-# 	
-# 	load("./testData/simplesymtable.rda", verbose=T)
-	
-	data("hgnc.table")
-	extab = hgnc.table
-	appsyms = extab$Approved.Symbol[1:10]
-	
-	res = corsym(symbol_set=appsyms, symref=extab, verbose=F)
-	checkEquals(target=appsyms, current=res)
-	
-	htab = getHugoSymbols(curhugofname="./reference_data/current_hugo_table_slim.txt", verbose=F)
-	
-	prevSyms = c("CPAMD9","ALD", "ALDL1", "ABC50", "AADACL2")
-	tmp = readline("The next test will require input of the letter y")
-	res1 = corsym(symbol_set=prevSyms, symref=htab, verbose=T)
-	correctSymbols = c("A2ML1","ABCD1","ABCD2","ABCF1","AADACL2")
-	checkEquals(target=correctSymbols, current=res1)
-	
-	res2 = corsym(symbol_set=prevSyms, symref=htab, verbose=F)
-	checkEquals(target=4, current=sum(correctSymbols!=res2))
-	
-	#checking corsym using hgnchelper
-	data("./testData/amlSymbolsUncorrected.rda", verbose=T)
-	path_detail = getDefaultPaths()
-	path_detail$symtable = hgnc.table
-	res3 = corsym(symbol_set=syms2, symref=path_detail, verbose=F)
-	checkEquals(target=15, current=sum(res3!=syms2), msg="check of HGNChelper-based script")
-	
-}
 
-#'@title corsym
-#'@description Function to correct and unify gene identifiers across a study
+#'@title Correct unofficial gene symbols. 
+#'@description Function to correct and unify gene identifiers across a study arms. 
 #'@param symbol_set the set of gene identifiers to be corrected
 #'@param symref The gene identifier lookup table containing a set of official gene symbols. If this contains two columns, it should be in the format of the hgnc.table data set provided by the CRAN package, HGNChelper. Else, this should be a whole data table of gene symbol look ups as provided by genenames.org
 #'@param verbose If set to TRUE, this flag will cause the gene symbol corrections to be conducted automatically. 
 #'@param col2 If two columns of data are provided as the symbol_set input to corsym, col2 should provide the name of a second column containing additional data bout the gene identifier to be checked, such as a chromosomal location.
 #'@param correctionsfile character string giving the file path to the a gene symbol corrections file. This file should contain two columns: old_symbol and new_symbol containing the errant and the correct symbols, respectively. This is the primary set of symbols to be used in coordinating gene symbol corrections between the multiple arms of the study. 
 #'@return The character vector of gene identifiers provided as an input, with any possible corrections made. 
-#'@details This function allows a user to interactively correct gene identifiers so they can be coordinated between study arms. All corrections can optionally be recorded to the corrections file so that at latter time they can be run automatically, without user interaction.
+#'@details This function allows a user to interactively correct gene identifiers so they can be coordinated between study arms. All corrections can optionally be recorded to the corrections file so that at latter time they can be run automatically, without user interaction, and so that they can be automatically re-used in correcting gene symbols from other study arms. 
 #'@export
+#'@examples
+#'toCheck = c("p53", "FLT3", "ASM1", "ASML3B","ARF","APOBEC3C")
+#'corrected = corsym(symbol_set=toCheck) #using HGNChelper and previously made corrections
+#'
+#' symref  = getHugoSymbols()
+#'
+#'\dontrun{
+#'symref  = getHugoSymbols(curhugofname="./reference_data/current_hugo_table_slim.txt")
+#'corrected = corsym(symbol_set=toCheck, symref=symref, verbose=T)
+#'}
 corsym<-function(symbol_set, 
 								 symref=NULL, 
 								 verbose=T, 
@@ -80,6 +43,11 @@ corsym<-function(symbol_set,
 	isHugo = T
 	hgnchelper = F
 	symtab = NULL
+	
+	if(is.null(symref)){
+		data("hgnc.table", package="HGNChelper", envir=environment())
+		symref = hgnc.table
+	}
 	
 	#option 0: no symbol correction available for current data type
 	if(class(symref)=="Study"){
@@ -97,9 +65,10 @@ corsym<-function(symbol_set,
 		return(symbol_set)
 	}
 
-	
 	#check if hgnchelper should be used
+	#use it if the symtab has two columns, symbol and approved.symbol, and if the symbol type is HUGO
 	hgnchelper = isHugo & ncol(symtab)==2 & !sum( !c("Symbol","Approved.Symbol")%in%colnames(symtab) ) 
+	
 	if(hgnchelper){ 	#option 1: use HGNChelper package
 		print("Correcting by HGNChelper")
 		res = correctByHgncHelper(symbol_set=symbol_set, symtab=symtab, correctionsfile=correctionsfile)
@@ -348,7 +317,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 	correction_set = NULL#the set of mappings from old names to new names, which is retreived from the corrections file
 	correctedSymbols = NULL#this will contain mappings to be made in this run of the program
 	new_corrections = NULL
-	
+	resave = F
 	###################################  Check Corrections File
 	raw_correction_set = getSymbolCorrectionTable(correctionsfile=correctionsfile)
 	if(file.exists(correctionsfile)){
@@ -379,9 +348,10 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 				not_approved = unique(not_approved)
 				if(verbose) cat("\nThere are now", as.character(max(0,nrow(not_approved))), "symbols remaining which do not match approved HUGO symbols.")
 			}
-			print("not approved 1.2:")
+			cat("\nnot approved 1.2:\n")
 			print(not_approved)
 			if(resave){
+				dir.create(path=dirname(path=correctionsfile), showWarnings=F, recursive=T)
 				write.table(x=correction_set, file=correctionsfile, 
 										quote=F, sep="\t", row.names=F, col.names=c("old_symbol", "new_symbol"))
 				raw_correction_set = read.delim(file=correctionsfile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
@@ -438,9 +408,9 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 											"not be corrected can be found at ./output/not_approved_not_correctable_symbols_from_last_run.txt\n")}
 			write.table(x=not_approved,file="./output/not_approved_not_correctable_symbols_from_last_run.txt",sep="\t",row.names=F)
 			if(length(new_corrections)){
-				cat("\nThese are the new corrections that were just added to the symbol corrections file:\n")
+				cat("\nThese are the new corrections that were just added:\n")
 				print(new_corrections)
-				if(readline("Would you like to save the set of corrections just made to the corrections file (y/n)")=="y"){
+				if(readline("Would you like to save this set of corrections just made to the corrections file (y/n)")=="y"){
 					addCorrections(new_corrections=new_corrections, correction_set=correction_set, correctionsfile=correctionsfile)
 				}
 			}
@@ -452,7 +422,8 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 getSymbolCorrectionTable<-function(correctionsfile){
 	
 	if(!file.exists(correctionsfile)){
-		dir.create(path=basename(path=correctionsfile), recursive=T, showWarnings=F)
+		message("\nNote: cannot find gene identifier correction file.\nCopying the default correction file from package data.\n")
+		dir.create(path=dirname(path=correctionsfile), recursive=T, showWarnings=F)
 		file.copy(from=system.file("extdata/gene_symbol_corrections_list.txt", package = "packageDir"),
 							to=correctionsfile)
 	}
@@ -483,6 +454,7 @@ addCorrections<-function(new_corrections, correctionsfile="./reference_data/gene
 	#now attempt to clean the final_collections of rows where no changes are made (ie, old symbol is the same as new symbol)
 	final_corrections=final_corrections[final_corrections[,1]!=final_corrections[,2],,drop=F]
 	final_corrections = unique(final_corrections)
+	dir.create(path=dirname(path=correctionsfile), showWarnings=F, recursive=T)
 	write.table(x=final_corrections, file=correctionsfile, 
 							quote=F, sep="\t", row.names=F, col.names=c("old_symbol", "new_symbol"))
 	cat("\nSymbol corrections recorded in file:", correctionsfile, "\n")	
@@ -583,13 +555,13 @@ checkSynonyms<-function(symbols, indexes, symlookup, col2){
 		sterm=cursym
 		acc = NULL
 		while(T){
-			print("start while(T)")
+			#print("start while(T)")
 			#grep the row against the previous symbols column
 			pat = paste("(^|[[:blank:]])", sterm, "(,|$)", collapse="", sep="")
 			res1 = grep(pattern=pat, x=symlookup[["Synonyms"]])
 			res2 = grep(pattern=sterm, x=symlookup[["Synonyms"]], ignore.case=T)
 			res3 = grep(pattern=pat, x=symlookup[["Approved.Symbol"]], ignore.case=T)
-			cat("\n###################################################### Searching synonyms for", cursym,"\n")
+			cat("\nSearching synonyms for", cursym,"###################################################### \n")
 			cat("#####in the data being processed, this symbol is associated with chromosome", curchrom, "\n\n########## Original query:", osym,
 					"\n########## Current search term: ", sterm, "\n")
 			if(length(res2)>0){
@@ -631,7 +603,7 @@ checkSynonyms<-function(symbols, indexes, symlookup, col2){
 			}
 			sterm = line
 		}#while
-		print("Out of while loop")
+		#print("Out of while loop")
 		if(acc != ""){
 			ssymbols = c(ssymbols, acc)
 			sindexes = c(sindexes, osym)
@@ -639,7 +611,7 @@ checkSynonyms<-function(symbols, indexes, symlookup, col2){
 	}#for
 	out = cbind.data.frame(sindexes, ssymbols, stringsAsFactors=F)
 	if(nrow(out)) colnames(out)<-c("old_symbol","new_symbol")
-	print("about to return")
+	#print("about to return")
 	return(out)
 }#checkSynonyms
 
@@ -735,69 +707,87 @@ cleanGeneSymbols<-function(genes){
 
 #'@title getHugoSymbols
 #'@description obtains HGNC/HUGO symbol look up table containing official set of HUGO symbols.
-#'@param paths_detail If a \code{Path_Detail} object is provided, the symbols will be extracted from its \code{symtable} slot
+#'@param paths_detail A \code{Path_Detail} or a \code{Study} object. If a \code{Path_Detail} object is provided, the symbols will be extracted from its \code{symtable} slot. If a \code{Study} object is provided for this argument, the symbol lookup table will be exracted from the \code{Path_Detail} it contains.
 #'@param curhugofname If interactive gene symbol correction is to be used, this argument should be the file path to the HUGO table as downloaded from genenames.org.
 #'@param verbose Controlls if symbol corrections are to be interactive (if yes, curhugofname file must be supplied as it contains critical information, such as gene symbol status, past identifiers and synonyms)
 #'@return Table of symbols: either a two column data.frame, the hgnc.table provided by HGNChelper, or a data frame as provided by genenames.org. Either of which have a column titled Approved.Symbol which contains official, approved symbols.  
 #'@import HGNChelper
+#'@export
+#'@examples
+#'#get the default HUGO lookup table, hgnc.table from HGNChelper.
+#'hsyms = getHugoSymbols() 
+#'#attempt to download and or use a full hugo lookup table from genenames.org
+#'hsyms = getHugoSymbols(curhugofname="./reference_data/current_hugo_table_slim.txt") 
 getHugoSymbols<-function(paths_detail=NULL, 
 												 curhugofname=NULL,#"./reference_data/current_hugo_table_slim.txt",
-												 verbose=T){
+												 verbose=F){
+	# 	curhugofname = "./reference_data/current_hugo_table_slim.txt"
 
-	if(is.null(curhugofname)){
+	if(!is.null(paths_detail)){
+		if(class(paths_detail)=="Study"){
+			cat("\nGetting Path_Detail object from Study object ..\n")
+			paths_detail=paths_detail@studyMetaData@paths
+		}
+		cat("\nGetting HUGO symbols from Path_Detail reference calss object...\n")
+		return(paths_detail$symtable)
+	}#if/else
+
+	if(is.null(curhugofname)){#if a file name for a hugo lookup table was not passed, return the hgnc.table from HGNChelper
 		library("HGNChelper")
 		data("hgnc.table", package="HGNChelper")
 		if(verbose){
 			if(readline("Would you like to use interactive gene symbol correciton? (enter y or n) ")=="n"){
 				return(hgnc.table)
+			}else{
+				curhugofname = "./reference_data/current_hugo_table_slim.txt"
 			}
 		}else{
 			return(hgnc.table)
 		}
 	}
-	#curhugofname = "./reference_data/current_hugo_table_slim.txt"
-	if(class(paths_detail)=="Study"){
-		cat("\nGetting HUGO gene symbols from study..\n")
-		paths_detail=paths_detail@studyMetaData@paths
+
+	if(!file.exists(curhugofname)){
+		downloadHugoLookupTable(curhugofname=curhugofname, autoDownLoad=!verbose)
 	}
-	if(is.null(paths_detail)){
-		cat("\nLoading official HUGO gene symbols from file..\n")
-		if(!file.exists(curhugofname)){
-			downloadHugoLookupTable(curhugofname=curhugofname, autoDownLoad=!verbose)
-		}
-		
-		cref = read.table(file=curhugofname,
-											sep="\t",
-											comment.char="",
-											header=T,
-											quote="", 
-											stringsAsFactors=F, 
-											na.strings="-")
-		
-		cref$Approved.Symbol = cleanGeneSymbols(genes=cref$Approved.Symbol)
-		cat("\nUsing a symbol correction file downloaded from http://www.genenames.org/",
-				"on",as.character(file.info(curhugofname)$mtime),".\n")
-		ginfo = ""
-		if(verbose){
-			ginfo=readline(paste("To get info on how to update this file enter \"i\"\n",
-													 "Otherwise, just press enter to continue"))
-		}else{
-			cat("\nTo get info on how to update HUGO symbol cross reference file \n",
-					"or automatically re-download cross ref file, re-run the getHugoSymbols() function\n",
-					"using the argument verbose=T (default: verbose=F)\n")
-		}
-		if(ginfo=="i"){
-			cref = downloadHugoLookupTable(curhugofname = curhugofname)
-		}
-		return(cref)
+	
+	cref = read.table(file=curhugofname,
+										sep="\t",
+										comment.char="",
+										header=T,
+										quote="", 
+										stringsAsFactors=F, 
+										na.strings="-")
+	
+	cref$Approved.Symbol = cleanGeneSymbols(genes=cref$Approved.Symbol)
+	cat("\nUsing a symbol correction file downloaded from http://www.genenames.org/",
+			"on",as.character(file.info(curhugofname)$mtime),".\n")
+	ginfo = ""
+	if(verbose){
+		ginfo=readline(paste("To get info on how to update this file enter \"i\"\n",
+												 "Otherwise, just press enter to continue"))
 	}else{
-		cat("\nGetting HUGO symbols from Path_Detail reference calss object")
-		return(paths_detail$symtable)
-	}#if/else
+		cat("\nTo get info on how to update HUGO symbol cross reference file \n",
+				"or automatically re-download cross ref file, re-run the getHugoSymbols() function\n",
+				"using the argument verbose=T (default: verbose=F)\n")
+	}
+	if(ginfo=="i"){
+		cref = downloadHugoLookupTable(curhugofname = curhugofname)
+	}
+	return(cref)
+
 }#getHugoSymbols
 
 
-downloadHugoLookupTable <- function (curhugofname, autoDownLoad=F) {
+#'@title Obtain full HUGO gene symbol look up table. 
+#'@description The function attempts to download the HUGO lookup table (includes previous symbols, synonyms and chromosome corrdinates) from the HGNC website genenames.org.
+#'@param curhugofname \code{character string} The location the symbol lookup table should be saved. Default is the local directory at ./reference_data/current_hugo_table_slim.txt. For this program to use the full HUGO table, the file needs to be left here. 
+#'@param autoDownLoad \code{logical} A flag indicating if the program should automatically attempt to download the table (T) or if it should just display information on how to manually download the table (F).
+## '@examples
+## 'curhugofname = "./reference_data/current_hugo_table_slim.txt"
+## 'downloadHugoLookupTable(curhugofname=curhugofname, autoDownload=TRUE) #attempt to download the HUGO table
+## 'hsyms = getHugoSymbols(curhugofname=curhugofname, verbose=F)
+## 'file.remove(curhugofname)
+downloadHugoLookupTable <- function (curhugofname="./reference_data/current_hugo_table_slim.txt", autoDownLoad=F) {
 	
 	if(!autoDownLoad){
 		autoDownLoad = "r"==readline("To attempt to download a current cross reference table of HUGO symbols enter r \n(note: this can take more than 10 minutes to download)\nIf you tried this once and it didn't work, press enter to get other options. ")
@@ -806,7 +796,8 @@ downloadHugoLookupTable <- function (curhugofname, autoDownLoad=F) {
 	if(autoDownLoad){
 		full_hurl = "http://www.genenames.org/cgi-bin/hgnc_downloads?title=HGNC+output+data&hgnc_dbtag=on&preset=all&status=Approved&status=Entry+Withdrawn&status_opt=2&level=pri&=on&where=&order_by=gd_app_sym_sort&limit=&format=text&submit=submit&.cgifields=&.cgifields=level&.cgifields=chr&.cgifields=status&.cgifields=hgnc_dbtag"
 		cat("\nConnecting to HGNC website...\n")
-		reopenedfurl=try(expr=read.table(file=full_hurl,sep="\t",comment.char="",header=T,quote="", stringsAsFactors=F,na.strings="-"),
+		reopenedfurl=try(expr=read.table(file=full_hurl,sep="\t",comment.char="",
+																		 header=T,quote="", stringsAsFactors=F,na.strings="-"),
 										 silent=T)
 		if(sum(grep(pattern="error", x=class(reopenedfurl), ignore.case=T))){
 			cat("\nError text:\n")
@@ -814,6 +805,7 @@ downloadHugoLookupTable <- function (curhugofname, autoDownLoad=F) {
 			cat("\nError, could not download Hugo reference table from HGNC..\n")
 		}else{
 			cat("\nTable downloaded, writing to file...\n")
+			dir.create(path=dirname(path=curhugofname), showWarnings=F, recursive=T)
 			write.table(x=reopenedfurl,file=curhugofname,quote=F,sep="\t")
 			cref = read.table(file=curhugofname,sep="\t",comment.char="",header=T,quote="", stringsAsFactors=F, na.strings="-")
 			cref$Approved.Symbol = cleanGeneSymbols(cref$Approved.Symbol)
@@ -847,4 +839,31 @@ getAndStripHGNC<-function(){
 	
 	write.table(x=extab, file="./htabExtract.txt", sep="\t",row.names=F, col.names=T)
 	
+}
+
+
+#like swapsymbols, but makes a dictionary out of corrected, not genelist, allowing genelist to contain duplicates
+#makes a dictionary out of corrected, to correct the items in genelist
+#takes: corrected: two column table, columns: <old symbols> <new symbols>
+#       genelist: list containing symbols to be corrected
+#returns: genelist with symbols corrected
+swapsymbols2<-function(corrected, genelist){
+	
+	#corrected needs to be subseted so it doesn't add anything
+	corrected = corrected[corrected[,1] %in% genelist,]
+	
+	#figure out which genes were actually corrected; if they were not correted, corrected[,2] or [,1] will contain an NA
+	#this gets only the lines that dont have NA in column 1 or 2
+	index = which(!(is.na(corrected[,2]) | is.na(corrected[,1])))
+	#make switch dictionary; names = old symbol, values = new symbol
+	cor = corrected[index,2]
+	names(cor) <- corrected[index,1]
+	#now switch the uncorrected unique targets to the corrected unique targets
+	out = genelist
+	rows = which(genelist%in%corrected[,1])#make sure to only correct the ones we have corrections for
+	for(i in rows){
+		out[i] = as.character(cor[genelist[i]])
+	}
+	print(length(rows))
+	return(out)
 }
