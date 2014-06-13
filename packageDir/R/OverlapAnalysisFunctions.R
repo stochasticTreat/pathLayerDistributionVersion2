@@ -1,5 +1,5 @@
 #overlapAnalaysisFunctions
-VERBOSE=T
+
 
 RunOverlapAnalysis<-function(settings, study){
 	
@@ -27,7 +27,7 @@ abDrugOverlapAnalysis<-function(study,
 																enrich_col="hyperg_p_w_FDR",
 																verbose=T,
 																settings=NULL){
-	
+	if(!exists("VERBOSE")) VERBOSE=T
 	cat("\n******************************************************************************************\n")
 	cat("\n*************************************overlap analysis*************************************\n")
 	cat("\n******************************************************************************************\n")
@@ -46,7 +46,7 @@ abDrugOverlapAnalysis<-function(study,
 	if("interactive"%in%names(settings)){ 
 		#if interactive is found as a flag in settings it is the first time overlap analysis has been run for the study
 		#put it in the right place
-		if("basic_overlap"%in%names(settings)){#overlap analysis has already been run
+		if( "basic_overlap"%in%names(settings) ){#overlap analysis has already been run
 			settings_full = settings #transfer the settings list
 			settings_full$interactive = NULL #erase the flag from the master list
 			interactiveFlag = settings$interactive # put the interactive flag in the right place
@@ -58,10 +58,11 @@ abDrugOverlapAnalysis<-function(study,
 		}
 	}else{
 		settings_full = settings
+		settings = settings_full$basic_overlap
 	}
 		
-# 	settings$interactive = settings_full$interactive
-# 	settings_full$interactive = NULL
+	# 	settings$interactive = settings_full$interactive
+	# 	settings_full$interactive = NULL
 
 	settings = setting(s=settings, prompt="Would you like to run the function/aberration overlap analysis on each patient? (y/n)")
 	runEachPatient=settings$.text == "y"
@@ -96,7 +97,7 @@ abDrugOverlapAnalysis<-function(study,
 selectOverlapType<-function(ola, study){
 	
 	#determine if matched
-	overlapPatients = CheckPatientOverlap(ola$results)
+	overlapPatients = CheckPatientOverlap(results=ola$results)
 	
 	#Assure only the sensitive patients are 
 	overlapPatients = adjustOverlapToSensitive(overlap=overlapPatients, 
@@ -137,8 +138,8 @@ selectOverlapType<-function(ola, study){
 }
 
 runUnmatchedCohort<-function(ola, study, functional_analysis_name="functional_drug_screen_summary"){
-	cat("\nola$settings:\n") 
-	print(ola$settings)
+	if(VERBOSE) cat("\nola$settings:\n") 
+	if(VERBOSE) print(ola$settings)
 	functionalEnrichmentAnalysis = ola$results[[functional_analysis_name[1]]]
 	#case 1: use what was passed as settings
 # 	combSettings = ola$settings$combinedAberrations
@@ -185,7 +186,8 @@ runMatchedCohort<-function(ola, overlapPatients, study){
 	# 	if(is.null(ola$settings$combinedAberrations)) ola$settings$combinedAberrations = 
 	#case 1: use the settings passed
 	funSettings = ola$settings$functionalPathAnalysis
-	if(ola$settings$defaultSummaryTable){#if case 1 is null
+	if(is.null(ola$settings$defaultSummaryTable)){#if case 1 is null
+		
 		ola$settings$functionalPathAnalysis = NULL
 		#case 2: use the default settings
 		#case 3: use the settings from an aberration arm (taken care of in combineAberrationTypes)
@@ -257,9 +259,9 @@ runMatchedIndividuals<-function(ola, overlapPatients, study){
 	tmpDs  = ola$settings$functional_drug_screen_summary
 	if(is.null(tmpDs)){
 		tmpDs = ola$settings$defaultSummaryTable
-# 		tmpDs = ola$results$functional_drug_screen_summary$settings
-# 		if(class(tmpDs)!="list") tmpDs = dfToList(df=tmpDs)
-# 		tmpDs$interactive = ola$settings$basic_overlap$interactive
+	# 		tmpDs = ola$results$functional_drug_screen_summary$settings
+	# 		if(class(tmpDs)!="list") tmpDs = dfToList(df=tmpDs)
+	# 		tmpDs$interactive = ola$settings$basic_overlap$interactive
 		ola$settings$functional_drug_screen_summary = tmpDs
 	}
 	
@@ -443,14 +445,14 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 		sensen  = functionalEnrichmentAnalysis$pathsummary[functionalEnrichmentAnalysis$pathsummary[,ola$enrich_col]<ola$threshold,"path_id"]
 	}
 	
-# 	if(is.null(senspaths)){
-# 		print("There are no sensitive targets in this sample.")
-# 		sensen=NULL
-# 	}else{
-# 		#T3			paths enriched for drug-sensitive genes
-# 		print("Sensitive targets found.")
-# 		sensen  = functionalEnrichmentAnalysis$pathsummary[functionalEnrichmentAnalysis$pathsummary[,ola$enrich_col]<ola$threshold,"path_id"]
-# 	}
+	# 	if(is.null(senspaths)){
+	# 		print("There are no sensitive targets in this sample.")
+	# 		sensen=NULL
+	# 	}else{
+	# 		#T3			paths enriched for drug-sensitive genes
+	# 		print("Sensitive targets found.")
+	# 		sensen  = functionalEnrichmentAnalysis$pathsummary[functionalEnrichmentAnalysis$pathsummary[,ola$enrich_col]<ola$threshold,"path_id"]
+	# 	}
 	
 	#vennList[["Paths enriched for drug-sensitve targets"]]
 	#T4			aberration_coverage
@@ -500,7 +502,7 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	dev.off()
 	if(VERBOSE) print(fullvennFileName)
 	
-	print(vennFileName)
+	if(VERBOSE) print(vennFileName)
 	
 	if(VERBOSE) print("Venn diagram complete.")
 	# 	#this is the base name (no folder root) of the venn diagram; 
