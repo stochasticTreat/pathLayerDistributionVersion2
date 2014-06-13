@@ -243,7 +243,7 @@ summaryTableInner<-function(psr, paths_detail){
 	
 	tableOut = tableOut[order(tableOut[,5], decreasing=T), ,drop=F]
 	
-	print("Regular return from pathway analysis")
+	print("Regular return from pathway analysis...")
 	return(list(pathsummary=tableOut, #The path enrichment summary
 							summarystats=generalSummary(psr=psr, paths_detail=paths_detail), #the overall summary stats
 							patientGeneMatrix=psr$patientGeneMatrix, #the original patientGeneMatrix with rows removed if genes were not targeted

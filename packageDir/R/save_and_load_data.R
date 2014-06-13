@@ -273,19 +273,6 @@ saveSummary<-function(summ, study_name="", path = "./output"){
 	cat("\n</saveSummary()>\n")
 }
 
-test.empemptySignature<-function(){
-	
-	tdf = data.frame(matrix(data="V1", nrow=1, ncol=1, dimnames=list(NULL,"V1")),stringsAsFactors=F)
-	
-	checkTrue(expr=emptySignature(testdf=tdf))
-	
-	tdf[1,1] = "testPid"
-	checkTrue(expr=emptySignature(testdf=tdf, pid="testPid"))
-	
-	tdf[1,1] = 12
-	checkTrue(expr=!emptySignature(testdf=tdf))
-	
-}
 
 emptySignature<-function(testdf, pid=""){
 	if(is.vector(testdf)&!is.data.frame(testdf)) return(F)

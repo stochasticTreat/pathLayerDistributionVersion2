@@ -36,6 +36,9 @@ changeStudyName<-function(study, newName){
 #'@param verbose A flag indicating if analyses should be run in interactive/verbose mode, prompting user to check intermediate settings. 
 #'@return A \code{Study} object with analysis described by settings complete. 
 #'@export
+#'@examples
+#'study = getTestStudyObject()
+#'sres = autoRunFromSettings(study=study)
 autoRunFromSettings<-function(study, verbose=T){
 	#pull each analysis type out
 	allanalyses = names(study@studyMetaData@settings)	
@@ -45,7 +48,8 @@ autoRunFromSettings<-function(study, verbose=T){
 		cat("Settings being run for these intput arms:\n")
 		cat(analyses, "\n")
 		for(a in analyses){
-			study = runArm(armDescription=a, study=study, fromDescription=F, interactive=F)
+			study = runArm(armDescription=a, study=study, 
+										 fromDescription=F, interactive=F)
 		}
 		if("overlap_analysis"%in%allanalyses){
 			study = runArm(armDescription="overlap_analysis", study=study, fromDescription=F, interactive=F)
@@ -283,28 +287,28 @@ printProgramState<-function(stud){#results, study_name, path_detail){
 			}
 		}
 		
-# 		cat("######### Other loaded data:\n")
-# 		for(n in odnames) cat("-",gsub(pattern="_",replacement=" ",x=n),"\n")
+	# 		cat("######### Other loaded data:\n")
+	# 		for(n in odnames) cat("-",gsub(pattern="_",replacement=" ",x=n),"\n")
 	}else{
 		cat("\n***There is currently no aberration or drug screen data loaded***\n")
 	}
-	cat("#########################################################")
-# 	cat("#########################################################")
-# 	###indicated if patients will be limited to some subset
-# 	if(is.null(aberration_patient_subset)){
-# 		cat("\nUsing full set of patients\n")
-# 	}else if(length(grep(pattern="TCGA",x=patient_set_name,ignore.case=T))){
-# 		cat("\nSingle patient loaded, pid:",patient_set_name,"\n")
-# 	}else{
-# 		cat("\nLoaded",patient_set_name,"cohort consisting of ",length(aberration_patient_subset)," patients out of ",length(all_patients)," patients.\n")
-# 	}
-# 	cat("#########################################################\n")
+	cat("\n#########################################################\n")
+	# 	cat("#########################################################")
+	# 	###indicated if patients will be limited to some subset
+	# 	if(is.null(aberration_patient_subset)){
+	# 		cat("\nUsing full set of patients\n")
+	# 	}else if(length(grep(pattern="TCGA",x=patient_set_name,ignore.case=T))){
+	# 		cat("\nSingle patient loaded, pid:",patient_set_name,"\n")
+	# 	}else{
+	# 		cat("\nLoaded",patient_set_name,"cohort consisting of ",length(aberration_patient_subset)," patients out of ",length(all_patients)," patients.\n")
+	# 	}
+	# 	cat("#########################################################\n")
 }#printProgramState
 
 # darkPaths = results$overlap_analysis$'Aberration enriched, not drug targeted'$path_id
 #determine list of genes found most often in pathways
 BangForBuck<-function(darkPaths, path_detail){
-	print("in bang for buck")
+	cat("\nIn bang for buck analysis...")
 	if(!is.vector(darkPaths)){
 		darkPaths = darkPaths[,1]
 	}
@@ -325,7 +329,7 @@ BangForBuck<-function(darkPaths, path_detail){
 	
 	pathsPerGene = cbind.data.frame(genecounts, pathcross, stringsAsFactors=F)
 	colnames(pathsPerGene)<-c("Number of paths", "Path names")
-	print("bang for buck analysis complete")
+	print("..done\n")
 	return(pathsPerGene)
 }
 
@@ -455,18 +459,18 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 		for(i in ri){
 			curres = results[[i]]
 			print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-			print(names(results)[i])
-			print(curres$patientsums)
+			if(VERBOSE) print(names(results)[i])
+			if(VERBOSE) print(curres$patientsums)
 			if(is.null(overlapPatients)){
 				overlapPatients = rownames(curres$patientsums)
-				print("overlap patients rout 1:")
-				print(overlapPatients)
+				if(VERBOSE) print("overlap patients rout 1:")
+				if(VERBOSE) print(overlapPatients)
 			}else{
 				numover = length(overlapPatients)
 				overlapPatients = intersect(overlapPatients,rownames(curres$patientsums))
 				nlost = numover - length(overlapPatients)
-				print("overlap patients rout 2:")
-				print(overlapPatients)
+				if(VERBOSE) print("overlap patients rout 2:")
+				if(VERBOSE) print(overlapPatients)
 				if(nlost > 0){
 					cat("Note: ",nlost,"patients were found not to have been analyzed by all platforms.\n")	
 				}
@@ -488,7 +492,7 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 	coverage_summary=NULL
 	coverageSet = NULL
 
-	print(ri)
+	if(VERBOSE) print(ri)
 	#Establish joint coverage of all aberration types
 	#for each aberration type
 	cat("\nNote, limiting coverage to inlude only those genes\nanalyzed on all aberration analysis platforms\n")
@@ -498,11 +502,10 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 			print("for(i in ri){ iteration:")
 			print(i)
 			print(curname)
-			print("point x")
 		}
 		curres = results[[i]]
 		if("coverage_summary"%in%names(curres)){
-			print("coverage summary found")
+			if(VERBOSE) cat(" ..coverage summary found.. ")
 			#there is a coverage summary, so extract the coverage set
 			covsum=curres$coverage_summary
 			if(is.null(coverageSet)){
@@ -514,14 +517,14 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 			}
 		}
 		abtypenames = paste(abtypenames,curres$summarystats[1,2], sep=" ")
-		print("abtypenames:")
-		print(abtypenames)
+		if(VERBOSE) print("abtypenames:")
+		if(VERBOSE) print(abtypenames)
 		trimGeneMatrix=curres$patientGeneMatrix[,overlapPatients,drop=F]#make sure only patients who have representation in each data type are being represented here
 		big_pgm = as.matrix(joinTables(t1=big_pgm, t2=trimGeneMatrix, name_prefix=curname, fill=0))
-		print("point z")
+		cat(".")
 	}#for
 	
-	print("infunction 2")
+	if(VERBOSE) print("infunction 2")
 	if(!is.null(coverageSet)){
 		#1: trim the big_pgm so there are no un-covered genes
 		goodPGMRows = rownames(big_pgm)%in%coverageSet
@@ -588,7 +591,7 @@ combineAberrationTypes<-function(study, s=NULL, results=NULL, runEachPatient=F, 
 	if(is.null(s)){
 		s = pickSettings(study=study, settingType="aberration")
 	}
-	print("inside combineAberrationTypes()....................................")
+	cat("\nCombining aberration types ....................................\n")
 	big_pgm = NULL
 	abtypenames = "Summary of"
 	if(is.null(s)) s=study@studyMetaData@settings$defaultSummaryTable
@@ -610,19 +613,19 @@ combineAberrationTypes<-function(study, s=NULL, results=NULL, runEachPatient=F, 
 	if(is.null(overlapPatients)){
 		for(i in ri){
 			curres = results[[i]]
-			print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-			print(names(results)[i])
-			print(curres$patientsums)
+			cat("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n")
+			if(VERBOSE) print(names(results)[i])
+			if(VERBOSE) print(curres$patientsums)
 			if(is.null(overlapPatients)){
 				overlapPatients = rownames(curres$patientsums)
-				print("overlap patients rout 1:")
-				print(overlapPatients)
+				if(VERBOSE) print("overlap patients rout 1:")
+				if(VERBOSE) print(overlapPatients)
 			}else{
 				numover = length(overlapPatients)
 				overlapPatients = intersect(overlapPatients,rownames(curres$patientsums))
 				nlost = numover - length(overlapPatients)
-				print("overlap patients rout 2:")
-				print(overlapPatients)
+				if(VERBOSE) print("overlap patients rout 2:")
+				if(VERBOSE) print(overlapPatients)
 				if(nlost > 0){
 					cat("Note: ",nlost,"patients were found not to have been analyzed by all platforms.\n")	
 				}
@@ -658,7 +661,7 @@ combineAberrationTypes<-function(study, s=NULL, results=NULL, runEachPatient=F, 
 		}
 		curres = results[[i]]
 		if("coverage_summary"%in%names(curres)){
-			print("coverage summary found")
+			if(VERBOSE) print("coverage summary found")
 			#there is a coverage summary, so extract the coverage set
 			covsum=curres$coverage_summary
 			if(is.null(coverageSet)){
@@ -670,14 +673,14 @@ combineAberrationTypes<-function(study, s=NULL, results=NULL, runEachPatient=F, 
 			}
 		}
 		abtypenames = paste(abtypenames,curres$summarystats[1,2], sep=" ")
-		print("abtypenames:")
-		print(abtypenames)
+		if(VERBOSE) print("abtypenames:")
+		if(VERBOSE) print(abtypenames)
 		trimGeneMatrix=curres$patientGeneMatrix[,overlapPatients,drop=F]#make sure only patients who have representation in each data type are being represented here
 		big_pgm = as.matrix(joinTables(t1=big_pgm, t2=trimGeneMatrix, name_prefix=curname, fill=0))
-		print("point z")
+		if(VERBOSE) print("point z")
 	}#for
 	
-	print("infunction 2")
+	if(VERBOSE) print("infunction 2")
 	if(!is.null(coverageSet)&is.null(big_pgm)){
 		#1: trim the big_pgm so there are no un-covered genes
 		goodPGMRows = rownames(big_pgm)%in%coverageSet
@@ -773,79 +776,3 @@ getPatientSubset<-function(){
 	return(aberration_patient_subset)
 }#getPatientSubset
 # 
-
-# checkLoadDependencies<-function(){
-# 	
-# 	if (!require("ggplot2", character.only=T)){
-# 		mess = paste0("Library named \'","ggplot2","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("methods", character.only=T)){
-# 		mess = paste0("Library named \'","methods","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("hwriterPlus", character.only=T)){
-# 		mess = paste0("Library named \'","hwriterPlus","\' is missing")
-# 		stop(mess)
-# 	}
-# 	
-# 	if (!require("xtable", character.only=T)){
-# 		mess = paste0("Library named \'","xtable","\' is missing")
-# 		stop(mess)
-# 	}
-# 	
-# 	if (!require("graph", character.only=T)){
-# 		mess = paste0("Library named \'","graph","\' is missing")
-# 		stop(mess)
-# 	}
-# 	
-# 	if (!require("plyr", character.only=T)){
-# 		mess = paste0("Library named \'","plyr","\' is missing")
-# 		stop(mess)
-# 	}
-# 	
-# 	if (!require(HGNChelper)){
-# 		mess = paste0("Library named \'","HGNChelper","\' is missing")
-# 		stop(mess)
-# 	}
-# 	
-# 	if (!require("tools", character.only=T)){
-# 		mess = paste0("Library named \'","tools","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("biomaRt", character.only=T)){
-# 		mess = paste0("Library named \'","biomaRt","\' is missing")
-# 		stop(mess)
-# 	}
-# 	
-# 	if (!require(RCurl)){
-# 		mess = paste0("Library named \'","RCurl","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("calibrate", character.only=T)){
-# 		mess = paste0("Library named \'","calibrate","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("VennDiagram", character.only=T)){
-# 		mess = paste0("Library named \'","VennDiagram","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("tcltk", character.only=T)){
-# 		mess = paste0("Library named \'","tcltk","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("RCytoscape", character.only=T)){
-# 		mess = paste0("Library named \'","RCytoscape","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("graphite", character.only=T)){
-# 		mess = paste0("Library named \'","graphite","\' is missing")
-# 		stop(mess)
-# 	}
-# 	if (!require("rBiopaxParser", character.only=T)){
-# 		mess = paste0("Library named \'","rBiopaxParser","\' is missing")
-# 		stop(mess)
-# 	}
-# 	
-# }
-

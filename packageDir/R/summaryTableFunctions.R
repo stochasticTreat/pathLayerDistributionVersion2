@@ -38,6 +38,7 @@ getBasicPathInformation <- function (paths_detail, pathNames, psr) {
 
 #ut1
 generalSummary<-function(psr, paths_detail){
+	cat("\n..Producing general summary of path coverage..")
 	#summary set is the general summary table output in the list returned by this function
 	summarySetLabels = c("Data set used:",
 											 "Path analysis of genes that are:",
@@ -70,6 +71,7 @@ generalSummary<-function(psr, paths_detail){
 	covSumOut = cbind.data.frame(summarySetLabels, defaultSummarySetValues, stringsAsFactors=F)
 	rownames(covSumOut) <- NULL
 	colnames(covSumOut) <- c("Data", "Value")
+	cat("done..\n")
 	return(covSumOut)
 }
 
