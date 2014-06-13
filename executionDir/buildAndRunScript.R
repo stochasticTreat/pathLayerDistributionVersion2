@@ -5,9 +5,9 @@ setwd("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistribution
 
 detach("package:packageDir", unload=TRUE)
 remove.packages("packageDir")
-
 roxygenize(overwrite=T, 
 					 package.dir="/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/packageDir/")
+
 
 # roxygenize()
 
@@ -46,6 +46,20 @@ packageDir:list_to_table()
 #'																										return(stud)
 #'																									})}
 
+
+sourceAllInFolder<-function(folname="../packageDir/R/"){
+	
+	if(!grepl(pattern="/$", x=folname)) folname = paste0(folname,"/")
+	
+	fnames = dir(folname)
+	fnames = fnames[grep(pattern="r", x=fnames, ignore.case=T)]
+	fnames = paste0(folname, fnames)
+	for(fn in fnames) source(fn)
+	
+}
+
+
+sourceAllInFolder()
 
 # improved list of objects
 .ls.objects <- function (pos = 1, pattern, order.by,
