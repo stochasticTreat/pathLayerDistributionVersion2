@@ -9,6 +9,34 @@ RunOverlapAnalysis<-function(settings, study){
 }
 
 
+test.abDrugOverlapAnalysis<-function(){
+	
+	#stud = STUDY
+	#test all instances with individuals and cohorts. 
+	#test matched cohort
+	
+	#get default overlap analysis settings
+	defSettings = getTestStudySettings()
+	overlapSettings = defSettings$overlap_analysis
+	#get a study object pre-loaded with data aberration and functional data. 
+	stud = getTestStudyObject()
+	#run the overlap analysis with functional genomic and genomic aberration data from the same cohort
+	overlapRes1 = abDrugOverlapAnalysis(study=stud, settings=overlapSettings)
+
+	#simulate the analysis with functional genomic and genomic aberration data from sepparate cohorts
+	studySepparateCohort = stud
+	patientSums = studySepparateCohort@results$functional_drug_screen_summary$patientsums
+	rownames(patientSums) <- toupper(rownames(patientSums))
+	
+	studySepparateCohort@results$functional_drug_screen_summary$patientsums  = patientSums
+	
+	overlapRes2 = abDrugOverlapAnalysis(study=studySepparateCohort, 
+															settings=overlapSettings)
+	
+	
+}
+
+
 #settings slots expected:
 #	combinedAberrations
 #'@title abDrugOverlapAnalysis
@@ -20,6 +48,21 @@ RunOverlapAnalysis<-function(settings, study){
 #'@param settings List obejct. This contains the settings used in the overlap analysis. Use getDefaultOverlapSettings()
 #'@return Study object with overlap analysis in results list added or replaced 
 #'@export
+#'@examples
+#'#get a study object pre-loaded with genomic aberration and functional genomic data. 
+#' stud = getTestStudyObject()
+#'#get default overlap analysis settings
+#' defSettings = getTestStudySettings()
+#' overlapSettings = defSettings$overlap_analysis
+#'#run the overlap analysis
+#' overlapRes1 = abDrugOverlapAnalysis(study=stud, settings=overlapSettings)
+#'\dontrun{
+#'#If settings for the overlap analysis cannot be found, the overlap 
+#'#analysis will run in interactive mode, requiring user input.
+#'#This line of code will run the overlap anaysis in interactive mode, 
+#'#requesting user input to establish settings:
+#'	abDrugOverlapAnalysis(study=stud)
+#'}
 #'@importFrom VennDiagram venn.diagram
 #'@importFrom calibrate textxy
 abDrugOverlapAnalysis<-function(study,
