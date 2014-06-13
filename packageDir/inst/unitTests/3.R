@@ -144,3 +144,54 @@ test.correctByHgncHelper<-function(){
 	checkEquals(target=c("TP53", "FLT3", "OCT5", "BMP2K", "STK10"), current=res)
 	
 }
+
+
+test.corsym<-function(userInput=F){
+	# 		symtabFile = "~/tprog/main_131219/reference_data/current_hugo_table.txt"
+	# 		symtab = read.delim(file=symtabFile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-")
+	# 		
+	# 		#first remove all the unapproved symbols
+	# 		withRows = grepl(pattern="~", x=symtab$Approved.Symbol)
+	# 		
+	# 		apptab = symtab[!withRows,]
+	# 		
+	# 		extab = apptab[,c("Approved.Symbol","Previous.Symbols")]
+	# 	
+	
+	
+	# 	syms2  = rownames(STUDY@results$somatic_mutation_aberration_summary$genesummary)
+	# 	save(syms2, file="./testData/")
+	#		save(syms2, file="~/tprog/distribution/pathLayerDistributionVersion2/packageDir/inst/testData/amlSymbolsUncorrected.rda")
+	# 	system.file("extdata/gene_symbol_corrections_list.txt", package = "packageDir")
+	# 	load("./testData/amlSymbolsUncorrected.rda", verbose=T)
+	# 	
+	# 	load("./testData/simplesymtable.rda", verbose=T)
+	
+	data("hgnc.table")
+	extab = hgnc.table
+	appsyms = extab$Approved.Symbol[1:10]
+	
+	res = corsym(symbol_set=appsyms, symref=extab, verbose=F)
+	checkEquals(target=appsyms, current=res)
+	
+	htab = getHugoSymbols(curhugofname="./reference_data/current_hugo_table_slim.txt", verbose=F)
+	
+	if(userInput){
+		prevSyms = c("CPAMD9","ALD", "ALDL1", "ABC50", "AADACL2")
+		tmp = readline("The next test will require input of the letter y")
+		res1 = corsym(symbol_set=prevSyms, symref=htab, verbose=T)
+		correctSymbols = c("A2ML1","ABCD1","ABCD2","ABCF1","AADACL2")
+		checkEquals(target=correctSymbols, current=res1)
+	}
+	
+	res2 = corsym(symbol_set=prevSyms, symref=htab, verbose=F)
+	checkEquals(target=4, current=sum(correctSymbols!=res2))
+	
+	#checking corsym using hgnchelper
+	
+	load(system.file("testData/amlSymbolsUncorrected.rda", package = "packageDir"), verbose=T)
+	path_detail = getDefaultPaths()
+	path_detail$symtable = hgnc.table
+	res3 = corsym(symbol_set=syms2, symref=path_detail, verbose=F)
+	checkEquals(target=15, current=sum(res3!=syms2), msg="check of HGNChelper-based script")
+}
