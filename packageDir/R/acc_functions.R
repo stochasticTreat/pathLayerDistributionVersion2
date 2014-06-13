@@ -527,34 +527,6 @@ joinTables<-function(t1,t2, name_prefix=NULL, fill=0){
 	return(out)	
 }
 
-#like swapsymbols, but makes a dictionary out of corrected, not genelist, allowing genelist to contain duplicates
-#makes a dictionary out of corrected, to correct the items in genelist
-#takes: corrected: two column table, columns: <old symbols> <new symbols>
-#       genelist: list containing symbols to be corrected
-#returns: genelist with symbols corrected
-swapsymbols2<-function(corrected, genelist){
-	
-	#corrected needs to be subseted so it doesn't add anything
-	corrected = corrected[corrected[,1] %in% genelist,]
-	
-	#figure out which genes were actually corrected; if they were not correted, corrected[,2] or [,1] will contain an NA
-	#this gets only the lines that dont have NA in column 1 or 2
-	index = which(!(is.na(corrected[,2]) | is.na(corrected[,1])))
-	#make switch dictionary; names = old symbol, values = new symbol
-	cor = corrected[index,2]
-	names(cor) <- corrected[index,1]
-	#now switch the uncorrected unique targets to the corrected unique targets
-	out = genelist
-	rows = which(genelist%in%corrected[,1])#make sure to only correct the ones we have corrections for
-	for(i in rows){
-		out[i] = as.character(cor[genelist[i]])
-	}
-	print(length(rows))
-	return(out)
-}
-
-
-
 #getEmpP
 #get empirical p-value
 getEmpP<-function(path,pgm,reps=1000,paths){
@@ -1282,6 +1254,19 @@ htmlPerPatient<-function(results, summ, fileroot, overlap=T, path_detail=NULL){
 	}
 }
 
+
+test.twoHistOnePlot<-function(){
+	
+	prefilt = data.frame(muts = sample(x=100:200, replace=T, size=100), stringsAsFactors=F)
+	postfilt = data.frame(muts=sample(x=50:150, replace=T, size=100), stringsAsFactors=F)
+	twoHistOnePlot(dataset1=prefilt, 
+								 dataset2=postfilt, 
+								 x_label="Number of mutations", 
+								 y_label="Number of patients",
+								 legend_titles=c("Before filtering", "After filtering"),
+								 main_title="Distributions of mutations in patients before and after filtering")
+}
+
 #twoHistOnePlot
 #
 #'@title Puts two histograms on the same plot.
@@ -1302,10 +1287,11 @@ twoHistOnePlot<-function(dataset1, dataset2,
 												 y_label="Frequency",
 												 legend_titles=c("dataset 1","dataset 2"),
 												 breaks=c(30,30)){
-	
+ 	cat("\nReporting distributions of ", legend_titles[1],"and",legend_titles[2],"...")
 	#first combine the two data sets
-	colnames(dataset1)<-NULL
-	colnames(dataset2)<-NULL
+	colnames(dataset1)<-"dat"
+	colnames(dataset2)<-"dat"
+	
 	stackedSet = rbind.data.frame(dataset1, dataset2)
 	idCol = c(rep(legend_titles[1],times=nrow(dataset1)), rep(legend_titles[2], times=nrow(dataset2)))
 	stackedSet = cbind.data.frame(stackedSet, idCol)
@@ -1340,12 +1326,12 @@ twoHistOnePlot<-function(dataset1, dataset2,
 							theme(legend.title=element_blank())+
 							xlab(x_label)
 
-	if(min(stackedSet)>=0){
+	if(min(stackedSet[,1])>=0){
 		p1 = p1+scale_x_continuous(limits=c( min(stackedSet[,"value"]), max(stackedSet[,"value"]) ))
 	}
 	
 	print(p1)
-
+	cat("...done\n")
 	return(p1)
 }
 
