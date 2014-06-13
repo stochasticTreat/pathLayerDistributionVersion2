@@ -13,3 +13,47 @@ getTestPGM<-function(){
 	load(file=defname, verbose=T)
 	return(pgm)
 }
+
+
+
+#'@title Get a Study object containing moc data. 
+#'@description Returns a \code{Study} object loaded with moc somatic mutation data which indicates the Reactome pathway, Abacavir metabolism, is enriched in somatic mutation. 
+#'@return \code{Study} object
+#'@export
+getTestStudyObject<-function(){
+	
+	# 	exampleResults = STUDY@results
+	# 	save(exampleResults, file="../packageDir/inst/testData/exampleResults.rda")
+	# 	exampleSettings = STUDY@studyMetaData@settings
+	# 	save(exampleSettings, file="../packageDir/inst/testData/exampleSettings.rda")
+	
+  l1 = load(file=system.file("testData/exampleResults.rda", package = "packageDir"), verbose=T)
+  exampleResults = get(l1[1])
+  l2 = load(file=system.file("testData/exampleSettings.rda", package = "packageDir"), verbose=T)
+  exampleSettings = get(l2[1])
+  
+	pths = getDefaultPaths()
+	
+	exampleStudy = getStudyObject(study.name="testDataSets", 
+																geneIdentifierType="HUGO",
+																path_detail=pths,
+																settings=exampleSettings)
+  exampleStudy = loadBasicArms(STUDY=exampleStudy)
+	exampleStudy@results = exampleResults
+
+	return(exampleStudy)
+
+}
+
+
+#'@title Get settings for the three basic study arms: functional, aberration and function-aberration overlap.
+#'@description Returns the settings list for the analysis of the test data sets: functional drug screen data, somatic mutation data and overlap analysis, of the functional and somatic mutation (aberration) data.
+#'@return \code{list} object with slots named "overlap_analysis", "somatic_mutation_aberration_summary" and "functional_drug_screen_summary" containing settings lists for their respective study arms. 
+#'@export
+getTestStudySettings<-function(){
+	# 	testStudySettings = STUDY@studyMetaData@settings
+	# 	save(testStudySettings, file="../packageDir/inst/testData/testStudySettings.rda")
+	lres = load(file="../packageDir/inst/testData/testStudySettings.rda", verbose=T)
+	dols = get(lres[1])
+	return(dols)
+}
