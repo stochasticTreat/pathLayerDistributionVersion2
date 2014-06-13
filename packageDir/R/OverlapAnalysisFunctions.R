@@ -20,7 +20,7 @@ RunOverlapAnalysis<-function(settings, study){
 #'@param settings List obejct. This contains the settings used in the overlap analysis. Use getDefaultOverlapSettings()
 #'@return Study object with overlap analysis in results list added or replaced 
 #'@export
-#'@import VennDiagram
+#'@importFrom VennDiagram venn.diagram
 #'@importFrom calibrate textxy
 abDrugOverlapAnalysis<-function(study,
 																thresh=0.05,
@@ -427,6 +427,14 @@ extractedDrugScreenAnalysis<-function(psubset, results, path_detail, study, s, e
 	return(summ)
 }#extractedDrugScreenAnalysis
 
+#'@title The central function used in an overlap analysis
+#'@description Examines the actual overlap between functionally significant and aberrationally signficant pathways.
+#'@param functionalEnrichmentAnalysis The functional enrichment analysis to be used. 
+#'@param combinedAberrations The aberration analysis to be used
+#'@param ola The overlap analysis runner object to be used. 
+#'@param coverage If coverage is limited, this will contain the set of genes the coverage is limited to. 
+#'@return An overlap analysis
+#'@import VennDiagram
 coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations, ola, coverage=NULL){
 	
 	if(is.null(coverage)) coverage=ola$results$functional_drug_screen_summary$coverage_summary
@@ -470,9 +478,15 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	
 	vennList[["Drug-screen targeted paths"]] = drugcoverage
 	vennList[["Aberration enriched paths"]] = aben
+	# 	print("search():")
+	# 	print(search())
+	# 	print("ls()")
+	# 	print(ls())
+	require(VennDiagram)
 	if(is.null(functionalEnrichmentAnalysis)){#ola$results$functional_drug_screen_summary$pathsummary)){#if this is null, then there is only a drug coverage analysis available
 		print("venn option 1 -- functionalEnrichmentAnalysis is NULL")
-		vennTmp = venn.diagram(vennList, filename=NULL,
+		vennTmp = venn.diagram(vennList, 
+													 filename=NULL,
 													 main.cex=1.5,
 													 cex=1.5,
 													 cat.cex=c(1.3,1.3),
@@ -483,7 +497,7 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 													 fill=c("red","blue"),
 													 main="Overlap of significantly aberrational and drug-targeted paths")
 	}else{
-		print("venn option 2")
+		if(VERBOSE) print("venn option 2")
 		vennList[["Paths containing drug-sensitive targets"]] = senspaths
 		vennTmp = venn.diagram(vennList, filename=NULL,
 													 main.cex=1.5,
