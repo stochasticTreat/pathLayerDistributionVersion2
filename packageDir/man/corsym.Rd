@@ -1,6 +1,6 @@
 \name{corsym}
 \alias{corsym}
-\title{corsym}
+\title{Correct unofficial gene symbols.}
 \usage{
 corsym(symbol_set, symref = NULL, verbose = T, col2 = "Chrom",
   correctionsfile = "./reference_data/gene_symbol_corrections_list.txt")
@@ -39,13 +39,26 @@ input, with any possible corrections made.
 }
 \description{
 Function to correct and unify gene identifiers across a
-study
+study arms.
 }
 \details{
 This function allows a user to interactively correct gene
 identifiers so they can be coordinated between study arms.
 All corrections can optionally be recorded to the
 corrections file so that at latter time they can be run
-automatically, without user interaction.
+automatically, without user interaction, and so that they
+can be automatically re-used in correcting gene symbols
+from other study arms.
+}
+\examples{
+toCheck = c("p53", "FLT3", "ASM1", "ASML3B","ARF","APOBEC3C")
+corrected = corsym(symbol_set=toCheck) #using HGNChelper and previously made corrections
+
+symref  = getHugoSymbols()
+
+\dontrun{
+symref  = getHugoSymbols(curhugofname="./reference_data/current_hugo_table_slim.txt")
+corrected = corsym(symbol_set=toCheck, symref=symref, verbose=T)
+}
 }
 

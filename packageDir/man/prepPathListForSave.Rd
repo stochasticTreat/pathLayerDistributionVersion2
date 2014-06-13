@@ -2,7 +2,7 @@
 \alias{prepPathListForSave}
 \title{prepPathListForSave()}
 \usage{
-prepPathListForSave(gset = reactome, path_source = "Reactome pathway")
+prepPathListForSave(gset, path_source = "Reactome pathway")
 }
 \arguments{
   \item{gset}{The list object of paths}

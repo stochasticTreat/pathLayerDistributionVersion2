@@ -33,4 +33,20 @@ replaced
 main function for running analysis of functional and
 genomic aberration arms
 }
+\examples{
+#get a study object pre-loaded with genomic aberration and functional genomic data.
+stud = getTestStudyObject()
+#get default overlap analysis settings
+defSettings = getTestStudySettings()
+overlapSettings = defSettings$overlap_analysis
+#run the overlap analysis
+overlapRes1 = abDrugOverlapAnalysis(study=stud, settings=overlapSettings)
+\dontrun{
+#If settings for the overlap analysis cannot be found, the overlap
+#analysis will run in interactive mode, requiring user input.
+#This line of code will run the overlap anaysis in interactive mode,
+#requesting user input to establish settings:
+	abDrugOverlapAnalysis(study=stud)
+}
+}
 
