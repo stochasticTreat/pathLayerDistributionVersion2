@@ -46,7 +46,6 @@ packageDir:list_to_table()
 #'																										return(stud)
 #'																									})}
 
-
 sourceAllInFolder<-function(folname="../packageDir/R/"){
 	
 	if(!grepl(pattern="/$", x=folname)) folname = paste0(folname,"/")
@@ -54,11 +53,12 @@ sourceAllInFolder<-function(folname="../packageDir/R/"){
 	fnames = dir(folname)
 	fnames = fnames[grep(pattern="r", x=fnames, ignore.case=T)]
 	fnames = paste0(folname, fnames)
-	for(fn in fnames) source(fn)
+	for(fn in fnames){
+		cat("..",fn,"..")
+		source(fn)
+	}
 	
 }
-
-
 sourceAllInFolder()
 
 # improved list of objects
