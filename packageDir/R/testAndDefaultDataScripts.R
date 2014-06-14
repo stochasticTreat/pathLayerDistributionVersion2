@@ -20,29 +20,33 @@ getTestPGM<-function(){
 #'@description Returns a \code{Study} object loaded with moc somatic mutation data which indicates the Reactome pathway, Abacavir metabolism, is enriched in somatic mutation. 
 #'@return \code{Study} object
 #'@export
-getTestStudyObject<-function(){
-	
+getTestStudyObject<-function(noSettings=FALSE, noResults=FALSE, noPaths=FALSE, noArms=FALSE){
 	# 	exampleResults = STUDY@results
 	# 	save(exampleResults, file="../packageDir/inst/testData/exampleResults.rda")
 	# 	exampleSettings = STUDY@studyMetaData@settings
 	# 	save(exampleSettings, file="../packageDir/inst/testData/exampleSettings.rda")
 	
-  l1 = load(file=system.file("testData/exampleResults.rda", package = "packageDir"), verbose=T)
-  exampleResults = get(l1[1])
-  l2 = load(file=system.file("testData/exampleSettings.rda", package = "packageDir"), verbose=T)
-  exampleSettings = get(l2[1])
-  
-	pths = getDefaultPaths()
-	
+	exampleSettings=list()
+
+	if(!noSettings){
+		l2 = load(file=system.file("testData/exampleSettings.rda", package = "packageDir"), verbose=T)
+		exampleSettings = get(l2[1])
+	}
+
 	exampleStudy = getStudyObject(study.name="testDataSets", 
 																geneIdentifierType="HUGO",
-																path_detail=pths,
+																path_detail=getDefaultPaths(),
 																settings=exampleSettings)
-  exampleStudy = loadBasicArms(STUDY=exampleStudy)
-	exampleStudy@results = exampleResults
+	
+	if(!noArms) exampleStudy = loadBasicArms(STUDY=exampleStudy)
+  
+	if(!noResults){
+		l1 = load(file=system.file("testData/exampleResults.rda", package = "packageDir"), verbose=T)
+		exampleResults = get(l1[1])
+		exampleStudy@results = exampleResults
+	}
 
 	return(exampleStudy)
-
 }
 
 
