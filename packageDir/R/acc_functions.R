@@ -6,7 +6,7 @@ if(!exists("VERBOSE")) VERBOSE = F
 # .pardefault <- par()
 
 simpleGGHist<-function(dataSet, xlab, ylab, mainTitle, showPlot=T){
-	
+	require(ggplot2)
 	p = qplot(x=as.vector(dataSet), geom="histogram")+
 		theme_bw()+
 		xlab(xlab)+
@@ -1318,18 +1318,17 @@ twoHistOnePlot<-function(dataset1, dataset2,
 	# 					 fill=c(rgb(1,0,0,1/4),rgb(0,0,1,1/4)), 
 	# 					 horiz=F)
 	# 	}
-	
+	bwidth = ifelse(test=length(unique(stackedSet$value))>10, yes=3, no=1)
 	p1 = ggplot(stackedSet, aes(x=value, fill=idCol)) + 
-							geom_histogram(alpha=0.5, position="identity", binwidth=3)+
+							geom_histogram(alpha=0.5, position="identity", binwidth=bwidth)+
 							ggtitle(main_title)+
 							theme_bw()+
 							theme(legend.title=element_blank())+
 							xlab(x_label)
-
-	if(min(stackedSet[,1])>=0){
-		p1 = p1+scale_x_continuous(limits=c( min(stackedSet[,"value"]), max(stackedSet[,"value"]) ))
-	}
-	
+# 	if(min(stackedSet[,1])<=0){
+# 		rng = (range(stackedSet$value)[2]-range(stackedSet$value)[1])*.1
+# 		p1 = p1+scale_x_continuous(limits=c( (min(stackedSet[,"value"])-rng), (max(stackedSet[,"value"])+rng ) ))
+# 	}
 	print(p1)
 	cat("...done\n")
 	return(p1)
