@@ -37,8 +37,14 @@ changeStudyName<-function(study, newName){
 #'@return A \code{Study} object with analysis described by settings complete. 
 #'@export
 #'@examples
-#'study = getTestStudyObject()
-#'sres = autoRunFromSettings(study=study)
+#'#load a set of settings
+#'load(system.file("extdata/abacavirSettings.rda",package="packageDir"), verbose=TRUE)
+#'#initialize the study
+#'s1 = getStudyObject(path_detail=getDefaultPaths(), 
+#'										settings=abacavirSettings,
+#'										study.name="integrationTestAvacavirMetabolism")
+#'s1 = loadBasicArms(STUDY=s1)
+#'sres = autoRunFromSettings(study=s1)
 autoRunFromSettings<-function(study, verbose=T){
 	#pull each analysis type out
 	allanalyses = names(study@studyMetaData@settings)	
@@ -106,8 +112,6 @@ test.multiRunFromSettings<-function(){
 	
 	ir1som = ir1$somatic_mutation_aberration_summary
 	ir2som = ir2$somatic_mutation_aberration_summary
-	
-
 
 }
 
@@ -336,16 +340,12 @@ BangForBuck<-function(darkPaths, path_detail){
 #next, report which of the pathways interact with 
 
 #'@title Display summaries of loaded data. 
-#'@description prints to the screen summary statistics for data sets from each data arm. 
+#'@description This function prints to the screen summary statistics for data sets from each data arm. 
 #'@param study A \code{Study} object. 
 #'@export
-#pths = getPaths("Reactome.2014.04.06.12.52.27.txt") #path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt",force=T)
-#	teststudy = getStudyObject(study.name="testerStudy", 
-#														 path_detail=pths,
-#														 settings=NULL,
-#														 GeneIdentifierLookup=pths$HUGOtable)
-#
-#	DataSummary(teststudy)
+#'@examples
+#'study=getTestStudyObject()
+#'DataSummary(study=study)
 DataSummary<-function(study){
 	results=study@results
 	cat("\nDisplaying summaries for all loaded data:\n")
@@ -361,7 +361,6 @@ DataSummary<-function(study){
 		cat("\nOverview of",titleTxt,"data:\n")
 		print(results[[i]]$summarystats)
 	}
-	stemp = readline("Summaries of all loaded data can be seen above.\nPress any key to continue.")
 }
 
 #options(warn=-1)
@@ -385,6 +384,11 @@ bmerge<-function(x,y){
 #'@param study A \code{Study} object. More than one aberration data type needs to have been loaded before this function is run. 
 #'@return A \code{Study} object with a slot named, \code{"Aberration data type comparrison"} in the results list filled with a table comparring impacts of each aberration data type for each pathway.
 #'@export
+#'@examples
+#' stud = getTestStudyObject()
+#' stud = compareSources(study=stud)
+#' resslot = slot(object=stud, name="results")
+#' View(resslot$'Aberration data type comparrison')
 compareSources<-function(study){
 	#takes:		 the results list
 	#returns:	 Two item list: list(outtable=outtable, results=results)
