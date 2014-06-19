@@ -203,9 +203,9 @@ Paths<-function(s){
 	return(s@studyMetaData@paths$paths)
 }
 
-PathMetaData<-function(s){
-	return(s@studyMetaData@paths)
-}
+# PathMetaData<-function(s){
+# 	return(s@studyMetaData@paths)
+# }
 
 studyName<-function(s){
 	return(s@studyMetaData@studyName)
@@ -285,6 +285,9 @@ patientSums<-function(dset){
 #'@description Returns the default settings object for the summaryTable path analysis. 
 #'@return A list with a slot named "defaultSummaryTable", containing the default settings for the summaryTable function.
 #'@export
+#'@examples
+#'defSettings = getDefaultSettings()
+#'print(names(defSettings$defaultSummaryTable))
 getDefaultSettings<-function(){
 	# summaryTableSettings = read.table(file=settingFileName, header=T, sep="\t")
 	summaryTableSettings = loadSettings(fname=NULL)
@@ -360,19 +363,6 @@ armDescriptionList<-function(study){
 
 Paths<-function(s){
 	return(s@studyMetaData@paths$paths)
-}
-
-#'@title FullPathObject
-#'@description retreives the full Path_Detail object from a study
-#'@param S A Study objecdt
-#'@return A Path_Detail object
-#'@export
-FullPathObject<-function(S){
-	return(S@studyMetaData@paths)
-}
-
-PathMetaData<-function(s){
-	return(s@studyMetaData@paths)
 }
 
 
