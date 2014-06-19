@@ -208,7 +208,7 @@ test.getPaths<-function(){
 	symtab = getHugoSymbols()
 	path_file=NULL
 	referenceFileName = system.file("extdata/pathMetaData.txt", package = "packageDir")
-	testPths = getPaths(symtab=symtab)
+	testPths = getPaths(symtab=symtab, referenceFileName=referenceFileName)
 	print(dim(testPths$paths))
 	print(testPths$paths[1:2,1:2])
 }
@@ -228,7 +228,28 @@ test.getPaths<-function(){
 #'@param symtab A gene identifier lookup table. If not provided, one will be automatically obtained (may take longer)
 #'@param verbose Logical flag indicating if interactive user prompts and additional information should be displayed. 
 #'@return \code{Path_Detail} object. 
+#'@details 
+#'Pathways are stored in the local working directory in the folder \code{./reference_data/paths/}. 
+#'Pathways must be imported into this package so that meta-data and import records can be maintained. 
+#'Path meta data is stored in the file \code{./reference_data/paths/pathMetaData.txt} . Any time a path
+#'repository is imported, a record of its import is added to the path meta data file. When loading a path
+#'repository for use in a study, this program checks the path meta data file, for available path repositories
+#'and for path repository file locations. 
 #'@export
+#'@examples
+#'
+#'\dontrun{
+#'#select and/or load pathways interactively
+#'path_detail = getPaths()
+#'}
+#'
+#'#Get pathways from a study object:
+#'study=getTestStudyObject()
+#'path_detail=getPaths(study)
+#'
+#'#select pathways from their file name:
+#'path_detail = getPaths(path_file="./reference_data/paths/Reactome.2014.04.06.12.52.27.txt", 
+#'											verbose=FALSE)
 getPaths<-function(path_file=NULL, 
 									 referenceFileName = "./reference_data/paths/pathMetaData.txt", 
 									 symtab=NULL, 
@@ -260,14 +281,6 @@ getPaths<-function(path_file=NULL,
 	return(paths)
 }
 
-#'@title getPathsFromStudy
-#'@description Retreives biological pathway bipartate graph from study object
-#'@param studyObject An object of class Study
-#'@return a path matrix: representation of a collection of pathway gene memberships as a bipartate graph, with columns representing genes and rows representing pathways. 
-#'@export
-getPathsFromStudy<-function(studyObject){
-	return(studyObject@studyMetaData@paths)
-}
 
 getPathMetaData<-function(ref="./reference_data/paths/pathMetaData.txt"){
 	
@@ -514,7 +527,8 @@ importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
 	}
 	
 	usesHUGO = readline("Does the selected pathway set employ HGNC/HUGO symbols? (y/n)")
-	if(usesHUGO){
+	
+	if(usesHUGO=="y"){
 		symbol_type="HUGO"
 		#correct gene symbols
 		colnames(preped_paths$paths)<-corsym(symbol_set=colnames(preped_paths$paths), 
