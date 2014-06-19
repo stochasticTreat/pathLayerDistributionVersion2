@@ -29,10 +29,10 @@ getActiveGenesEachPath <- function (psr) {
 #used to get the first 3 columns of information going into the pathSummary
 getBasicPathInformation <- function (paths_detail, pathNames, psr) {
 	path_id = pathNames
-	full_path_lengths = psr$study@studyMetaData@paths$full_path_length[path_id,,drop=F]
+	full_path_lengths = psr$study@studyMetaData@paths$full_path_length[path_id,,drop=FALSE]
 	colnames(full_path_lengths)<-"full_path_length"
-	testable_path_length = paths_detail$paths%*%rep(T, times=ncol(paths_detail$paths))
-	testable_path_length = testable_path_length[path_id,,drop=F]
+	testable_path_length = paths_detail$paths%*%rep(TRUE, times=ncol(paths_detail$paths))
+	testable_path_length = testable_path_length[path_id,,drop=FALSE]
 	return(cbind.data.frame(path_id, full_path_lengths, testable_path_length))
 }
 
@@ -68,7 +68,7 @@ generalSummary<-function(psr, paths_detail){
 																		 				 "min:", min(psr$patientsum),
 																		 				 "max:", max(psr$patientsum))))
 	
-	covSumOut = cbind.data.frame(summarySetLabels, defaultSummarySetValues, stringsAsFactors=F)
+	covSumOut = cbind.data.frame(summarySetLabels, defaultSummarySetValues, stringsAsFactors=FALSE)
 	rownames(covSumOut) <- NULL
 	colnames(covSumOut) <- c("Data", "Value")
 	cat("done..\n")
@@ -83,8 +83,11 @@ is.uninitilizedNull<-function(val){
 
 # save(s, file=defaultSettingsFile)
 #allow interactive determination of path analysis settings
-pathAnalysisSettings <- function (psr, study, s=NULL, interactive=F, 
+pathAnalysisSettings <- function (psr, study, s=NULL, interactive=FALSE, 
 																	defaultSettingsFile=NULL) {
+	
+	if(is.data.frame(s)) s = dfToList(df=s)
+	
 	print("inside pathAnalysisSettings")
 	interactiveTmp = s$interactive
 
@@ -93,14 +96,14 @@ pathAnalysisSettings <- function (psr, study, s=NULL, interactive=F,
 	}else if(!is.list(s)){
 		print(s)
 	}
-	
+
 	if(interactiveTmp){
 		interTest = s[["Use special path significance analysis settings for this data type? (y/n)"]]
 		if(!is.null(interTest)){
-			if(interTest=="y") s$interactive = T
+			if(interTest=="y") s$interactive = TRUE
 		}
 	}else{
-		s[["Use special path significance analysis settings for this data type? (y/n)"]] = F
+		s[["Use special path significance analysis settings for this data type? (y/n)"]] = FALSE
 	}
 	
 	etPrompt = "To add additional path significance tests, please select the R script file containing the interfaces to these enrichment tests"
@@ -137,7 +140,7 @@ pathAnalysisSettings <- function (psr, study, s=NULL, interactive=F,
 	if(specialSettingsFile){
 		#select file of enrichment tests	
 		s = setting(s, 
-								requireInput=F, 
+								requireInput=FALSE, 
 								prompt=etPrompt)
 	}
 
@@ -176,7 +179,7 @@ loadPathSigTests<-function(sigTestFile='./hypergeometricPathAnalysis.R'){
 	
 	pathAnalysisFunctions = list()
 	if(!is.null(sigTestFile)){
-		source(sigTestFile, local=T)
+		source(sigTestFile, local=TRUE)
 	}
 	pathAnalysisFunctions[["hypergeometric"]] = hypergeometricPathEnrichment
 	return(pathAnalysisFunctions)
@@ -184,25 +187,25 @@ loadPathSigTests<-function(sigTestFile='./hypergeometricPathAnalysis.R'){
 
 
 checkSummaryTableInput<-function(psr,paths_detail){
-	pass=T
+	pass=TRUE
 	if(!sum(psr$patientGeneMatrix)&ncol(psr$patientGeneMatrix)>1){
 		readline(paste("Error, it appears there were no",targetname,
 									 "genes in the cohort of data entered,\n though this may not be the case. Please check your data and your patient identifiers.\n Press enter to continue."))
-		pass=F
+		pass=FALSE
 	}
 	if(!is.matrix(psr$patientGeneMatrix)){
 		tmp=readline(prompt="ERROR!! The patient gene matrix provided to the summarytable4 function was not of the R, matrix data type.\nPress any key to continue")
-		pass=F
+		pass=FALSE
 	}
 	pdnames = c("paths","source","date","info", "full_path_length")
-	allgood=T
-	for(n in pdnames) if(!length(paths_detail[[n]])) allgood=F
+	allgood=TRUE
+	for(n in pdnames) if(!length(paths_detail[[n]])) allgood=FALSE
 	if(!allgood){
 		tmp=readline(paste("ERROR! The paths list is missing one or more of the following named elements: \n", 
 											 paste(pdnames, collapse="; "),
 											 "\nPress any key to continue.",
 											 collapse=" "))
-		pass=F
+		pass=FALSE
 	}
 	print(ifelse(test=pass, yes="Path analysis inputs look correct..", no="Issues found with path analysis inputs.."))
 }
@@ -211,8 +214,8 @@ adjustPathsForCoverage<-function(paths_detail, targetMatrix){
 	
 	pd = paths_detail$copy()
 	pd$paths=targetMatrix
-	pd[["gene_overlap_counts"]] = rep(T,nrow(	pd$paths))%*%	pd$paths
-	pd[["full_path_length"]] = 	pd$paths%*%rep(T,ncol(	pd$paths))
+	pd[["gene_overlap_counts"]] = rep(TRUE,nrow(	pd$paths))%*%	pd$paths
+	pd[["full_path_length"]] = 	pd$paths%*%rep(TRUE,ncol(	pd$paths))
 	return(pd)	
 }
 
@@ -240,7 +243,7 @@ checkCoverage<-function(psr, paths_detail,
 	psrCtmp$.significanceTests = c()
 	psrCtmp$patientGeneMatrix = PGMFromVector(genevector=psr$coverage)
 	#assure correct formatting and data were supplied to summary table
-	psrCtmp$patientGeneMatrix = psrCtmp$patientGeneMatrix==T
+	psrCtmp$patientGeneMatrix = psrCtmp$patientGeneMatrix==TRUE
 	
 	#several preliminary computations
 	psrCtmp$patientsum = t((rep(x=1,times=nrow(psrCtmp$patientGeneMatrix))%*%psrCtmp$patientGeneMatrix)) #patientsum: matrix with the number of active genes found in each patient
@@ -263,7 +266,7 @@ checkCoverage<-function(psr, paths_detail,
 getMinMaxAndFreq<-function(psr = psr, paths_detail = paths_detail){ # pathTargetMatrix,patientGeneMatrix,genesum, paths){
 	#gets the minumumn, maximum and frequency of mutations in path genes, across the cohort
 	#takes: 		pathTargetMatrix: bipartate graph, path matrix reduced to only the pathways and genes that are targeted by the patients in the cohort
-	#						patientGeneMatrix: bipartate graph, indicates which patients have which genes active, columns=patient ids, rows=gene names, values=T/F
+	#						patientGeneMatrix: bipartate graph, indicates which patients have which genes active, columns=patient ids, rows=gene names, values=TRUE/FALSE
 	#						paths: the bipartate graph of the full pathways
 	#						genesum: data frame with three columns: types, the gene names
 	#																										counts, the number of patients the genes are found active in
@@ -277,7 +280,7 @@ getMinMaxAndFreq<-function(psr = psr, paths_detail = paths_detail){ # pathTarget
 	patientGeneMatrix = psr$patientGeneMatrix
 	genesum = data.frame(types=rownames(psr$gene_count_matrix), 
 											 counts=psr$gene_count_matrix, 
-											 stringsAsFactors=F)
+											 stringsAsFactors=FALSE)
 	colnames(genesum)<-c("types", "counts")
 
 	paths = paths_detail$paths
@@ -298,11 +301,11 @@ getMinMaxAndFreq<-function(psr = psr, paths_detail = paths_detail){ # pathTarget
 
 	for(i in 1:nrow(pathTargetMatrix)){#for each path in the target matrix
 		pname = rownames(pathTargetMatrix)[i]
-		p = paths[pname,,drop=F]#pull out one pathway
+		p = paths[pname,,drop=FALSE]#pull out one pathway
 		mems = colnames(p)[p]#pull out the set of path memebers
-		xm = patientGeneMatrix[intersect(x=mems,y=colnames(pathTargetMatrix)),,drop=F]#extract just the parts of the patientGeneMatrix corresponding to the path
+		xm = patientGeneMatrix[intersect(x=mems,y=colnames(pathTargetMatrix)),,drop=FALSE]#extract just the parts of the patientGeneMatrix corresponding to the path
 		p_act_count[i] = sum(xm)
-		pathpatients = (rep(T, nrow(xm))%*%xm) > 0 #find those patients with active genes in any of the genes in the pathway
+		pathpatients = (rep(TRUE, nrow(xm))%*%xm) > 0 #find those patients with active genes in any of the genes in the pathway
 		pfreq[i] = sum(pathpatients) #sum the number of patients across the cohort with active genes in any of the path genes
 		maxmuts[i] = max(tmpgenesum[mems])#find the maximum number of active genes of any of the genes in the pathway
 		minmuts[i] = min(tmpgenesum[mems])#find the minimum number of active genes of any of the genes in the pathway
