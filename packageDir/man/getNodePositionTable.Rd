@@ -1,6 +1,6 @@
 \name{getNodePositionTable}
 \alias{getNodePositionTable}
-\title{getNodePostionTable}
+\title{Get position of nodes in cytoscape diagram. .}
 \usage{
 getNodePositionTable(nodeTable, attval, attname, w)
 }
@@ -18,10 +18,10 @@ getNodePositionTable(nodeTable, attval, attname, w)
   \item{w}{The cytoscape window connection object.}
 }
 \value{
-data table with three columns, node id, x position, y
+data table with three columns: node id, x position, y
 postion
 }
 \description{
-gets a table with the positions of all the nodes.
+Gets a table with the positions of all the nodes.
 }
 

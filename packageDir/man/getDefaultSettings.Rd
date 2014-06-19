@@ -12,4 +12,8 @@ the default settings for the summaryTable function.
 Returns the default settings object for the summaryTable
 path analysis.
 }
+\examples{
+defSettings = getDefaultSettings()
+print(names(defSettings$defaultSummaryTable))
+}
 

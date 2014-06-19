@@ -68,5 +68,6 @@ pathwayAnalysis = summaryTable(study=studyObject,
 																pgm=getTestPGM(),
 																dataSetDescription="test analysis of gene data",
 																activeGeneDescription="analyzed_gene")
+View(pathwayAnalysis$patientsums)
 }
 

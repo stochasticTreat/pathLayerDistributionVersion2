@@ -31,4 +31,30 @@ getPaths(path_file = NULL,
 Get \code{Path_Detail} object, housing gene sets for
 cellular pathways.
 }
+\details{
+Pathways are stored in the local working directory in the
+folder \code{./reference_data/paths/}. Pathways must be
+imported into this package so that meta-data and import
+records can be maintained. Path meta data is stored in the
+file \code{./reference_data/paths/pathMetaData.txt} . Any
+time a path repository is imported, a record of its import
+is added to the path meta data file. When loading a path
+repository for use in a study, this program checks the path
+meta data file, for available path repositories and for
+path repository file locations.
+}
+\examples{
+\dontrun{
+#select and/or load pathways interactively
+path_detail = getPaths()
+}
+
+#Get pathways from a study object:
+study=getTestStudyObject()
+path_detail=getPaths(study)
+
+#select pathways from their file name:
+path_detail = getPaths(path_file="./reference_data/paths/Reactome.2014.04.06.12.52.27.txt",
+											verbose=FALSE)
+}
 

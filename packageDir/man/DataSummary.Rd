@@ -8,7 +8,11 @@ DataSummary(study)
   \item{study}{A \code{Study} object.}
 }
 \description{
-prints to the screen summary statistics for data sets from
-each data arm.
+This function prints to the screen summary statistics for
+data sets from each data arm.
+}
+\examples{
+study=getTestStudyObject()
+DataSummary(study=study)
 }
 

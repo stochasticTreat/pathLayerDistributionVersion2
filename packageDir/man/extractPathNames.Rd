@@ -1,6 +1,6 @@
 \name{extractPathNames}
 \alias{extractPathNames}
-\title{extractPathNames}
+\title{Get names of significant pathways.}
 \usage{
 extractPathNames(resSetName, study, limitCol, limitVal)
 }
@@ -21,6 +21,7 @@ vector, a list of pathways from study meeting the
 parameters described in the function argument
 }
 \description{
-extracts path names given a results set, study and limitCol
+Extracts path names given a results set name, study and
+limitCol
 }
 

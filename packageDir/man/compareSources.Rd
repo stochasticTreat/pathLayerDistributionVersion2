@@ -19,4 +19,10 @@ each pathway.
 The function examines and compares the pathway summaries
 for all loaded aberration data types
 }
+\examples{
+stud = getTestStudyObject()
+stud = compareSources(study=stud)
+resslot = slot(object=stud, name="results")
+View(resslot$'Aberration data type comparrison')
+}
 
