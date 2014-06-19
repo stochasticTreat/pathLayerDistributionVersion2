@@ -14,14 +14,6 @@
 # 	nodeData(g, "C", "lfc") = 3	
 # }
 
-
-checkCurrentBiopax<-function(pathNames,	
-														 pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"){
-	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
-	neededPaths = pathNames[!pathNames%in%pwrecord$path_name]
-	return(neededPaths)
-}
-
 is.error.message<-function(biopaxFile){
 	if(grepl(pattern="error$",x=class(biopaxFile), ignore.case=T)){
 		return(T)
@@ -136,8 +128,8 @@ pathsAreFromGraphite<-function(stud){
 }
 
 
-#'@title extractPathNames
-#'@description extracts path names given a results set, study and limitCol
+#'@title Get names of significant pathways.
+#'@description Extracts path names given a results set name, study and limitCol
 #'@param resSetName the name of a summary table results set
 #'@param study a study object
 #'@param limitCol the column the returned pathways should be limited by
