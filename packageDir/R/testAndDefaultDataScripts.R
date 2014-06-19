@@ -10,7 +10,7 @@ getTestPGM<-function(){
 	#save(pgm, file="./testData/pgm.rda")
 	defname = system.file("testData/pgm.rda", package = "packageDir")
 	# 	load(file="./testData/pgm.rda", verbose=T)
-	load(file=defname, verbose=T)
+	load(file=defname, verbose=TRUE)
 	return(pgm)
 }
 
@@ -18,6 +18,10 @@ getTestPGM<-function(){
 
 #'@title Get a Study object containing moc data. 
 #'@description Returns a \code{Study} object loaded with moc somatic mutation data which indicates the Reactome pathway, Abacavir metabolism, is enriched in somatic mutation. 
+#'@param noSettings \code{logical} flag indicating if analysis setting should not be automatically added to \code{Study} object.
+#'@param noResults \code{logical} flag indicating if analysis results should not be automatically added to \code{Study} object.
+#'@param noPaths \code{logical} flag indicating if cellular pathway repository should not be automatically added to \code{Study} object.
+#'@param noArms \code{logical} flag indicating if data processing arms should not be loaded with \code{Study} object.
 #'@return \code{Study} object
 #'@export
 getTestStudyObject<-function(noSettings=FALSE, noResults=FALSE, noPaths=FALSE, noArms=FALSE){
