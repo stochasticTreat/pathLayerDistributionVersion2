@@ -7,7 +7,7 @@
 RunDrugScreen<-function(settings, study){
 	
 	#initialize objects
-	path_detail = FullPathObject(S=study)
+	path_detail = getPaths(study)
 	drug_screen_summary = list() #this is the main summary object that is provided in the main name space for the main function
 	s = settings
 	interactiveTMP = s$interactive #this allows that, if a user enters something the program does not understand, 
@@ -389,6 +389,7 @@ getPatientSubset<-function(patient_gene_matrix, s, verbose=T, subset_id=NULL){
 #'@return \code{list} with slots pgm, a logical patient gene matrix and \code{s} the settings list object. 
 #'@import grid
 #'@import gridExtra
+#'@import ggplot2
 setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
 	#require(grid)
 	#require(gridExtra)
@@ -405,13 +406,13 @@ setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
 	
 	# 	oldpar <- par(no.readonly=T)
 	# #	oldpar <- par()
-	while(T){
-		tr = try(expr={
-	# 			par(mfrow=c(2,1))
-	# 			hist(pgm, 
-	# 					 ylab="Num. genes throughout cohort",
-	# 					 xlab="Gene score", 
-	# 					 main="Distribution of drug sensitivity scores for all genes\nexamined in cohort")
+	# 	while(T){
+	# 		tr = try(expr={
+	# 	# 			par(mfrow=c(2,1))
+	# 	# 			hist(pgm, 
+	# 	# 					 ylab="Num. genes throughout cohort",
+	# 	# 					 xlab="Gene score", 
+	# 	# 					 main="Distribution of drug sensitivity scores for all genes\nexamined in cohort")
 			p1 = simpleGGHist(dataSet=as.vector(pgm), showPlot=F,
 									 xlab="Gene score", 
 									 ylab="Num. genes throughout cohort", 
@@ -432,12 +433,12 @@ setCutoff<-function(pgm, s, verbose=T, cutoffScore=NULL){
 	# 			par(mfrow=c(1,1))
 			grid.arrange(p1, p2)
 
-		}, silent=T)
-		
-		if(!is.error(tr)) break
-		print(tr)
-# 		blnktmp = readline("\nSorry, there was an error displaying the plot.\nPlease increase the size of the 'plots' display window\nthen press enter to try again.")
-	}
+	# 		}, silent=T)
+	# 		
+	# 		if(!is.error(tr)) break
+	# 		print(tr)
+	# # 		blnktmp = readline("\nSorry, there was an error displaying the plot.\nPlease increase the size of the 'plots' display window\nthen press enter to try again.")
+	# 	}
 
 	if(verbose){
 		s = setting(s=s, prompt="Please select a drug screen score cutoff value:")
@@ -474,7 +475,7 @@ runPanelAnalysis<-function(path_detail, study, s=list()){
 	s = setting(s=s, prompt="Please select a file with a drug screen results data set\n")
 	drug_scores_fname = s$.text
 
-	
+	drug_scores_fname = checkFileCopyDefault(fname=drug_scores_fname)
 	#check if there are only 3 columns --> this would indicate it's a stacked format file
 	if(isStackedFormat(drug_scores_fname)){
 		print("in stacked format")
