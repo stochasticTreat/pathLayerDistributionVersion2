@@ -15,16 +15,16 @@ getTestPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.
 	
 	testEnv$path_detail<-getPaths(path_file=path_file, verbose=F)
 	return(testEnv$path_detail)
-	
 }
+
 
 getTestPathSummaryRunner<-function(pths=NULL){
 	
 	if(is.null(pths)) pths = getTestPaths()
 	
-	geneSet = getGenesFromPaths(pids="Abacavir metabolism", STUDY=pths)
+	geneSet = packageDir:::getGenesFromPaths(pids="Abacavir metabolism", STUDY=pths)
 	
-	tm = getTargetMatrix(tgenes=geneSet, paths=pths$paths)
+	tm =  packageDir:::getTargetMatrix(tgenes=geneSet, paths=pths$paths)
 	
 	psr = PathSummaryRunner$new(.verbose=F, path_summary_each_patient=list())
 	psr$targetname = "testTarget"
@@ -35,6 +35,7 @@ getTestPathSummaryRunner<-function(pths=NULL){
 	return(psr)
 }
 
+BiocGenerics:::testPackage("packageDir")
 
 message("Running Tests")
 
