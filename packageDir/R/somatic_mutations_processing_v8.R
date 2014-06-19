@@ -16,7 +16,7 @@ runSomaticMutationsProcessing<-function(settings, study){
 	}
 	
 	#initialize objects
-	path_detail = FullPathObject(S=study)
+	path_detail = getPaths(study)
 	somatic_summary = list() #this is the main summary object that is provided in the main name space for the main function
 	s = settings
 	interactiveTMP = s$interactive #this allows that, if a user enters something the program does not understand, 
@@ -58,11 +58,12 @@ runSomaticMutationsProcessing<-function(settings, study){
 	}
 }
 
-top20Hists<-function(unfilteredData,fileroot){
+top20Hists<-function(unfilteredData){
 
 	# 	unfilteredData=results$somatic_mutation_aberration_summary$unfiltered_data
 	
 	#get the top 20 mutations
+	print(colnames(unfilteredData))
 	stacked = unfilteredData[,c("pid","Hugo_Symbol")]
 	names(stacked)<-c("Ids", "Symbol")
 	prepgm = toPGM(sds=stacked)
@@ -72,7 +73,6 @@ top20Hists<-function(unfilteredData,fileroot){
 	gsum = gsum[order(gsum, decreasing=T),,drop=F]
 	
 	top30 = gsum[1:min(30,nrow(gsum)),,drop=F]
-	
 	for(i in 1:30){
 		cn = rownames(top30)[i]
 		# 		start_positions = unfilteredData$Start_Position[unfilteredData$Hugo_Symbol==cn]#find all the start positions with Symbol == cn
@@ -90,8 +90,10 @@ top20Hists<-function(unfilteredData,fileroot){
 							 main=paste("Positions and distributions of variants in gene", cn))
 		qp + theme(axis.text.x=element_text(angle=-90))
 		dir.create("./output/image_tmp/",recursive=T, showWarnings=F)
-		ggsave(filename=paste("./output/image_tmp/variant_postions_and_types_for_gene_",cn,".png",sep=""), plot=qp)
+		fnameOut = paste("./output/image_tmp/variant_postions_and_types_for_gene_",cn,".png",sep="")
+		ggsave(filename=fnameOut, plot=qp)
 	}
+	return(fnameOut)
 }
 
 # stackedGeneHist<-function(postype){
@@ -312,14 +314,14 @@ filterMutationType<-function(tcga_som, tracker, s){
 
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	print("Before removal of genes marked as \"UNKNOWN\"")
-	stackedGeneBar(tcga_som, title="Top mutations before\nremoval of genes marked \"UNKNOWN\"")
+	stackedGeneBar(tcga_som, title="Top mutations before any filtering ")
 	tracker[["Before removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes"]]=save.plot(pname="stackedGeneBarPreUnknownRemoval")
 	
 	tcga_som_no_unknown = tcga_som[tcga_som$Hugo_Symbol!="UNKNOWN",]
 	
 	print("After removal of genes marked as \"UNKNOWN\"")
 	stackedGeneBar(tcga_som_no_unknown,
-								 title="Top mutations after removal of genes marked\"UNKNOWN\"")#make another stacked gene bar after the "UNKNOWN" are removed
+								 title="Top mutations after removal\nof genes marked \"UNKNOWN\"")#make another stacked gene bar after the "UNKNOWN" are removed
 	tracker[["After removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes."]]=save.plot("stackedGeneBarPostUnknownRemoval")
 
 	tcga_som_sum = summarize_by(col=tcga_som[["Variant_Classification"]], left_margin_factor=1.3,
@@ -597,7 +599,8 @@ processSomaticData<-function(study,
 	
 	cat(".")
 	preFilteringGeneSummary = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
-	#preFilteringWithHists = top20Hists(preFilteringGeneSummary)
+	# 	preFilteringWithHists = top20Hists(unfilteredData=tcga_som)
+	# 	tracker[["Variant locations"]] = preFilteringWithHists
 	tracker[["Mutations per gene before filtering"]] = preFilteringGeneSummary
 	
 	preFiltCountByPatient = summarize_by(col=tcga_som$pid, display=F)
@@ -668,9 +671,11 @@ processSomaticData<-function(study,
 																 activeGeneDescription="mutated", 
 																 dataSetDescription="somatic mutation data", 
 																 settings=s)
-	
+
+	cat("\nPath analysis for somatic mutation data complete\n")
 	prefilt = tracker[['Mutations per patient, before any filtering']]
 	postfilt = somatic_summary$patientsums
+
 	twoHistOnePlot(dataset1=prefilt, 
 								 dataset2=postfilt, 
 								 x_label="Number of mutations", 
@@ -683,6 +688,7 @@ processSomaticData<-function(study,
 	somatic_summary[["preFilteringGeneSummary"]] = preFilteringGeneSummary
 	#	print(names(somatic_summary$settings))
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
+	cat("\nReturning from somatic mutation analysis arm\n")
 	return(somatic_summary)
 }#processSomaticData()
 
