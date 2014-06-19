@@ -26,6 +26,9 @@ Imports:
     gridExtra,
     shiny,
     hwriter
+Suggests:
+    RUnit,
+    BiocGenerics
 Version: 0.1
 Author: Sam Higgins <samuelhiggins@gmail.com>
 Maintainer: Sam Higgins <samuelhiggins@gmail.com>
