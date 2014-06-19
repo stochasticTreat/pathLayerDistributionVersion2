@@ -102,13 +102,7 @@ getDrugData<-function(drugFname = "./reference_data/drugDB/drugbank/drug_links.c
 	return(drugTab)
 }
 
-test.makeDrugSelectionWorksheet<-function(){
-	
-	limpaths = read.table(file="./testLimitPaths.txt", header=F, sep="\t", stringsAsFactors=F)
-	
-	res1 = makeDrugSelectionWorksheet(STUDY=STUDY, pathsToSearch=limpaths$V1)
-	
-}
+
 
 
 addPanelMembership<-function(dmd, dtd, STUDY){
@@ -154,7 +148,7 @@ addBangForBuck <- function (pathsToTarget, STUDY, dtd) {
 }
 
 test.getPathIdsToTarget<-function(){
-	
+	STUDY=getTestStudyObject()
 	pids = getPathIdsToTarget(STUDY=STUDY)
 	
 }
@@ -331,6 +325,7 @@ appendClincalTrials<-function(dmd, fname="./reference_data/drugDB/exported_study
 	#for each drug name grep all the rows in the clinical trials data that has that drug name
 	phases = rep("", times=length(udn))
 	cat("Finding clinical trails for drugs...\n")
+	print(length(udn))
 	pb = txtProgressBar(min=1,max=length(udn), style=3)
 	for(i in 1:length(udn)){
 		dn = udn[i]
@@ -383,6 +378,17 @@ importDrugDbData<-function(STUDY){
 
 	return(dtd)
 }
+
+test.makeDrugSelectionWorksheet<-function(){
+	
+	stud = getTestStudyObject()
+	res1 = makeDrugSelectionWorksheet(STUDY=stud)
+# 	limpaths = read.table(file="./testLimitPaths.txt", header=F, sep="\t", stringsAsFactors=F)
+	
+	res1 = makeDrugSelectionWorksheet(STUDY=stud, pathsToSearch=limpaths$V1)
+	
+}
+
 
 #'@title Uses genomic data from the provided Study object to produce a table of pertinent drug-gene associations.
 #'@param STUDY A \code{Study} object
