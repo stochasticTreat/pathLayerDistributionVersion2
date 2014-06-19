@@ -3,7 +3,7 @@
 makeRandomPgm<-function(npat=5, probabilities=c(1,4), targetPath="ABCA transporters in lipid homeostasis"){
 	
 	pths = getDefaultPaths()
-	genes = getGenesFromPaths(pids=targetPath, STUDY=pths)
+	genes = packageDir:::getGenesFromPaths(pids=targetPath, STUDY=pths)
 	
 	patients = paste("p", 1:npat, sep="")
 	
@@ -66,7 +66,7 @@ test.summaryTable<-function(){
 															activeGeneDescription="mutated", 
 															dataSetDescription="somatic mutation data")
 	
-	saveSummary(summ=stResSomatic, study_name="tmpForUnitTest", path="./testData")
+	packageDir:::saveSummary(summ=stResSomatic, study_name="tmpForUnitTest", path="./testData")
 	stResSomatic_reopened = loadSummary(study_name="tmpForUnitTest", path="./testData")
 	
 	#extract the slots that should be the same
@@ -92,8 +92,8 @@ test.coverage.summaryTable<-function(){
 	testStudyObjectFileNamesomatic = system.file("testData/amlDrugScreenSum.rda", package = "packageDir")
 	if(!file.exists("./testData")) dir.create("./testData", recursive=T, showWarnings=F)
 	
-	#amlFun = STUDY@results$functional_drug_screen_summary
-	#save(amlFun, file=testStudyObjectFileNamesomatic, compress=T)
+	#amlFun = stResFunctional
+	#save(amlFun, file="../packageDir/inst/testData/amlDrugScreenSum.rda", compress=T)
 	load(file=testStudyObjectFileNamesomatic, verbose=T)
 	
 	stemp = getStudyObject()
@@ -109,10 +109,9 @@ test.coverage.summaryTable<-function(){
 															activeGeneDescription="drug_sensitive", 
 															dataSetDescription="Drug screen output data")
 	
-	saveSummary(summ=stResFunctional, study_name="tmpForUnitTest", path="./testData")
+	packageDir:::saveSummary(summ=stResFunctional, study_name="tmpForUnitTest", path="./testData")
 	stResFunctional_reopened = loadSummary(study_name="tmpForUnitTest", path="./testData")
 
-	
 	#extract the slots that should be the same
 	
 	commonSlots = intersect(names(amlFun), names(stResFunctional_reopened))
@@ -123,10 +122,33 @@ test.coverage.summaryTable<-function(){
 	
 	amlFun = amlFun[commonSlots]
 	stResFunctional_reopened = stResFunctional_reopened[commonSlots]
-	
-	checkEquals(target=amlFun, 
-							current=stResFunctional_reopened, 
-							msg="Checking whole summary Table result set")
+	badslots=c()
+	for(sn in names(amlFun)){
+		print(sn)
+		tres = try(checkEquals(target=amlFun[[sn]], 
+											current=stResFunctional_reopened[[sn]], 
+											msg="Checking whole summary Table result set"),silent=TRUE)
+		if(class(tres)=="try-error"){
+			print(tres)	
+			badslots = c(badslots, sn)
+		} 
+	}
+	if(length(badslots)){
+		checkEquals(target=T,current=F, msg=paste("These are the bad slots: ",paste(badslots,sep=" ",collapse="")))
+	}
+# 	covT = amlFun$path_summary_each_patient$AMLadult07335
+# 	covC = stResFunctional_reopened$path_summary_each_patient$AMLadult07335
+# 	badslots=c()
+# 	for(sn in names(covT)){
+# 		tres = try(checkEquals(target=covT[[sn]], 
+# 													 current=covC[[sn]], 
+# 													 msg="Checking whole summary Table result set"),silent=TRUE)
+# 		if(class(tres)=="try-error"){
+# 			print(tres)	
+# 			badslots = c(badslots, sn)
+# 		} 
+# 	}
+
 	unlink(x="./testData/tmpForUnitTest/", recursive=T, force=T)
 }
 

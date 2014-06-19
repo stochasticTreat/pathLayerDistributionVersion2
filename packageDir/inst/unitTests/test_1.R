@@ -55,9 +55,9 @@ test.getBasicPathInformation<-function(){
 	ccres = checkCoverage(psr=psr, paths_detail=pths, geneDescription="covered", "coverage analysis")
 	psr = ccres$psr
 	pths = ccres$paths_detail
-	geneSet = setdiff(getGenesFromPaths(pids="Abacavir metabolism", STUDY=pths), 
+	geneSet = setdiff(packageDir:::getGenesFromPaths(pids="Abacavir metabolism", STUDY=pths), 
 										remset)
-	psr$.targetMatrix = getTargetMatrix(tgenes=geneSet, paths=pths$paths)
+	psr$.targetMatrix = packageDir:::getTargetMatrix(tgenes=geneSet, paths=pths$paths)
 	
 	bpiCov_current = getBasicPathInformation(paths_detail=pths, 
 																					 psr=psr,
@@ -74,8 +74,8 @@ test.getBasicPathInformation<-function(){
 
 test.generalSummary<-function(){
 	
-	psr = getTestPathSummaryRunner()
-	pths = getDefaultPaths()
+	psr = packageDir:::getTestPathSummaryRunner()
+	pths = packageDir:::getDefaultPaths()
 	
 	psr$patientsum = t((rep(x=1,times=nrow(psr$patientGeneMatrix))%*%psr$patientGeneMatrix)) #patientsum: matrix with the number of active genes found in each patient
 	colnames(	psr$patientsum )<-"count_per_patient"
