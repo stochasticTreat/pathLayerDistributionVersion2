@@ -114,39 +114,39 @@ loadDrugEAVtable<-function(fileName="./reference_data/drugDB/drugbank/drugbankEA
 	return(tabIn)
 }
 
-
-test.getAtts<-function(){
-	cat("\nThis should take about 20 seconds \n")
-	
-	eavtab=loadDrugEAVtable()
-
-	# 	> dim(eavtab)
-	# 	[1] 933299      3
-	
-	ptm2<-proc.time()
-	targrec = getDrugTargetRecords(eavtab=eavtab)
-	totalTime = proc.time() - ptm2
-	cat("Getting drug target records took", totalTime["elapsed"], "seconds.\n")
-	# 	> dim(targrec)
-	# 	[1] 452414      3
-	
-	retAtts = getAtts(mat=targrec, atts=c("^ID:", 
-																				"^Name", 
-																				"Pfam_Domain_Function", 
-																				"HGNC_ID",
-																				"Gene_Name", 
-																				"General_Function"))
-	# 	> dim(retAtts)
-	# 	[1] 87564     3
-	
-	#for each 
-	#get table of targets
-	#needs: drug, target gene symbol, reference
-	
-	#first: pull out the individual target symbols for all the individual drugs
-	targSyms = getAtts(mat=targrec, atts="Gene_Name:$")
-	tsyms=targSyms
-}
+# 
+# test.getAtts<-function(){
+# 	cat("\nThis should take about 20 seconds \n")
+# 	
+# 	eavtab=loadDrugEAVtable()
+# 
+# 	# 	> dim(eavtab)
+# 	# 	[1] 933299      3
+# 	
+# 	ptm2<-proc.time()
+# 	targrec = getDrugTargetRecords(eavtab=eavtab)
+# 	totalTime = proc.time() - ptm2
+# 	cat("Getting drug target records took", totalTime["elapsed"], "seconds.\n")
+# 	# 	> dim(targrec)
+# 	# 	[1] 452414      3
+# 	
+# 	retAtts = getAtts(mat=targrec, atts=c("^ID:", 
+# 																				"^Name", 
+# 																				"Pfam_Domain_Function", 
+# 																				"HGNC_ID",
+# 																				"Gene_Name", 
+# 																				"General_Function"))
+# 	# 	> dim(retAtts)
+# 	# 	[1] 87564     3
+# 	
+# 	#for each 
+# 	#get table of targets
+# 	#needs: drug, target gene symbol, reference
+# 	
+# 	#first: pull out the individual target symbols for all the individual drugs
+# 	targSyms = getAtts(mat=targrec, atts="Gene_Name:$")
+# 	tsyms=targSyms
+# }
 
 
 # getDrugTargetTable<-function(tsyms){
@@ -181,22 +181,21 @@ test.getAtts<-function(){
 # 	
 # }
 
-
-#'@title getAtts
-#'@description Gets all rows in the matrix, mat, with a the attribute strings(s) in atts
-#'@param mat the matrix to be searched through; contains at least 2 columns with column to being the attributes column. 
-#'@param atts a vector of strings; the attributes to be matched. perl compatible regular expressions are implemented for string matching
-#'@param verbose Flag indicating if extra information should be displayed.
-#'@return matrix, the subset of rows matching the strings provided in atts. 
-getAtts<-function(mat, atts, verbose=F){
-	omat = mat
-	mat[,2] = gsub(pattern="Drug_Target_[0-9]*_", replacement="", x=mat[,2])
-	selli = rep(F, times=nrow(mat))
-	for(a in atts){
-		if(verbose) cat(a, "retreived:\n")
-		curi = grepl(pattern=a, x=mat[,2], ignore.case=T, perl=T)
-		selli = selli | curi
-		if(verbose) print(head(omat[curi,]))
-	}
-	retmat = omat[selli,]
-}
+# #'@title getAtts
+# #'@description Gets all rows in the matrix, mat, with a the attribute strings(s) in atts
+# #'@param mat the matrix to be searched through; contains at least 2 columns with column to being the attributes column. 
+# #'@param atts a vector of strings; the attributes to be matched. perl compatible regular expressions are implemented for string matching
+# #'@param verbose Flag indicating if extra information should be displayed.
+# #'@return matrix, the subset of rows matching the strings provided in atts. 
+# getAtts<-function(mat, atts, verbose=F){
+# 	omat = mat
+# 	mat[,2] = gsub(pattern="Drug_Target_[0-9]*_", replacement="", x=mat[,2])
+# 	selli = rep(F, times=nrow(mat))
+# 	for(a in atts){
+# 		if(verbose) cat(a, "retreived:\n")
+# 		curi = grepl(pattern=a, x=mat[,2], ignore.case=T, perl=T)
+# 		selli = selli | curi
+# 		if(verbose) print(head(omat[curi,]))
+# 	}
+# 	retmat = omat[selli,]
+# }
