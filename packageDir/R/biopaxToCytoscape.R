@@ -1,17 +1,17 @@
 
 
-test.addDrugsToGraph<-function(){
-	
-	splist = STUDY@results$overlap_analysis$"Aberration enriched, containing sensitive targets"
-	dplist = STUDY@results$overlap_analysis$"Aberration enriched, not drug targeted"
-	testPath1 = dplist$path_id[3]
-	
-	study=STUDY
-	pname=testPath1
-	
-	pname = splist[1,1]
-	
-}
+# test.addDrugsToGraph<-function(){
+# 	
+# 	splist = STUDY@results$overlap_analysis$"Aberration enriched, containing sensitive targets"
+# 	dplist = STUDY@results$overlap_analysis$"Aberration enriched, not drug targeted"
+# 	testPath1 = dplist$path_id[3]
+# 	
+# 	study=STUDY
+# 	pname=testPath1
+# 	
+# 	pname = splist[1,1]
+# 	
+# }
 
 
 addDrugsToGraph<-function(w, study, pname, drugID){
@@ -1235,13 +1235,13 @@ getNodeNames<-function(attval, attname, nodeTable){
 	return(nodeSet)
 }
 
-#'@title getNodePostionTable
-#'@description gets a table with the positions of all the nodes. 
+#'@title Get position of nodes in cytoscape diagram. . 
+#'@description Gets a table with the positions of all the nodes. 
 #'@param nodeTable The table of nodes
 #'@param attval Used to get positions of a subset of nodes. Ex: if the attname is cellularLocation, and the attval is cell_membrane, the nodes with the cellularLocation attribute set to cell_membrane would be returned. 
 #'@param attname The name of the attribute to filter the nodes by
 #'@param w The cytoscape window connection object. 
-#'@return data table with three columns, node id, x position, y postion
+#'@return data table with three columns: node id, x position, y postion
 getNodePositionTable<-function(nodeTable, attval, attname, w){
 	
 	nodeSet = nodeTable$nodeID[nodeTable[[attname]]==attval]
@@ -1939,38 +1939,6 @@ checkForDups<-function(edg){
 	edg[ad,]
 }
 
-#'@title getBiopaxEdges()
-#'@description retreives edge data from the data frame part of a biopax object (the type obtained from RbiopaxParser)
-#'@param df the biopax data frame
-#'@param connectionTypes string, the type of connection/edge to be searched for
-#'@param classType string, the class of nodes be searched through
-#'@return matrix with columns type, participant and direction: the type of edge, the participant and the direction or type of interaction
-getBiopaxEdges<-function(df, connectionTypes, classType){
-
-# 	readline("collect all types of edges, but apply the ones with left or right as the property_attr_value")
-	
-	bcr = df[df$class%in%classType,] 
-	
-	bcr = bcr[bcr$property%in%connectionTypes,]
-	
-	ureactions = unique(bcr$id)
-	
-	outset = matrix(data="",ncol=3,
-									dimnames=list(NULL,c("type","participant","direction")),
-									nrow=sum(bcr$property%in%connectionTypes))
-	cur = 1
-	for(cr in ureactions){
-		
-		dfsub = bcr[bcr$id==cr&bcr$property%in%connectionTypes,
-								c("id","property_attr_value","property")]
-		
-		outset[cur:(cur+nrow(dfsub)-1),] = as.matrix(dfsub)
-		cur = cur + nrow(dfsub)
-	}
-	outset[,"participant"] = gsub(pattern="#", replacement="", x=outset[,"participant"])
-	return(outset)
-	
-}
 
 setNodeColors<-function(w, nodeLabels, color, defaultColor, study){
 	#assure the nodes are in the pathway?
