@@ -42,6 +42,7 @@ saveDefaultSettings<-function(psr){
 #'																pgm=getTestPGM(),
 #'																dataSetDescription="test analysis of gene data",
 #'																activeGeneDescription="analyzed_gene")
+#'View(pathwayAnalysis$patientsums)
 summaryTable<-function(study, 
 											 activeGeneDescription="active_gene", 
 											 dataSetDescription="analysis of undefined active genes",
@@ -59,7 +60,7 @@ summaryTable<-function(study,
 	
 	psr = PathSummaryRunner$new(.verbose=F, path_summary_each_patient=list())
 	
-	psr$individualEnrichment
+	psr$individualEnrichment = individualEnrichment
 	psr$targetname = activeGeneDescription
 	psr$dataSetName = dataSetDescription
 	psr$study = study
@@ -75,7 +76,7 @@ summaryTable<-function(study,
 	}
 	psr=covres$psr
 	paths_detail = covres$paths_detail
-	print(dim(pgm))
+	cat("\nFound data for",paste(paste(dim(pgm),c("genes in","patients")), collapse=" "),"\n")
 	##items to be set after the psr is used for coverage analysis
 	psr$patientGeneMatrix = pgm
 	psr = pathAnalysisSettings(study=study, 
