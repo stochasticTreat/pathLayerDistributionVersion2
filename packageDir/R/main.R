@@ -3,7 +3,15 @@
 #'@title Load the basic set of analysis arms for use in a study
 #'@description This function connects the basic set of analysis arms (drug screen analysis, somatic mutation, arbitrary gene input data and overlap analysis) to a Study object. 
 #'@param STUDY A \code{Study} object.
-#'@return A \code{Study} object with study arms loaded. 
+#'@return A \code{Study} object with study arms loaded.
+#'@export
+#'@examples
+#'study = getStudyObject(study.name="testDataSets", 
+#' 											 geneIdentifierType="HUGO")
+#'study = loadBasicArms(STUDY=study) 
+#'sa = slot(object=study, name="arms")
+#'print(names(sa))
+#'print(slotNames(sa$functional_drug_screen_summary))
 loadBasicArms<-function(STUDY){
 	
 	arms = STUDY@arms
@@ -76,7 +84,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			cat("\nStudy initiated.. \n")
 			# 		STUDY = getStudyObject(results=results)
 			results = STUDY@results
-			path_detail = FullPathObject(STUDY)
+			path_detail = getPaths(STUDY)
 			cat("\nPaths set.. \n")
 		}
 
@@ -158,6 +166,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			STUDY = combineAberrationTypes(study=STUDY)
 		}else if(sel=="View summary of loaded data"){#View summary of loaded data 
 			DataSummary(STUDY)
+			stemp = readline("Summaries of all loaded data can be seen above.\nPress any key to continue.")
 		}else if(sel=="Save current study"){
 			saveStudy(study=STUDY, path="./output")
 		}else if(sel=="Clear current study and study data"){
