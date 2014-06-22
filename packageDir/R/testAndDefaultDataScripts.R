@@ -30,8 +30,9 @@ getTestPGM<-function(){
 	#save(pgm, file="./testData/pgm.rda")
 	defname = system.file("testData/pgm.rda", package = "packageDir")
 	# 	load(file="./testData/pgm.rda", verbose=T)
-	load(file=defname, verbose=TRUE)
-	return(pgm)
+	lres = load(file=defname, verbose=TRUE)
+	pgmdat = get(lres[1])
+	return(pgmdat)
 }
 
 
