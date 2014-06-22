@@ -20,7 +20,7 @@ runDrugWorksheet<-function(STUDY=STUDY){
 	
 	bfbTargDrugData=NULL
 	
-	if(exists("bfbTargDrugData")){
+	if(exists("bfbTargDrugData")|!is.null(STUDY@results$drugSelectionWorksheet)){
 		print("option1")
 		if(is.null(bfbTargDrugData)) bfbTargDrugData <<- makeDrugSelectionWorksheet(STUDY=STUDY)
 	}else{

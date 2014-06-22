@@ -7,6 +7,19 @@
 
 #provide facility for user to pick which drugs they are interested in
 
+
+# rx="GABA"
+rowsContaining<-function(df, rx){
+	
+	rowsWith = rep(FALSE, times=nrow(df))
+	if(rf!=""){
+		for(i in 1:ncol(df)){
+			rowsWith = rowsWith|grepl(pattern=rx, x=df[,i])
+		}
+	}
+	return(rowsWith)
+}
+
 makeStacked<-function(dfin){
 	ltmp = list()
 	#first make a list out of it
@@ -334,7 +347,10 @@ appendClincalTrials<-function(dmd, fname="./reference_data/drugDB/exported_study
 		drugsTrialPhases = ctdat$Phases[rowsWithDrug] 
 		phaseNums0 = gsub(pattern="Phase ", replacement="", x=drugsTrialPhases)
 		phaseNums = as.numeric(unlist(strsplit(x=phaseNums0, split="[|]")))
-		maxPhase = max(phaseNums, na.rm=T)
+		maxPhase = "No data"
+		if(length(phaseNums)){
+			maxPhase = max(phaseNums, na.rm=T)
+		}
 		phases[i] = paste("Phase",maxPhase)
 		setTxtProgressBar(pb, i)
 	}
@@ -472,7 +488,7 @@ adjustColumns<-function(tab){
 	
 	foundc = corder%in%colnames(tab)
 	
-	if(sum(!foundc)) warning("Could not find these data columns: ",paste(corder[!foundc],collpase=" "))
+	if(sum(!foundc)) message("Could not find these data columns: ",paste(corder[!foundc],collpase=" "))
 	corder = corder[foundc]
 	
 	corder= c(corder, setdiff(colnames(tab), corder))

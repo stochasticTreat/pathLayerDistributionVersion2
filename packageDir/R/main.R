@@ -203,10 +203,10 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			tmp = readline(paste("\nSorry, your input, \"", sel_line,"\", was not recognized.\nPress any key to return to the main menu.", sep=""))
 		}else if(sel=="Run drug selection worksheet"){
 			cat("...")
-			sfile=system.file("shinyDrugSelect/runShiny.R",package = "packageDir")
+			#sfile=system.file("shinyDrugSelect/runShiny.R",package = "packageDir")
 			print("Runing shiny main")
-			source(sfile, local=T)
-			drugSelectionTable = runDrugWorksheet(STUDY=STUDY)
+			#source(sfile, local=T)
+			STUDY@results$"drugSelectionWorksheet" = runDrugWorksheet(STUDY=STUDY)
 		}
 	}
 	return(STUDY)
