@@ -680,21 +680,25 @@ nodeNamesFromLabels<-function(w, nodeLabels){
 #'@param pwrecord.fileName the file name for the pathway records file. 
 #'@return data frame with columns: dbID, path_name and download_date
 getPathwaysRecords<-function(pwrecord.fileName=NULL){
-
-		if(file.exists(pwrecord.fileName)){ 
-			pwrecord = read.table(file=pwrecord.fileName, 
-														strip.white=T,
-														quote="",
-														comment.char="",
-														stringsAsFactors=F,
-														header=T,sep="\t")
-		}else{
-			cat("\nPathway record file not found.\n")
-			pwrecord=data.frame(matrix(nrow=0,ncol=3,dimnames=c(list(NULL,c("dbID", "path_name", "download_date")))), 
-													stringsAsFactors=F)
-		}
-		pwrecord2=pwrecord
-		return(pwrecord2)
+	print("getting biopax pathway records..")
+	if(!file.exists(pwrecord.fileName)){ 
+		cat("\nPathway record file not found, copying default.\n")
+		checkFileCopyDefault(fname=pwrecord.fileName)
+		# 		checkFileCopyDefault(fname="./reference_data/paths/biopax/2161541.owl")
+		
+		# 		pwrecord=data.frame(matrix(nrow=0,ncol=3,dimnames=c(list(NULL,c("dbID", "path_name", "download_date")))), 
+		# 												stringsAsFactors=F)
+		
+	}
+	pwrecord = read.table(file=pwrecord.fileName, 
+											strip.white=T,
+											quote="",
+											comment.char="",
+											stringsAsFactors=F,
+											header=T,sep="\t")
+	pwrecord2=pwrecord
+	return(pwrecord2)
+	
 }
 
 
@@ -718,11 +722,13 @@ getReactomeBiopax<-function(study, pathNames){
 	neededPaths = pathNames[!pathNames%in%pwrecord$path_name]
 	
 	if(length(neededPaths)){
-		if("d"!=readline("Some biopax pathway records cannot be found on this computer.\nTo attempt to download these pathways please enter d\nTo skip this step just press enter.")){
-			cat("\nFiles describing the networks for these pathways are not available on this computer:\n")
-			print(neededPaths)
-			cat("\nTo manually install these pathway diagram files, please follow these steps: \n1)obtain their biopax/pathway diagram files\n2)Place the biopax files in the ./reference_data/paths/biopax/ directory\n3)Add records of the newly added biopax files to the file ./reference_data/paths/biopax/record_of_biopax_pathways.txt\n")
-			return(neededPaths)
+		if(verbose){
+			if("d"!=readline("Some biopax pathway records cannot be found on this computer.\nTo attempt to download these pathways please enter d\nTo skip this step just press enter.")){
+				cat("\nFiles describing the networks for these pathways are not available on this computer:\n")
+				print(neededPaths)
+				cat("\nTo manually install these pathway diagram files, please follow these steps: \n1)obtain their biopax/pathway diagram files\n2)Place the biopax files in the ./reference_data/paths/biopax/ directory\n3)Add records of the newly added biopax files to the file ./reference_data/paths/biopax/record_of_biopax_pathways.txt\n")
+				return(neededPaths)
+			}
 		}
 	}else{
 		return(neededPaths)
@@ -762,7 +768,10 @@ getReactomeBiopax<-function(study, pathNames){
 	return(notAvailableDbIds)
 }#getReactomeBiopax
 
-
+#pname : the name of the pathway
+#dbid : the database id of the biopax record (with or with out .owl)
+#biopaxDat : the actual biopax data. If this is given as a file name, the file will be moved to the correct biopax dir)
+#dldate : the date the biopax file was downloaded or obtained. . 
 addBiopaxPath<-function(pname, dbid, biopaxDat, dldate = as.character(Sys.time())){
 	
 	dbid = gsub(pattern=".owl|.OWL", replacement="", x=dbid)
@@ -869,6 +878,8 @@ biopaxFileNameFromPathName<-function(pathNames, pwrecord.file = "./reference_dat
 
 UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
 	
+	localPathwayRecord = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
+	
 	neededPaths=character(0)
 	
 	if(is.null(pathMetaDataFile)){ #if there's no path meta data file, just add the single path
@@ -908,7 +919,8 @@ UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
 		
 		#copy each of the pathway files to the correct directory
 		sourcePath  = dirname(pathMetaDataFile)
-		bpath = dirname(pwrecord.fileName)
+		bpath = dirname(localPathwayRecord)
+		
 		if(!file.exists(bpath)) dir.create(path=bpath, recursive=T, showWarnings=F)
 		
 		for(partname in pwrecord$dbID){
@@ -918,9 +930,8 @@ UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
 		}
 		
 		neededPaths = pathNames[!toupper(x=pathNames)%in%toupper(x=pwrecord$path_name)]
-		#copy pathway record file and all .owl files to correct directory
-		pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
-		write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
+		#copy pathway record file and all .owl files to correct directory 
+		write.table(x=pwrecord, file=localPathwayRecord, quote=F,sep="\t", row.names=F, col.names=T)
 	}
 	return(neededPaths)
 }

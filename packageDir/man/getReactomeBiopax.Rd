@@ -2,13 +2,17 @@
 \alias{getReactomeBiopax}
 \title{Download biopax files for reactome pathways.}
 \usage{
-getReactomeBiopax(study, pathNames)
+getReactomeBiopax(study, pathNames, verbose = T)
 }
 \arguments{
   \item{study}{A \code{Study} object.}
 
   \item{pathNames}{The names of the pathways the program
   should attempt to download.}
+
+  \item{verbose}{\code{logical} flag indicating if user
+  should be prompted before attempted download of biopax
+  pathways.}
 }
 \value{
 Character vector containing the names of any pathways that
