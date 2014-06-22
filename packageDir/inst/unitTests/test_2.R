@@ -50,11 +50,11 @@ makeRandomPgm<-function(npat=5, probabilities=c(1,4), targetPath="ABCA transport
 test.summaryTable<-function(){
 	
 	testStudyObjectFileNamesomatic = system.file("testData/amlSomaticSum.rda", package = "packageDir")
-	
-	if(!file.exists("./testData")) dir.create("./testData", recursive=T, showWarnings=F)
-	#amlSom = STUDY@results$somatic_mutation_aberration_summary
-	#save(amlSom, file=testStudyObjectFileNamesomatic, compress=T)
 	load(file=testStudyObjectFileNamesomatic, verbose=T)
+	
+	#amlSom = stResSomatic_reopened
+	#save(amlSom, file="../packageDir/inst/testData/amlSomaticSum.rda", compress=T)
+	# load(system.file("testData/amlSomaticSum.rda",package="packageDir"),verbose=T)
 	
 	stemp = getStudyObject()
 	stemp@studyMetaData@paths = getDefaultPaths()
@@ -66,8 +66,13 @@ test.summaryTable<-function(){
 															activeGeneDescription="mutated", 
 															dataSetDescription="somatic mutation data")
 	
+	if(file.exists("./testData")){
+		unlink(x="./testData/tmpForUnitTest", recursive=T, force=T)
+	}else{
+		dir.create("./testData", recursive=T, showWarnings=F)
+	}
 	packageDir:::saveSummary(summ=stResSomatic, study_name="tmpForUnitTest", path="./testData")
-	stResSomatic_reopened = loadSummary(study_name="tmpForUnitTest", path="./testData")
+	stResSomatic_reopened = packageDir:::loadSummary(study_name="tmpForUnitTest", path="./testData")
 	
 	#extract the slots that should be the same
 	commonSlots = c('pathsummary', 'summarystats', 'patientGeneMatrix', 'patientsums', 
@@ -81,18 +86,67 @@ test.summaryTable<-function(){
 							current=stResSomatic_reopened, 
 							msg="Checking whole summary Table result set")
 	
-	unlink(x="./testData/tmpForUnitTest", recursive=T, force=T)
+	curs = amlSom
+	curp = stResSomatic_reopened
+	eslots = c()
+	for(sn in names(curs)){
+		print(sn)
+		tres = try(checkEquals(target=curs[[sn]], 
+													 current=curp[[sn]], 
+													 msg="Checking whole summary Table result set"))
+		if(class(tres)!="logical"){
+			print(sn)
+			# 			print(tres)
+			eslots = c(eslots, sn)
+		}
+	# 		readline("enter")
+	}
+	checkEquals(target=names(curs$path_summary_each_patient),
+							current=names(curp$path_summary_each_patient) )
+	print(eslots)
+	
+# 	eslots2 = c()
+# 	for(pat in names(amlSom$path_summary_each_patient)){
+# 		
+# 		print(pat)
+# 
+# 		curs = amlSom$path_summary_each_patient[[pat]]
+# 		curp = stResSomatic_reopened$path_summary_each_patient[[pat]]
+# 		tres = try(checkEquals(curs, curp))
+# 		if(class(tres)!="logical"|class(tres)=="try-error"){
+# 			eslots2 = c(eslots2,pat)
+# 			print(tres)
+# 		} 
+# 		for(sn in names(curs)){
+# 			cat("..",sn,"..")
+# 			tres = try(checkEquals(target=curs[[sn]], 
+# 									current=curp[[sn]], 
+# 									msg="Checking whole summary Table result set"))
+# 			if(class(tres)!="logical"|class(tres)=="try-error"){
+# 				print(pat)
+# 				print(sn)
+# 				print(tres)
+# 				eslots2 = c(eslots2, sn, pat)
+# 			}
+# 		}
+# 	}
+
+	unlink(x="./testData/", recursive=T, force=T)
 	#CheckAll(old=amlSom, novo=stResSomatic_reopened, verbose=T)
 }
 
 
-#test.summaryTable()
+#test.coverage.summaryTable()
 test.coverage.summaryTable<-function(){
 	
 	testStudyObjectFileNamesomatic = system.file("testData/amlDrugScreenSum.rda", package = "packageDir")
-	if(!file.exists("./testData")) dir.create("./testData", recursive=T, showWarnings=F)
+	if(file.exists("./testData")){
+		unlink(x="./testData/tmpForUnitTest/", recursive=T, force=T)
+	}else{ 
+		dir.create("./testData", recursive=T, showWarnings=F) 
+	}
 	
-	#amlFun = stResFunctional
+	#amlFun = stResFunctional_reopened
 	#save(amlFun, file="../packageDir/inst/testData/amlDrugScreenSum.rda", compress=T)
 	load(file=testStudyObjectFileNamesomatic, verbose=T)
 	
@@ -110,7 +164,7 @@ test.coverage.summaryTable<-function(){
 															dataSetDescription="Drug screen output data")
 	
 	packageDir:::saveSummary(summ=stResFunctional, study_name="tmpForUnitTest", path="./testData")
-	stResFunctional_reopened = loadSummary(study_name="tmpForUnitTest", path="./testData")
+	stResFunctional_reopened = packageDir:::loadSummary(study_name="tmpForUnitTest", path="./testData")
 
 	#extract the slots that should be the same
 	
@@ -120,13 +174,13 @@ test.coverage.summaryTable<-function(){
 	# 									'genesummary', 'active_genes_ea_path', 'path_summary_each_patient', 
 	# 									'active_genes_not_in_paths', 'patientList', 'settings')
 	
-	amlFun = amlFun[commonSlots]
-	stResFunctional_reopened = stResFunctional_reopened[commonSlots]
+	tarsl = amlFun[commonSlots]
+	cursl = stResFunctional_reopened[commonSlots]
 	badslots=c()
-	for(sn in names(amlFun)){
+	for(sn in names(tarsl)){
 		print(sn)
-		tres = try(checkEquals(target=amlFun[[sn]], 
-											current=stResFunctional_reopened[[sn]], 
+		tres = try(checkEquals(target=tarsl[[sn]], 
+											current=cursl[[sn]], 
 											msg="Checking whole summary Table result set"),silent=TRUE)
 		if(class(tres)=="try-error"){
 			print(tres)	
@@ -134,8 +188,28 @@ test.coverage.summaryTable<-function(){
 		} 
 	}
 	if(length(badslots)){
-		checkEquals(target=T,current=F, msg=paste("These are the bad slots: ",paste(badslots,sep=" ",collapse="")))
+		checkEquals(target=T,current=F, msg=paste("\nThese are the bad slots: ",paste(badslots,sep=" ",collapse=" ")))
 	}
+	print(badslots)
+	
+	cursl = cursl$path_summary_each_patient$AMLadult07335
+	tarsl = tarsl$path_summary_each_patient$AMLadult07335
+	badslots=c()
+	for(sn in names(tarsl)){
+		print(sn)
+		tres = try(checkEquals(target=tarsl[[sn]], 
+													 current=cursl[[sn]], 
+													 msg="Checking whole summary Table result set"),silent=TRUE)
+		if(class(tres)=="try-error"){
+			print(tres)	
+			badslots = c(badslots, sn)
+		} 
+	}
+	
+# 	if(length(badslots)){
+# 		checkEquals(target=T,current=F, msg=paste("\nThese are the bad slots: ",paste(badslots,sep=" ",collapse=" ")))
+# 	}
+	
 # 	covT = amlFun$path_summary_each_patient$AMLadult07335
 # 	covC = stResFunctional_reopened$path_summary_each_patient$AMLadult07335
 # 	badslots=c()
@@ -152,6 +226,7 @@ test.coverage.summaryTable<-function(){
 	unlink(x="./testData/tmpForUnitTest/", recursive=T, force=T)
 }
 
+#test.matchPath.SummayTable()
 test.matchPath.SummayTable<-function(){
 	
 	stemp = getStudyObject()

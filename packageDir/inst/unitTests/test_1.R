@@ -1,6 +1,6 @@
 
 
-
+#test.hypergeometricPathEnrichment
 test.hypergeometricPathEnrichment<-function(){
 	
 	pths = getDefaultPaths()
@@ -23,7 +23,7 @@ test.getActiveGenesEachPath<-function(){
 	pths = getDefaultPaths()
 	psr = getTestPathSummaryRunner(pths=pths)
 	
-	agep1 = getActiveGenesEachPath(psr=psr)
+	agep1 = packageDir:::getActiveGenesEachPath(psr=psr)
 	agepTestDataFile = system.file("testData/abacavirActiveGenesEachPath.rda", package = "packageDir")
 	#save(agep, file=agepTestDataFile) #created on 4/16/14 with data from 
 	load(file=agepTestDataFile, verbose=T)
@@ -32,6 +32,7 @@ test.getActiveGenesEachPath<-function(){
 	
 }
 
+#test.getBasicPathInformation()
 test.getBasicPathInformation<-function(){
 	
 	pths = getDefaultPaths()#path_file="./reference_data/paths/Reactome 2014.04.06 12.52.27.txt",force=T)
@@ -42,7 +43,7 @@ test.getBasicPathInformation<-function(){
 														 path_detail=pths,
 														 settings=NULL)
 	
-	bpi_current = getBasicPathInformation(paths_detail=pths, pathNames=rownames(psr$.targetMatrix), psr=psr)
+	bpi_current = packageDir:::getBasicPathInformation(paths_detail=pths, pathNames=rownames(psr$.targetMatrix), psr=psr)
 	tdfn = system.file("testData/basicPathInfoAbacavir.rda", package = "packageDir")
 	#save(bpi, file=tdfn)
 	load(file=tdfn, verbose=T)
@@ -52,14 +53,14 @@ test.getBasicPathInformation<-function(){
 	print("Trying with reduced coverage..")
 	remset = c("ADAL",  "ADH1A", "GUK1")
 	psr$coverage = setdiff(x=colnames(pths$paths), remset)
-	ccres = checkCoverage(psr=psr, paths_detail=pths, geneDescription="covered", "coverage analysis")
+	ccres = packageDir:::checkCoverage(psr=psr, paths_detail=pths, geneDescription="covered", "coverage analysis")
 	psr = ccres$psr
 	pths = ccres$paths_detail
 	geneSet = setdiff(packageDir:::getGenesFromPaths(pids="Abacavir metabolism", STUDY=pths), 
 										remset)
 	psr$.targetMatrix = packageDir:::getTargetMatrix(tgenes=geneSet, paths=pths$paths)
 	
-	bpiCov_current = getBasicPathInformation(paths_detail=pths, 
+	bpiCov_current = packageDir:::getBasicPathInformation(paths_detail=pths, 
 																					 psr=psr,
 																					 pathNames=rownames(psr$.targetMatrix))
 	
@@ -72,18 +73,33 @@ test.getBasicPathInformation<-function(){
 	
 }
 
+#test.generalSummary()
 test.generalSummary<-function(){
 	
-	psr = packageDir:::getTestPathSummaryRunner()
 	pths = packageDir:::getDefaultPaths()
+	psr = packageDir:::getTestPathSummaryRunner(pths=pths)
+	
 	
 	psr$patientsum = t((rep(x=1,times=nrow(psr$patientGeneMatrix))%*%psr$patientGeneMatrix)) #patientsum: matrix with the number of active genes found in each patient
 	colnames(	psr$patientsum )<-"count_per_patient"
 	
-	gs1 = generalSummary(psr=psr, paths_detail=pths)
-	#save(gs, file="./testData/generalSummary.rda")
+	gs1 = packageDir:::generalSummary(psr=psr, paths_detail=pths)
+	#gs = gs1
+	#save(gs, file="../packageDir/inst/testData/generalSummary.rda")
 	load(system.file("testData/generalSummary.rda", package = "packageDir"), verbose=T)
 	
 	checkEquals(target=gs, current=gs1)
 	
+}
+
+test.loadSettings<-function(){
+	fname = "./testSaveSettings.txt"
+	file.remove(fname)
+	study = getTestStudyObject()
+	originalSettings = study@studyMetaData@settings$defaultSummaryTable
+	dflist = packageDir:::saveSettings(set=originalSettings)
+	write.table(x=dflist, file=fname, sep="\t")
+	reopened = packageDir:::loadSettings(fname=fname)
+	checkEquals(target=originalSettings, current=reopened)
+	file.remove(fname)
 }

@@ -5,43 +5,66 @@
 # 	checkEquals(target="Checking that the unit tests work and will report a failure", current="no")
 # 	
 # }
-
+#test.UserProvidedBiopax()
 test.UserProvidedBiopax<-function(userInput=FALSE){
-	
+	print("testing UserProvidedBiopax...")
+	defaultFile = system.file("extdata/record_of_biopax_pathways.txt",package="packageDir")
 	#clean everything up and get it all ready: delete everything in the biopax directory
-	pwrecord.fileName = system.file("extdata/record_of_biopax_pathways.txt",package="packageDir") #"./reference_data/paths/biopax/record_of_biopax_pathways.txt"
-	for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
+	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"#system.file("extdata/record_of_biopax_pathways.txt",package="packageDir") #
 	
-	#user provided biopax tests:
-	#1) just supply path names and require the user select the files to go with
-	if(userInput){
-			checkEquals(msg="Checking copy of single path via user input",
-							target=character(0), current=packageDir:::UserProvidedBiopax(pathNames="Abacavir metabolism"))
-	}
+	print("test 1, assuring abacavir metabolism pathway's name will not be returned if the path is present.. ")
+	packageDir:::checkFileCopyDefault(fname=pwrecord.fileName)
+	pwrecord = packageDir:::getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
 	
-	#clean it all up again
-	for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
+	biopaxFname = paste0(dirname(pwrecord.fileName),"/",pwrecord$dbID[1],".owl")
+	packageDir:::checkFileCopyDefault(fname=biopaxFname)
 	
 	#check if the pathway file name is provided manually
 	checkEquals(target=character(0), 
 							current=packageDir:::UserProvidedBiopax(pathNames="Abacavir metabolism", 
-																				 pathMetaDataFile=pwrecord.fileName ))
-	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
+																											pathMetaDataFile=pwrecord.fileName ))
 	
-	abacavirFname = paste0(pwrecord$dbID[pwrecord$path_name=="Abacavir metabolism"],".owl")
+	print("test 2, seeing if abcavir metabolism's biopax file is there... ")
+	biopaxFname = paste0(pwrecord$dbID[pwrecord$path_name=="Abacavir metabolism"],".owl")
 	allFiles = dir(dirname(pwrecord.fileName))
 	allFiles = allFiles[grepl(pattern=".owl", x=allFiles)]
-	
-	checkTrue(expr=(abacavirFname%in%allFiles), 
+	checkTrue(expr=(biopaxFname%in%allFiles), 
 						msg="checking that the biopax file is in the list and in the correct folder")
-	
-	#check that there's one row in the records file for each biopax file
+	print("checking that there's one row in the records file for each biopax file")
 	checkTrue(expr=(sum(paste0(pwrecord$dbID,".owl")%in%allFiles)==nrow(pwrecord)))
 	
+	print("cleaning out the records for the next tests")
+	#clean out the directory
+	if(file.exists(dirname(pwrecord.fileName))){
+		for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
+	}else{
+		dir.create(dirname(pwrecord.fileName))
+	}
+	
+	print("seeing if a remote biopax path meta data can be pointed to, to move the pathways to the local dir.")
+	#now supply the file name as the remote repository
+	checkEquals(target="not a path", 
+							current=packageDir:::UserProvidedBiopax(pathNames=c("Abacavir metabolism","not a path"), pathMetaDataFile=defaultFile))
+	
+	#user provided biopax tests:
+	#1) just supply path names and require the user select the files to go with
+	if(userInput){
+		print("Checking procurement of biopax with user input.. ")
+			checkEquals(msg="Checking copy of single path via user input",
+							target=character(0), current=packageDir:::UserProvidedBiopax(pathNames="Abacavir metabolism"))
+			#clean it all up again
+			for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
+	}
+	
+	print("cleaning up..")
+	#clean out the directory
+	if(file.exists(dirname(pwrecord.fileName))){
+		for(fn in dir( dirname(path=pwrecord.fileName) )){ file.remove( paste0(dirname(path=pwrecord.fileName), "/", fn) ) }
+	}
 	#	 	write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
 }
 
-
+#test.checkForceRowNames()
 test.checkForceRowNames<-function(){
 	fname = system.file("testData/test.checkForceRowNames.rda", package = "packageDir")
 	fname2 = system.file("testData/testTarget.checkForceRowNames.rda", package = "packageDir")
@@ -56,6 +79,7 @@ test.checkForceRowNames<-function(){
 	checkEquals(target=wrn, current=wrn2, msg="row names when there shouldn't be a change")
 }
 
+#test.loadPathsAsSets()
 test.loadPathsAsSets<-function(){
 	
 	#fname1 = "./reference_data/paths/Reactome.2013.12.27.18.00.18.txt"
@@ -67,7 +91,7 @@ test.loadPathsAsSets<-function(){
 	checkEquals(target=4, current=length(psets2[[1]]))
 }
 
-
+#test.getDefaultPaths()
 test.getDefaultPaths<-function(){
 	cellular_pathways = getDefaultPaths()
 	checkEquals(target="Path_Detail", current=class(cellular_pathways)[1])
@@ -76,30 +100,32 @@ test.getDefaultPaths<-function(){
 	checkEquals(target="matrix", current=class(cellular_pathways$paths))
 }
 
-
-.test.addBiopaxPath<-function(){
+#test.addBiopaxPath()
+test.addBiopaxPath<-function(){
 	
-	addBiopaxPath(pname="Abacavir metabolism", 
-								dbid="p53-Dependent G1 DNA Damage Response.owl", 
-								biopaxDat="/Users/samhiggins2001_worldperks/tprog/main_131219/reference_data/paths/biopax/p53-Dependent G1 DNA Damage Response.owl")
+	if(file.exists("./reference_data/paths/biopax/2161541.owl")) file.remove("./reference_data/paths/biopax/2161541.owl")
+	if(file.exists("./reference_data/paths/biopax/record_of_biopax_pathways.txt")) file.remove("./reference_data/paths/biopax/record_of_biopax_pathways.txt")
+	
+	
+	packageDir:::addBiopaxPath(pname="Abacavir metabolism", 
+								dbid="2161541", 
+								biopaxDat=system.file("extdata/2161541.owl", package="packageDir"))
 	
 	pwrecord.fileName = system.file("extdata/record_of_biopax_pathways.txt",package="packageDir")
 	#pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
-	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
+	pwrecord = packageDir:::getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
 	
+	checkTrue(file.exists(paste0("./reference_data/paths/biopax/",pwrecord$dbID,".owl")))
+	checkTrue("2161541"%in%pwrecord$dbID)
 	
-	checkTrue(file.exists("./reference_data/paths/biopax/p53-Dependent G1 DNA Damage Response.owl"))
-	checkTrue("p53-Dependent G1 DNA Damage Response"%in%pwrecord$dbID)
-	
-	pwrecord = pwrecord[pwrecord$dbID!="p53-Dependent G1 DNA Damage Response",]
 	write.table(x=pwrecord, file=pwrecord.fileName, quote=F,sep="\t", row.names=F, col.names=T)
 	
-	file.remove("./reference_data/paths/biopax/p53-Dependent G1 DNA Damage Response.owl")
-	
+	file.remove("./reference_data/paths/biopax/2161541.owl")
+	file.remove("./reference_data/paths/biopax/record_of_biopax_pathways.txt")
 }
 
 
-
+#test.biopaxFileNameFromPathName()
 test.biopaxFileNameFromPathName<-function(){
 	# 	library(RUnit)
 	#unit test test.biopaxFileNameFromPathName()
@@ -118,14 +144,15 @@ test.biopaxFileNameFromPathName<-function(){
 	
 }
 
-test.getReactomeBiopax<-function(){
-	# 	tpnames = c("Abacavir metabolism", "Transcriptional Regulation of White Adipocyte Differentiation")
-	tpnames = c("Abacavir metabolism")
-	getReactomeBiopax(study=NULL, pathNames=tpnames)
-	
-}
+# #test.getReactomeBiopax()
+# test.getReactomeBiopax<-function(){
+# 	# 	tpnames = c("Abacavir metabolism", "Transcriptional Regulation of White Adipocyte Differentiation")
+# 	tpnames = c("Abacavir metabolism")
+# 	getReactomeBiopax(study=NULL, pathNames=tpnames, verbose=F)
+# 	
+# }
 
-
+#test.correctByHgncHelper()
 test.correctByHgncHelper<-function(){
 	
 	# 	symbol_set = rownames(STUDY@results$somatic_mutation_aberration_summary$genesummary)
@@ -136,6 +163,7 @@ test.correctByHgncHelper<-function(){
 	
 }
 
+#test.corsym()
 #param userInput Logical flag indicating if unit test should require user input
 test.corsym<-function(userInput=FALSE){
 	# 		symtabFile = "~/tprog/main_131219/reference_data/current_hugo_table.txt"

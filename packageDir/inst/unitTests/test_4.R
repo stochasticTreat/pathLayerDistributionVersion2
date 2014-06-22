@@ -1,4 +1,5 @@
 #4.R: unit tests for acc_functions.R
+#test.addPidColumn()
 test.addPidColumn<-function(){
 	
 	dfin = data.frame(Tumor_Sample_Barcode=c("TCGA-AB-2988-03A-01D-0739-09", "TCGA-AB-2989-03A-01D-0739-09"), 
@@ -9,7 +10,7 @@ test.addPidColumn<-function(){
 	
 }
 
-
+#test.emptySignature()
 test.emptySignature<-function(){
 	
 	tdf = data.frame(matrix(data="V1", nrow=1, ncol=1, dimnames=list(NULL,"V1")),stringsAsFactors=F)
