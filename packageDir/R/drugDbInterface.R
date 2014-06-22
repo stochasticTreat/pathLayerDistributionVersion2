@@ -399,12 +399,12 @@ test.makeDrugSelectionWorksheet<-function(){
 	
 	stud = getTestStudyObject()
 	res1 = makeDrugSelectionWorksheet(STUDY=stud)
-# 	limpaths = read.table(file="./testLimitPaths.txt", header=F, sep="\t", stringsAsFactors=F)
+	checkTrue("RXRA"%in%res1[res1$"Drug name"=="Bexarotene",c("Gene symbol")])
 	
-	res1 = makeDrugSelectionWorksheet(STUDY=stud, pathsToSearch=limpaths$V1)
+	limpaths  = stud@results$somatic_mutation_aberration_summary$pathsummary$path_id#= read.table(file="./testLimitPaths.txt", header=F, sep="\t", stringsAsFactors=F)
+	res2 = makeDrugSelectionWorksheet(STUDY=stud, pathsToSearch=limpaths)
 	
 }
-
 
 #'@title Uses genomic data from the provided Study object to produce a table of pertinent drug-gene associations.
 #'@param STUDY A \code{Study} object
