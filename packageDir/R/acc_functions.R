@@ -58,25 +58,7 @@ longTextBarPlot<-function(data, lab, main=""){
 	
 }
 
-#'@title checkFileCopyDefault
-#'@description Checks if a file exists. If it doesn't, function checks for a default in the package directory's extdata/ folder and copies the default to the location described by the file name passed.
-#'@param fname The path of the file to be checked. 
-#'@return string, the file name.
-checkFileCopyDefault<-function(fname){
-	if(file.exists(fname)){
-		return(fname)
-	}else{
-		defname = system.file(paste0("extdata/",basename(fname)), package = "packageDir")
-		if(file.exists(defname)){
-			message(paste("Moving default file,", defname, "\nto current working directory at ",fname))
-			file.copy(from=defname, to=fname)
-			return(fname)
-		}else{
-			warning(paste("A default file for",fname,"could not be found!!"))
-			return(fname)
-		}
-	}#"extdata/uniqueColorPalette.txt"
-}
+
 
 ###############################################################################
 #

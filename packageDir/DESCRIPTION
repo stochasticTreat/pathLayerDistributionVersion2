@@ -22,7 +22,6 @@ Imports:
     methods,
     rBiopaxParser,
     ggplot2,
-    RUnit,
     gridExtra,
     shiny,
     hwriter

@@ -1,6 +1,5 @@
 require("roxygen2")
 
-
 # dir.create("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/executionDir")
 setwd("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/executionDir")
 
@@ -24,7 +23,7 @@ STUDY = allInteractiveMainFunction()
 library("devtools")
 load_all(pkg="packageDir", export_all=T, reset=T)
 
-packageDir:list_to_table()
+packageDir:::list_to_table()
 
 
 abacavirIntegrationTest = STUDY
