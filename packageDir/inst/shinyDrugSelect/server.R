@@ -44,8 +44,12 @@ shinyServer(function(input, output){
 		}else{
 			displayData = tmp
 		}
-	
-		displayData[,input$show_vars,drop=FALSE]
+		showRows = rep(T, times=nrow(bfbTargDrugData))
+		if(input$exclude!=""){
+			showRows = !rowsContaining(df=displayData, rx=input$exclude)
+		}
+		
+		displayData[showRows,input$show_vars,drop=FALSE]
 	})
 	
 	observe({

@@ -28,6 +28,10 @@ shinyUI(pageWithSidebar(
 	),
 	mainPanel(
 		h5("The selection boxes below use \"regular expressions\", thus use the pipe symbol \"|\" to sepparate \"or'd\" terms (ex: use \"Phase-4|Phase-3\" to get both phase 4 and phase 3 clinical trials). \"[1-9]+\" can be used to get all numbers greater than 0."),
+		textInput(inputId="exclude", 
+							value="",
+							label="Input terms you would like to exclude from rows. \nSeparate multiple terms with the pipe character (\"|\") ex: GABA|Vitamin C excludes rows with GABA or Vitamin C."),
+							
 		dataTableOutput('targetGeneData')
 # 		imageOutput('myImage')
 	)
