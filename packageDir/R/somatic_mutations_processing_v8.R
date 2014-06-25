@@ -233,38 +233,6 @@ stackedGeneBar1<-function(tcga_som){
 }#stackedGeneBar
 
 
-
-stackedGeneBar<-function(tcga_som, 
-												 title="Mutation types for the top 20 most mutated genes"){
-	ufilt = tcga_som
-	gs = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
-	top20 = head(gs[order(gs[,2],decreasing=T),],20)
-	gsnames = top20$types
-	
-	toprows = ufilt[ufilt$Hugo_Symbol%in%gsnames,]
-	
-	slimrows = toprows[,c("Hugo_Symbol","Variant_Classification")]
-	slimrows = merge(x=slimrows, y=top20, by.x="Hugo_Symbol", by.y="types")
-	slimrows = slimrows[order(slimrows$counts),]
-	slimrows$Hugo_Symbol<-factor(slimrows$Hugo_Symbol, levels=top20$types)
-	
-	colcols = getColorSequence(cnames=unique(slimrows$Variant_Classification), 
-														 fname="./reference_data/MAFcolorMatches.txt")
-	colnames = colors()[colcols]
-	names(colnames)<-names(colcols)
-	
-	p1 = ggplot(data=slimrows, aes(x=Hugo_Symbol, 
-																 fill=factor(Variant_Classification)))+
-		geom_bar(color="black")+
-		coord_flip()+
-		scale_fill_manual(values=colnames)+
-		theme_bw()+
-		theme(legend.title=element_blank())+
-		ggtitle(title)
-	
-	print(p1)
-}
-
 #remove_dbSNP
 #removes mutations with dbSNP records
 #allows output and user input
@@ -583,10 +551,8 @@ processSomaticData<-function(study,
 	
 	#########################################################
 	###############  Summarize patient somatic mutation stats
-#   subset = unique(pid)
-# 	cat("\nPatient sample identifers loaded:\n")
-#  	print(subset)
-# 	####extract the patient subset if a subset was established
+
+	####extract the patient subset if a subset was established
 
 	cat("\nIn this set of patients", as.character(nrow(tcga_som)), "unique somatic mutations were found.\n")
 	
@@ -641,6 +607,13 @@ processSomaticData<-function(study,
 	tracker[["Number of unique mutations after removing records with gene identifier given as \"UNKNOWN\""]] = nrow(som_select)
 	
 	tracker[["Number of patients with mutations not removed by the filtering steps:"]] = length(unique(som_select$Tumor_Sample_Barcode))
+	
+	###################   hypermutator filtering
+	hfiltres = filterHyperMutators(s=s, tracker=tracker, odat=som_select, patsum=tracker[['Mutations per patient, before any filtering']])
+	som_select = hfiltres$som_select
+	s = hfiltres$s
+	tracker=hfiltres$tracker
+	
 	############################################################
 	###### build output           ##############################
 	############################################################
@@ -649,11 +622,15 @@ processSomaticData<-function(study,
 	uniquePatientMutations = nrow(som_select)
 	tracker[["Number of genes across cohort that are mutated more than once in the same patient"]] = uniquePatientMutations - uniquePatientSymbolsMutated
 	tracker[["Genes are considered to be in a mutated or normal state, thus the final number of unique, mutated genes passed to the enrichment analysis is:"]] = uniquePatientSymbolsMutated
+	
+	
+
 	#########################################
 	# create the patient gene matrix. 
 	#########################################
 	somatic_pgm = makePatientGeneMatrix(som_select)
-
+	
+	
 	print("After all filtering steps")
 	stackedGeneBar(som_select,
 								 title="Top mutations after all filtering steps")
@@ -691,5 +668,48 @@ processSomaticData<-function(study,
 	cat("\nReturning from somatic mutation analysis arm\n")
 	return(somatic_summary)
 }#processSomaticData()
+
+
+filterHyperMutators<-function(s, tracker, odat, patsum){
+	if(!is.data.frame(patsum)) patsum = as.data.frame(as.matrix(x=patsum, ncol=1))
+	colnames(patsum)<-"mut_count"
+	bwidth = ifelse(test=length(unique(patsum[,1]))>10, yes=3, no=1)
+	
+	p1 = ggplot(patsum, aes(x=mut_count)) + 
+		geom_histogram(alpha=0.5, position="identity", binwidth=bwidth)+
+		ggtitle("Distribution of mutation counts per patient")+
+		theme_bw()+
+		theme(legend.title=element_blank())+
+		xlab("Number of mutations in patient")
+	print(p1)
+	
+	while(T){
+		s=setting(s=s, prompt="Would you like to filter out hypermutators?\nIf yes, please enter a mutation count threshold.\nIf no just press enter n ")
+		if(!is.na(as.numeric(s$.text))) break
+		if(s$.text=="n") break
+		print("Sorry, that input was not understood, please try again")
+	}
+	if(s$.text=="n") return(list(s=s,tracker=tracker,som_select=odat))
+	
+	thrsh = as.numeric(s$.text)
+	
+	nonMutPati = patsum[,1]<=thrsh
+	tracker[["Number of patients removed as hypermutators"]] = sum(!nonMutPati)
+	tracker[["Hypermutator patient IDs"]] = rownames(patsum)[!nonMutPati]
+	patientsToKeep = rownames(patsum)[nonMutPati]
+
+	nonHyperMutatorRows = odat[,"pid"]%in%patientsToKeep
+	tracker[["Number of unique mutations assocaited with hypermutator patients(s)"]] = sum(!nonHyperMutatorRows)
+	tracker[["Number of unique HUGO gene symbols associated with hypermutator patient(s)"]] = length(unique(odat[!nonHyperMutatorRows,"Hugo_Symbol"]))
+	
+	odat = odat[nonHyperMutatorRows,]
+	
+	return(list(s=s,tracker=tracker,som_select=odat))
+}
+
+
+
+
+
 
 

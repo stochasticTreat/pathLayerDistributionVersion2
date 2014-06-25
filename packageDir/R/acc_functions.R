@@ -5,6 +5,39 @@ if(!exists("VERBOSE")) VERBOSE = F
 .parpin <-par()$pin
 # .pardefault <- par()
 
+
+stackedGeneBar<-function(tcga_som, 
+												 title="Mutation types for the top 20 most mutated genes", 
+												 colorMatchesFile="./reference_data/MAFcolorMatches.txt"){
+	ufilt = tcga_som
+	gs = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
+	top20 = head(gs[order(gs[,2],decreasing=T),],20)
+	gsnames = top20$types
+	
+	toprows = ufilt[ufilt$Hugo_Symbol%in%gsnames,]
+	
+	slimrows = toprows[,c("Hugo_Symbol","Variant_Classification")]
+	slimrows = merge(x=slimrows, y=top20, by.x="Hugo_Symbol", by.y="types")
+	slimrows = slimrows[order(slimrows$counts),]
+	slimrows$Hugo_Symbol<-factor(slimrows$Hugo_Symbol, levels=top20$types)
+	
+	colcols = getColorSequence(cnames=unique(slimrows$Variant_Classification), 
+														 fname=colorMatchesFile)
+	colnames = colors()[colcols]
+	names(colnames)<-names(colcols)
+	
+	p1 = ggplot(data=slimrows, aes(x=Hugo_Symbol, 
+																 fill=factor(Variant_Classification)))+
+		geom_bar(color="black")+
+		coord_flip()+
+		scale_fill_manual(values=colnames)+
+		theme_bw()+
+		theme(legend.title=element_blank())+
+		ggtitle(title)
+	
+	print(p1)
+}
+
 simpleGGHist<-function(dataSet, xlab, ylab, mainTitle, showPlot=T){
 	require(ggplot2)
 	p = qplot(x=as.vector(dataSet), geom="histogram")+
