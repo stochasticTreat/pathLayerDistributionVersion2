@@ -108,13 +108,14 @@ getTestPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.
 #'@title Returns an example of the PathSummaryRunner reference class object used by 
 #'@description Returns an object of the PathSummaryRunner reference class used by summaryTable. 
 #'@param pths A \code{Path_Detail} object. If left null, (the default), the default reactome pathways will be automatically provided. 
+#'@param pathIds A \code{character} vector containing the name(s) of paths to be artificially enriched.
 #'@return An instance of the \code{PathSummaryRunner} class, loaded with data indicating enrichment of the "Abacavir metabolism" Reactome pathway.
 #'@export
-getTestPathSummaryRunner<-function(pths=NULL){
+getTestPathSummaryRunner<-function(pths=NULL, pathIds="Abacavir metabolism"){
 	
 	if(is.null(pths)) pths = getTestPaths()
 	
-	geneSet = getGenesFromPaths(pids="Abacavir metabolism", STUDY=pths)
+	geneSet = getGenesFromPaths(pids=pathIds, STUDY=pths)
 	
 	tm = getTargetMatrix(tgenes=geneSet, paths=pths$paths)
 	
@@ -126,4 +127,22 @@ getTestPathSummaryRunner<-function(pths=NULL){
 	
 	return(psr)
 }
+
+
+# psepFile = "./output/pathSummaryRunnerObject_psep.rda"
+# save(psep,file=psepFile)
+# psrFile= "./output/pathSummaryRunnerObject.rda"
+# save(psr,file=psrFile)
+
+#'@title Get \code{path_summary_runner} object. 
+#'@description The  \code{path_summary_runner} object returned by this function is one of the two passed by summaryTable to the path significance tests.
+#'@return \code{path_summary_runner} object loaded with the data that is provided for path significance test functions.
+#'@seealso \code{\link{summaryTable}}
+getLoadedPathSummaryRunner<-function(){
+	r1 = load(system.file("extdata/pathSummaryRunnerObject.rda", package="packageDir"), verbose=T)
+	psr = get(r1[1])
+	return(psr)
+}
+
+
 

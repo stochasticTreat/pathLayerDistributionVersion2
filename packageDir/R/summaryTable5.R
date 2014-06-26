@@ -233,19 +233,28 @@ summaryTableInner<-function(psr, paths_detail){
 	if(psr$.verbose) cat(" st5.5.8: min max and freq info")
 	minmaxfreq = getMinMaxAndFreq(psr=psr, paths_detail=paths_detail)
 	
-	tableOut = cbind.data.frame(tableOut, pathCounts, proportionAffected, minmaxfreq, stringsAsFactors=F)
+	psr$pathsummary = cbind.data.frame(tableOut, pathCounts, proportionAffected, minmaxfreq, stringsAsFactors=F)
 	
 	if(psr$.verbose) cat(" st5.5.9: sig tests..")
+	if(!file.exists("./output/pathSummaryRunnerObject.rda")&(ncol(psr$patientGeneMatrix)>1)){
+		dir.create(path="./output/", showWarnings=F, recursive=T)
+		if(is.null(psr$path_summary_each_patient)) warning("path summaries for each patient is null... strange")
+		warning("saving path summary runner for diagnostic purposes...")
+		save(psr, file="./output/pathSummaryRunnerObject.rda")
+	# 		path_summary_each_patient = psr$path_summary_each_patient
+	# 		save(path_summary_each_patient, file="./output/pathSummaryRunnerObject_psep.rda")
+	} 	
 	
 	for(tf in psr$.significanceTests){
-		tableOut = cbind.data.frame(tableOut, tf(pathSigRunner=psr, paths_detail=paths_detail), stringsAsFactors=F)
+		psr$pathsummary = cbind.data.frame(psr$pathsummary, tf(pathSigRunner=psr, paths_detail=paths_detail), stringsAsFactors=F)
+		
 	}
-	tableOut = unfactorize(df=tableOut)
+	psr$pathsummary = unfactorize(df=psr$pathsummary)
 	
-	tableOut = tableOut[order(tableOut[,5], decreasing=T), ,drop=F]
+	psr$pathsummary = psr$pathsummary[order(psr$pathsummary[,5], decreasing=T), ,drop=F]
 	
 	print("Regular return from pathway analysis...")
-	return(list(pathsummary=tableOut, #The path enrichment summary
+	return(list(pathsummary=psr$pathsummary, #The path enrichment summary
 							summarystats=generalSummary(psr=psr, paths_detail=paths_detail), #the overall summary stats
 							patientGeneMatrix=psr$patientGeneMatrix, #the original patientGeneMatrix with rows removed if genes were not targeted
 							patientsums=psr$patientsum, #counts of active genes for each patient
@@ -254,6 +263,6 @@ summaryTableInner<-function(psr, paths_detail){
 							path_summary_each_patient=psr$path_summary_each_patient, #results from applying the summary table function
 							active_genes_not_in_paths=psr$genomicnotpw, #list of active genes not in the pathways
 							patientList = colnames(psr$patientGeneMatrix)))  #list of patient ids
-}#summaryTable4
+}#summaryTable
 
 

@@ -105,7 +105,7 @@ test.abacavirMetabolismOverlapSets<-function(){
 				ctarg = ctarg[order(ctarg)]
 			}
 		}else{
-			if(nrow(cur)&ncol(cur)){
+			if( nrow(cur)&ncol(cur) ){
 				cur = cur[order(cur[,1]),]
 				ctarg = ctarg[order(ctarg[,1]),]
 				colnames(ctarg)<-colnames(cur)

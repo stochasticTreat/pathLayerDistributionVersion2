@@ -92,6 +92,8 @@ analysis.
   class "matrix"} Values are pasted together
   \code{"character"} vectors of identifiers for genes found
   active in each pathway. Row names are given as pathway
-  identifiers.  } }
+  identifiers.  } \item{\code{pathsummary}:}{ \code{Object
+  of class "data.frame"} containing main coverage and
+  enrichment summary data for each affected pathway.  } }
 }
 

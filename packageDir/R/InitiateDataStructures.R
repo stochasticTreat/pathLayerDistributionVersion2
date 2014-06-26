@@ -100,6 +100,9 @@ Path_Detail<-setRefClass(Class="Path_Detail", fields=list(name="character",
 #' \item{\code{active_genes_ea_path}:}{
 #'	 \code{Object of class "matrix"} Values are pasted together \code{"character"} vectors of identifiers for genes found active in each pathway. Row names are given as pathway identifiers. 
 #'	 }
+#' \item{\code{pathsummary}:}{
+#'	 \code{Object of class "data.frame"} containing main coverage and enrichment summary data for each affected pathway.
+#'	 }
 #' }
 #'@import methods
 #'@exportClass PathSummaryRunner
@@ -125,7 +128,8 @@ PathSummaryRunner<-setRefClass(Class="PathSummaryRunner",
 															 				 '.gene_frequency_matrix', 
 															 				 '.gene_vector', 
 															 				 'genomicnotpw', 
-															 				 'active_genes_ea_path'))
+															 				 'active_genes_ea_path', 
+															 				 "pathsummary"))
 
 #'@title StudyMetaData
 #'@description Object containing crucial study meta data. 
@@ -153,7 +157,6 @@ setClass("Study", representation(results="list",
 																 arms = "list",
 																 studyMetaData = "StudyMetaData"))
 
-
 #'@title DataArm
 #'@description Contains the information necessarry to connect a data input arm to the interactive version of this program. 
 #'@slot description character. The description of the data input arm provided in the main menu.
@@ -176,6 +179,14 @@ setClass("DataArm", representation(description="character",
 #'@param scriptFile A file providing the script where the functions implementing the data import arm can be found. Note: This allows that a script can be provied which contains the definition of the function provided for the mainFunction argument. Thus, this script will be executed before the mainFunction is called or referened. 
 #'@return The arms list with the additional arm added. 
 #'@export
+#'@examples
+#'study = getStudyObject(study.name="testDataSets", 
+#' 											 geneIdentifierType="HUGO")
+#'arms = study@arms
+#'arms = loadDataArm(description="Load drug screen data",
+#'	title="functional_drug_screen_summary", 
+#'	mainFunction=RunDrugScreen, 
+#'	arms=arms)
 loadDataArm<-function(mainFunction, 
 											arms, 
 											title, 
