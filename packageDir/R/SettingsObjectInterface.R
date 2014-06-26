@@ -296,7 +296,7 @@ settingText<-function(s, prompt, requireInput=T){
 	if(prompt%in%names(s)){ #the value has already been set
 		if(s$interactive){
 			cat("\n",prompt,"\n")
-			if(!is.null(s[[prompt]])) cat("Default value:\n", s[[prompt]])
+			if(!is.null(s[[prompt]])) cat("Previous/default value:\n", s[[prompt]])
 			res = readline("Enter an option or just press enter to use the defalt value: ")
 			if(res!="") s[[prompt]] = res
 		}
@@ -397,7 +397,7 @@ settingList<-function(s, prompt, set){
 			} 
 		}
 		
-		if(!is.null(s[[prompt]]))     cat("\nDefault value:\n", s[[prompt]], "\n")
+		if(!is.null(s[[prompt]]))     cat("\nPrevious/default value:\n", s[[prompt]], "\n")
 		#	s[[fullSet]] = paste(set[,1], collapse="; ")
 		if( s$interactive|forceInput ){
 			#display prompt
