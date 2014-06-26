@@ -1,6 +1,6 @@
 \name{hypergeometricPathEnrichment}
 \alias{hypergeometricPathEnrichment}
-\title{hypergeometricPathEnrichment}
+\title{hypergeometric Path Enrichment analysis function for summaryTable interface.}
 \usage{
 hypergeometricPathEnrichment(pathSigRunner, paths_detail)
 }
@@ -16,8 +16,9 @@ p-values for each path, the other with B.H./FDR adjusted
 p-value.
 }
 \description{
-provides hypergeometric test for analysis of pathway
-enrichment
+Provides hypergeometric test for analysis of pathway
+enrichment. Implements interface from the summaryTable
+function to path significance tests.
 }
 \note{
 Implements the path test interface with one input, the path

@@ -1,8 +1,8 @@
 
 #hypergeometricPathEnrichment
 
-#'@title hypergeometricPathEnrichment
-#'@description provides hypergeometric test for analysis of pathway enrichment
+#'@title hypergeometric Path Enrichment analysis function for summaryTable interface.
+#'@description Provides hypergeometric test for analysis of pathway enrichment. Implements interface from the summaryTable function to path significance tests.
 #'@param paths_detail An object of the Path_Detail class
 #'@param pathSigRunner An object of the PathSummaryRunner reference class
 #'@return data.frame with two columns, one with hypergeometric p-values for each path, the other with B.H./FDR adjusted p-value.
