@@ -1,9 +1,7 @@
 #processOHSUseqDat_functions.R
 
-
 loadCoverageData<-function(path_detail, fname, verbose=F){
 	#function to load seq.capture  gene coverage data
-	fname = coverageFilePrompt(defaultfile=fname)
 	tab = read.table(file=fname,header=F,stringsAsFactors=F)
 	#check that usym are approved hugo symbols
 	usym = corsym(symbol_set=tab[,1], symref=path_detail$symtable, verbose=verbose)
@@ -20,7 +18,7 @@ appendPPScoresOHSU<-function(oseqDat){
 }
 
 CheckIntegratePolyPhen<-function(seqDat, tracker){
-	
+	print(exists("seqDat"))
 	#first check to see if there is a polyphen column
 	if(length(grep(pattern="PolyPhen", colnames(seqDat), ignore.case=T))){
 		cat("\nPolyPhen column found.. \n")
@@ -28,7 +26,7 @@ CheckIntegratePolyPhen<-function(seqDat, tracker){
 		#if there's a polyphen column, adjust the consequences
 		sd = splitScoresOut(seqdat=seqDat)
 		print("Split PolyPhen scores out")
-		sd2 = appendPPScoresOHSU(sd)
+		sd2 = appendPPScoresOHSU(oseqDat=sd)
 		print(dim(sd2))
 		print("scores appended to consequence types")
 		seqDat=sd2
@@ -36,19 +34,26 @@ CheckIntegratePolyPhen<-function(seqDat, tracker){
 	return(list(seqDat=seqDat, tracker=tracker))
 }
 
-FilterdbSNP<-function(ohsuSeqDat, tracker, filterYN=NULL, verbose=T){
-	filtLogicVector = rep(T, nrow(ohsuSeqDat))
-	tracker[["Number of variants in chohort with dbSNP records:"]] = sum( ohsuSeqDat$in_dbsnp==1)
-	cat("\nOut of",
-			nrow(ohsuSeqDat),
-			"variants found in the cohort,the number with dbSNP records is",
-			sum( ohsuSeqDat$in_dbsnp==1),"\n")
+FilterdbSNP<-function(ohsuSeqDat, tracker, s){
+	
+
+	mess  = 	paste("Out of",
+								 nrow(ohsuSeqDat),
+								 "variants found in the cohort, the number with dbSNP records is",
+								 sum( ohsuSeqDat$in_dbsnp==1))
+	tracker[["Number of variants in chohort with dbSNP records:"]] = mess
+	cat("\n",mess,"\n")
+	
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
-	if(verbose) filterYN = readline("Would you like to filter out dbSNP Values? (y/n)")
-	if(filterYN=="y"){
+	while(TRUE){
+		s = setting(s=s,prompt="Would you like to filter out dbSNP Values? (y/n)")
+		if(s$.text%in%c("y","n")) break
+	}
+	filtLogicVector = rep(TRUE, nrow(ohsuSeqDat))
+	if(s$.text=="y"){
 		filtLogicVector = ohsuSeqDat$in_dbsnp==0
 	}
-	return(list(tracker=tracker, filtLogicVector=filtLogicVector))
+	return(list(tracker=tracker, filtLogicVector=filtLogicVector, s=s))
 }
 
 
@@ -150,7 +155,7 @@ stackedGeneBar_OHSUseq<-function(seqDat){
 	par(mar = oldmar)
 }
 
-getColorSequence<-function(cnames){
+getColorSequence<-function(cnames, colorPalleteFile=NULL){
 	#first check cnames, 
 	#			if colors already assigned to cnames, 
 	#					set those colors already assigned
@@ -161,16 +166,22 @@ getColorSequence<-function(cnames){
 	out = rep(0,times = length(cnames))
 	names(out) = cnames
 	
-	cpal = read.table(file=system.file("extdata/uniqueColorPalette.txt", package = "packageDir"),
+	if(is.null(colorPalleteFile)){
+		cpalfile = checkFileCopyDefault(fname="./reference_data/uniqueColorPalette.txt")
+	}else{
+		cpalfile = colorPalleteFile
+	}
+	cpal = read.table(file=cpalfile,
 										stringsAsFactors=F,
 										header=F,sep="\t")
+	
 	colnames(cpal) = c("colorNumber", "colorDescription")
 	
 	#make dictionary
 	assignments = read.table(file=system.file("extdata/colorMatches.txt", package = "packageDir"),
-						 			stringsAsFactors=F,
-						 			header=F,
-						 			sep="\t")
+													 stringsAsFactors=F,
+													 header=F,
+													 sep="\t")
 	#clean things up
 	assignments[,2]=gsub(pattern=" ", replacement="", x=assignments[,2])
 	
@@ -240,11 +251,10 @@ getColorSequence<-function(cnames){
 #returns: 			list
 #										$selected_variants: filtered variant records
 #										$tracker: the tracker object
-FilterVariantType<-function(ohsuSeqDat, tracker, verbose=T, variant_selection = NULL){
+FilterVariantType<-function(ohsuSeqDat, tracker, s, variant_selection = NULL){
 	line=""
-
+	verbose=s$interactive
 	if(is.null(variant_selection)){
-		
 		variant_selection = read.delim(header=F, 
 																	 check.names=F,
 																	 stringsAsFactors=F,
@@ -256,6 +266,7 @@ FilterVariantType<-function(ohsuSeqDat, tracker, verbose=T, variant_selection = 
 	#allCons = parseConsequenceLong(ohsuSeqDat$Consequence) #get all 
 	allCons=ohsuSeqDat$Consequence
 	stackedGeneBar_OHSUseq(seqDat=ohsuSeqDat)
+	
 	ohsuSeqDat_sum = summarize_by(col=allCons, 
 																display=T, 
 																barPlotTitle="Occurances of variant identifiers") #function provides user a summary of the somatic variant data
@@ -263,35 +274,32 @@ FilterVariantType<-function(ohsuSeqDat, tracker, verbose=T, variant_selection = 
 	tracker[["variant types and counts"]] = ohsuSeqDat_sum
 	#give user the option to filter it: 
 	####################### readline() ####################### 
-	if(verbose){
-		cat("This is the default set of mutations:\n")
-		print(variant_selection)
-		system('/usr/bin/afplay ./reference_data/Submarine.aiff')
-		prompt = paste("\nEnter row numbers of variant types to be assumed as implying aberrational genes.\n",
-									 "Enter blank line for the default set, which can be found above. ", 
-									 sep="")
-		line = readline(prompt)
-	}
 	
-	selection = variant_selection
-	if((line!="")&(verbose)){
-		selection = as.integer(strsplit(line, " ")[[1]])
-		selection = ohsuSeqDat_sum[selection,1]
-	}
+	userprompt = "\nEnter row numbers of variant types to be assumed as implying aberrational genes.\n"
+	s[[userprompt]] = paste(variant_selection, collapse="; ")
+	
+	s = settingList(s=s, prompt=userprompt, set=ohsuSeqDat_sum[,1])
+	
+	selection = s$.text
+	
 	cat("\nLimiting analysis to lines containing these variant type identifiers:\n")
 	print(selection)
+	
+	
 	#selected_variants will contain the set of somatic variants which match the types selected for analysis
-	glines = rep(F, times=nrow(ohsuSeqDat))
-	for(vt in selection){
-		curset = ohsuSeqDat$Consequence%in%vt#grepl(pattern=vt, x=ohsuSeqDat$Consequence)
-		glines = glines | curset
-	}
+# 	glines = rep(F, times=nrow(ohsuSeqDat))
+# 	for(vt in selection){
+# 		curset = ohsuSeqDat$Consequence%in%vt#grepl(pattern=vt, x=ohsuSeqDat$Consequence)
+# 		glines = glines | curset
+# 	}
+	
+	glines = ohsuSeqDat$Consequence%in%selection
 	
 	selected_variants = ohsuSeqDat[glines,]
 	tracker[["Retained variants with these tags as aberrations"]] = paste(selection, sep="; ", collapse="; ")
 	tracker[["Ignored these variant tags"]] = paste(ohsuSeqDat_sum$types[!ohsuSeqDat_sum$types%in%selection],sep="; ",collapse="; ")
 	cat("\nNow",nrow(selected_variants),"variants remain\n")
-	return(list(selected_variants=glines, tracker=tracker))
+	return(list(selected_variants=glines, tracker=tracker, s=s))
 }#FilterVariantType
 
 parseConsequence<-function(cons){
@@ -399,7 +407,8 @@ splitScoresOut<-function(seqdat){
 	#takes polyphen data (data frame with PolyPhen column) as provided in OHSU data
 	#breaks out the score and polyphen category
 	#returns table with score and category appended
-	polyPhen_full = seqDat$PolyPhen
+	
+	polyPhen_full = seqdat$PolyPhen
 	if(length(grep(pattern="\\(",x=polyPhen_full))){
 		scores  = gsub(x=polyPhen_full,replacement="",pattern=")")
 		ppcategory = rep("", times=length(scores))
@@ -411,24 +420,44 @@ splitScoresOut<-function(seqdat){
 				ppscore[i] = as.numeric(tmpscores[2])
 			}
 		}
-		seqDat$PolyPhen=ppcategory
-		out = cbind.data.frame(seqDat, 
+		seqdat$PolyPhen=ppcategory
+		out = cbind.data.frame(seqdat, 
 													 polyPhen_full,
 													 ppscore, 
 													 stringsAsFactors=F)
 		return(out)
 	}
-	return(seqDat)
+	return(seqdat)
 }
 
 
+# seqfname = "~/tprog/main_131219/input/AML_corrolated_overlap/AMLSeqCapOverlapPatOnly.txt"
+# seqcoverage = "~/tprog/main_131219/input/AML_corrolated_overlap/OHSUSeqcoverageForSequenceCapture.txt"
+# paths_detail=path_detail
+# study_name="amlseqcap"
 
-processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose=T){
-	tracker = list()
-	cat("\nPlease select the file of sequence capture data\n")
-	#seqfname = file.choose()
+
+processSequenceCaptureData<-function(settings, study){
 	
-	covDatRes = loadCoverageData(path_detail=paths_detail, verbose=verbose, fname="./input/AML_corrolated_overlap/OHSUSeqcoverageForSequenceCapture.txt")
+	s=settings
+	
+	tracker = list()
+	
+	paths_detail=study@studyMetaData@paths
+	study_name = study@studyMetaData@studyName
+
+	s  = setting(s=s, prompt="Please select the file of sequence capture, gene variant data..")
+	seqfname = s$.text
+	
+	s  = setting(s=s, prompt="Please select the file containing the set of gene identifiers representing the coverage of the sequence capture analysis..")
+	seqcoverage = s$.text
+
+	verbose=s$interactive #set this here to make sure something is in the $interactive slot
+
+	
+	covDatRes = loadCoverageData(path_detail=paths_detail, 
+															 verbose=s$interactive, 
+															 fname=seqcoverage) #"./input/AML_corrolated_overlap/OHSUSeqcoverageForSequenceCapture.txt")
 	
 	covDat = covDatRes$cov
 	tracker[["Coverage data file name"]] =covDatRes$file
@@ -455,7 +484,12 @@ processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose
 	
 	preFiltVarPerPatientPreFilt = summarize_by(col=ohsuseq$alias, display=F)
 	tracker[["Variants per patient before filtering"]] = paste(names(summary(preFiltVarPerPatientPreFilt[,2])), summary(preFiltVarPerPatientPreFilt[,2]), sep=':', collapse=" ")
-	ohsuseq$Symbol = corsym(symbol_set=ohsuseq$Symbol, symref=paths_detail$symtable, verbose=verbose)
+	
+	while(T){
+		s = setting(s=s,prompt="Have manual gene symbol corrections already been made? (y/n)")
+		if(s$.text%in%c("y","n")) break
+	}
+	ohsuseq$Symbol = corsym(symbol_set=ohsuseq$Symbol, symref=paths_detail$symtable, verbose=(s$.text=="n"))
 	
 	########reduce the sequence data to only that allowed by the coverage set
 	ohsuseq = ohsuseq[ohsuseq$Symbol%in%covDat,]
@@ -463,9 +497,10 @@ processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose
 	tracker[["Number of unique patient or sample IDs found in the input data,  after limiting to only those containing genes targeted by the sequence capture"]] = length(unique(ohsuseq$alias))
 	
 	################## readline() ################## 
-	snpfiltres = FilterdbSNP(ohsuSeqDat=ohsuseq, filterYN="y", tracker=tracker, verbose=verbose)
+	snpfiltres = FilterdbSNP(ohsuSeqDat=ohsuseq, s=s, tracker=tracker)
 	snpfiltLogicVector = snpfiltres$filtLogicVector
 	tracker = snpfiltres$tracker
+	s = snpfiltres$s
 	#use filtLogicVector to subset the original ohsuseq data
 	ohsuseq = ohsuseq[snpfiltLogicVector,]
 	
@@ -481,9 +516,11 @@ processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose
 	preFiltPolyCount = grep(pattern="polyphen", x=ohsuseq$Consequence, ignore.case=T)
 	
 	################## readline() ################## 
-	varfiltres = FilterVariantType(ohsuSeqDat=ohsuseq, tracker=tracker, verbose=verbose)
+	varfiltres = FilterVariantType(ohsuSeqDat=ohsuseq, s=s, tracker=tracker)
 	varfiltLogicVector = varfiltres$selected_variants
 	tracker = varfiltres$tracker
+	s = varfiltres$s
+	
 	#use filtLogicVector and snpfiltLogicVector to subset the original ohsuseq data
 	ohsuFiltered = ohsuseq[(varfiltLogicVector),]
 	stackedGeneBar_OHSUseq(seqDat=ohsuFiltered)
@@ -511,9 +548,11 @@ processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose
 	# 																		patientGeneMatrix=pgm, 
 	# 																		paths_detail=paths_detail)
 	
-	tmpStudy = getStudyObject(study.name=study_name, path_detail=paths_detail)
-	seqCaptureSummary = summaryTable(study=tmpStudy,
-																	 coverage=covDatm,
+# 	tmpStudy = getStudyObject(study.name=study_name, path_detail=paths_detail)
+
+	seqCaptureSummary = summaryTable(study=study,
+																	 settings=s,
+																	 coverage=rownames(covDatm),
 																	 pgm=pgm,
 																	 dataSetDescription=paste("Sequence capture data,",study_name),
 																	 activeGeneDescription="variant",
@@ -525,4 +564,16 @@ processSequenceCaptureData<-function(paths_detail, seqfname, study_name, verbose
 	
 	return(seqCaptureSummary)
 }#processSequenceCaptureData()
+
+
+
+addOHSUseqcapArm<-function(STUDY){
+	arms = STUDY@arms
+	arms = loadDataArm(description="Load OHSU sequence capture data",
+										 title="sequence_capture_aberration_summary", 
+										 mainFunction=processSequenceCaptureData, 
+										 arms=arms)
+	STUDY@arms = arms
+	return(STUDY)
+}
 
