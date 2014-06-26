@@ -22,18 +22,34 @@ runDrugWorksheet<-function(STUDY=STUDY){
 	
 	if(exists("bfbTargDrugData")|!is.null(STUDY@results$drugSelectionWorksheet)){
 		print("option1")
-		if(is.null(bfbTargDrugData)) bfbTargDrugData <<- makeDrugSelectionWorksheet(STUDY=STUDY)
+		if(is.null(bfbTargDrugData)&is.null(STUDY@results$drugSelectionWorksheet)){
+			cat("\nis.null(bfbTargDrugData)&is.null(STUDY@results$drugSelectionWorksheet) is TRUE...\n")
+			cat("\nrunning makeDrugSelectionWorksheet()\n")
+			bfbTargDrugData = makeDrugSelectionWorksheet(STUDY=STUDY)
+		}else{
+			cat("\nelse\n")
+			bfbTargDrugData = STUDY@results$drugSelectionWorksheet
+		}
 	}else{
-		print("option2")
-		bfbTargDrugData <<- makeDrugSelectionWorksheet(STUDY=STUDY)
+		bfbTargDrugData = STUDY@results$drugSelectionWorksheet
 	}
+	
+	bfbTargDrugData <<- bfbTargDrugData
+	
+	# 	else{
+	# 		print("option2")
+	# 		bfbTargDrugData = makeDrugSelectionWorksheet(STUDY=STUDY)
+	# 		bfbTargDrugData <<- bfbTargDrugData
+	# 	}
 
 	prepDrugSelect()
 	
 	shinyDir = dirname(system.file("shinyDrugSelect/server.R",package = "packageDir"))
 	
 	runApp(shinyDir)#"./shinyDrugSelect/")
-	
+	cat("bfbTargDrugData exists:",exists("bfbTargDrugData"),"\n")
+	cat("bfbTargDrugData is null:",is.null(bfbTargDrugData),"\n")
+	print(getwd())
 	return(bfbTargDrugData)
 }
 

@@ -4,22 +4,24 @@ require(shiny)
 newbfbTargDrugData=NULL
 
 shinyServer(function(input, output){
-# 	
-# 	output$exitHTML<-reactive({
-# 		
-# 	})
-# 	output$myImage<-renderImage({
-# 		list(src="test.png", 
-# 				 contentType='image/png', 
-# 				 width=400, 
-# 				 alt="this is only a test image")
-# 	})
+	# 	
+	# 	output$exitHTML<-reactive({
+	# 		
+	# 	})
+	# 	output$myImage<-renderImage({
+	# 		list(src="test.png", 
+	# 				 contentType='image/png', 
+	# 				 width=400, 
+	# 				 alt="this is only a test image")
+	# 	})
 	newbfbTargDrugDataFunction<-reactive({
 		print("Adjusting pathways")
 		inFile = input$file1
 		if(!is.null(input$file1)){
 			limPaths = read.csv(inFile$datapath, header=F, sep="\t", quote="", stringsAsFactors=F)
+			print(getwd())
 			setwd("..")
+			print(getwd())
 			bfbTargDrugData <<- makeDrugSelectionWorksheet(STUDY=STUDY, plimit=limPaths[,1])
 			setwd("./shinyDrugSelect/")
 			displayData = bfbTargDrugData
@@ -27,7 +29,7 @@ shinyServer(function(input, output){
 			displayData = bfbTargDrugData
 			bfbTargDrugData<<-bfbTargDrugData
 		}
-# 		newbfbTargDrugData<<- displayData
+		# 		newbfbTargDrugData<<- displayData
 		
 		return(displayData)
 		
@@ -46,7 +48,7 @@ shinyServer(function(input, output){
 		}
 		showRows = rep(T, times=nrow(bfbTargDrugData))
 		if(input$exclude!=""){
-			showRows = !rowsContaining(df=displayData, rx=input$exclude)
+			showRows = !packageDir:::rowsContaining(df=displayData, rx=input$exclude)
 		}
 		
 		displayData[showRows,input$show_vars,drop=FALSE]
@@ -66,9 +68,9 @@ shinyServer(function(input, output){
 		}
 	)
 	
-# 	output$dynamicRanges<-renderUI({
-# 		
-# 	})
+	# 	output$dynamicRanges<-renderUI({
+	# 		
+	# 	})
 })
 
 

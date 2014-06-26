@@ -206,7 +206,8 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			#sfile=system.file("shinyDrugSelect/runShiny.R",package = "packageDir")
 			print("Runing shiny main")
 			#source(sfile, local=T)
-			STUDY@results$"drugSelectionWorksheet" = runDrugWorksheet(STUDY=STUDY)
+			STUDY@results[["drugSelectionWorksheet"]] = runDrugWorksheet(STUDY=STUDY)
+			cat("drugSelectionWorksheet found:",!is.null(STUDY@results$drugSelectionWorksheet))
 		}
 	}
 	return(STUDY)

@@ -12,7 +12,7 @@
 rowsContaining<-function(df, rx){
 	
 	rowsWith = rep(FALSE, times=nrow(df))
-	if(rf!=""){
+	if(rx!=""){
 		for(i in 1:ncol(df)){
 			rowsWith = rowsWith|grepl(pattern=rx, x=df[,i])
 		}
