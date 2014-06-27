@@ -58,10 +58,10 @@ runSomaticMutationsProcessing<-function(settings, study){
 	}
 }
 
+
+#top20Hists(unfilteredData=STUDY@results$somatic_mutation_aberration_summary$original_data_matrix)
 top20Hists<-function(unfilteredData){
 
-	# 	unfilteredData=results$somatic_mutation_aberration_summary$unfiltered_data
-	
 	#get the top 20 mutations
 	print(colnames(unfilteredData))
 	stacked = unfilteredData[,c("pid","Hugo_Symbol")]
@@ -80,21 +80,34 @@ top20Hists<-function(unfilteredData){
 		curgenmat = unfilteredData[unfilteredData$Hugo_Symbol==cn,,drop=F]
 		postype2 = curgenmat
 		postype2$Variant_Classification<-as.factor(postype2$Variant_Classification)
-		bw = range(curgenmat$Start_Position)[2]-range(curgenmat$Start_Position)[1]
-		bw = bw/75
-
-		qp = qplot(Start_Position, 
-							 data = postype2,  
-							 binwidth=bw,
-							 fill = Variant_Classification, 
-							 main=paste("Positions and distributions of variants in gene", cn))
-		qp + theme(axis.text.x=element_text(angle=-90))
+		
+		minPos = min(postype2$Start_Position)
+		postype2$Start_Position = postype2$Start_Position - minPos
+		postype2$End_Position = postype2$End_Position - minPos
+		
+		bw = floor(max(postype2$Start_Position)/200)
+		
+		# 		qp = qplot(Start_Position, 
+		# 							 data = postype2,  
+		# 							 binwidth=bw,
+		# 							 fill = Variant_Classification, 
+		# 							 main=paste("Positions and distributions of variants in gene", cn))
+		# 		qp + theme(axis.text.x=element_text(angle=-90))
+		
+		qp=ggplot(data=postype2, aes(x=Start_Position, fill=Variant_Classification))+ 
+			geom_histogram(binwidth=bw)+
+			theme(axis.text.x=element_text(angle=-90))+
+			xlab("Nucleotide position in gene")+
+			ylab("Number of mutations at position in gene")+
+			ggtitle(paste("Nucleotide positions of variants in gene", cn,"across all members of cohort\nbin width:",bw))
+		
 		dir.create("./output/image_tmp/",recursive=T, showWarnings=F)
 		fnameOut = paste("./output/image_tmp/variant_postions_and_types_for_gene_",cn,".png",sep="")
 		ggsave(filename=fnameOut, plot=qp)
 	}
 	return(fnameOut)
 }
+
 
 # stackedGeneHist<-function(postype){
 # 	
