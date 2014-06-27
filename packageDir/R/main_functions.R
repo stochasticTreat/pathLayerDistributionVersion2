@@ -458,7 +458,8 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 		print(nrow(big_pgm))
 		print(length(big_pgm))
 	}
-	if(!is.null(big_pgm)&is.null(coverageSet)){
+	
+	if( !is.null(big_pgm)&!is.null(coverageSet) ){
 		combined_aberrations_summary = summaryTable(study=study, individualEnrichment=T,
 																								activeGeneDescription="aberrational",
 																								pgm=big_pgm, 
