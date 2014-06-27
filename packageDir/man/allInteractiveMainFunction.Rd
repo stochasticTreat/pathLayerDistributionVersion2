@@ -18,4 +18,9 @@ allInteractiveMainFunction.
 Main function for interactive usage of package. Provides
 menu-based access for nearly all program functionality.
 }
+\examples{
+\dontrun{
+STUDY=allInteractiveMainFunction()
+}
+}
 

@@ -40,4 +40,9 @@ The arms list with the additional arm added.
 Connects data input arm to program, providing essential
 information and the main execution function.
 }
+\examples{
+study = getStudyObject(study.name="testDataSets",
+											 geneIdentifierType="HUGO")
+arms = study
+}
 

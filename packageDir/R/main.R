@@ -46,7 +46,11 @@ loadBasicArms<-function(STUDY){
 #'@description Main function for interactive usage of package. Provides menu-based access for nearly all program functionality.
 #'@param additionalArms Optional. Function loading additional data input arms. Function should take a Study object as an argument, use the loadDataArm() to load data arms, and return the Study object with arms added.
 #'@export
-#'@return The Study object created and filled by allInteractiveMainFunction. 
+#'@return The Study object created and filled by allInteractiveMainFunction.
+#'@examples
+#'\dontrun{
+#'STUDY=allInteractiveMainFunction()
+#'} 
 ########################################################################
 allInteractiveMainFunction<-function(additionalArms=NULL){
 	
