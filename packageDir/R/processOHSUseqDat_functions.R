@@ -1,5 +1,27 @@
 #processOHSUseqDat_functions.R
 
+#'@title Add sequence capture data input arm.
+#'@description Add arm onto main study for input of sequence capture data. 
+#'@param STUDY A \code{Study} object.
+#'@return STUDY A \code{Study} object with the sequence capture data input arm loaded. 
+#'@export
+#'@examples
+#'STUDY = getTestStudyObject()
+#'STUDY = addSequenceCaptureArm(STUDY=STUDY)
+#'\dontrun{
+#'STUDY = allInteractiveMainFunction(additionalArms=addSequenceCaptureArm)
+#'}
+addSequenceCaptureArm<-function(STUDY){
+	arms = STUDY@arms
+	arms = loadDataArm(description="Load OHSU sequence capture data",
+										 title="sequence_capture_aberration_summary", 
+										 mainFunction=processSequenceCaptureData, 
+										 arms=arms)
+	STUDY@arms = arms
+	return(STUDY)
+}
+
+
 loadCoverageData<-function(path_detail, fname, verbose=F){
 	#function to load seq.capture  gene coverage data
 	tab = read.table(file=fname,header=F,stringsAsFactors=F)
@@ -565,15 +587,4 @@ processSequenceCaptureData<-function(settings, study){
 	return(seqCaptureSummary)
 }#processSequenceCaptureData()
 
-
-
-addOHSUseqcapArm<-function(STUDY){
-	arms = STUDY@arms
-	arms = loadDataArm(description="Load OHSU sequence capture data",
-										 title="sequence_capture_aberration_summary", 
-										 mainFunction=processSequenceCaptureData, 
-										 arms=arms)
-	STUDY@arms = arms
-	return(STUDY)
-}
 
