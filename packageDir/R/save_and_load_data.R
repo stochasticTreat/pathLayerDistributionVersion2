@@ -13,6 +13,7 @@ checkAndMoveImage<-function(curfile, cfolder){
 					#then move the image
 					#re-create the file name
 					newFname = paste(cfolder, basename(curfile), sep='/')
+					cat("\nCopying to file",newFname,"\n")
 					dir.create(path=dirname(newFname), showWarnings=F, recursive=T)
 					my.file.rename(from=curfile, to=newFname)
 					curfile = newFname

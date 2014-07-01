@@ -295,13 +295,13 @@ filterMutationType<-function(tcga_som, tracker, s){
 
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	print("Before removal of genes marked as \"UNKNOWN\"")
-	stackedGeneBar(tcga_som, title="Top mutations before any filtering ")
+	stackedGeneBar(tcga_som=tcga_som, title="Top mutations before any filtering")
 	tracker[["Before removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes"]]=save.plot(pname="stackedGeneBarPreUnknownRemoval")
 	
 	tcga_som_no_unknown = tcga_som[tcga_som$Hugo_Symbol!="UNKNOWN",]
 	
 	print("After removal of genes marked as \"UNKNOWN\"")
-	stackedGeneBar(tcga_som_no_unknown,
+	stackedGeneBar(tcga_som=tcga_som_no_unknown,
 								 title="Top mutations after removal\nof genes marked \"UNKNOWN\"")#make another stacked gene bar after the "UNKNOWN" are removed
 	tracker[["After removal of UNKNOWN genes, distribution of mutation types in top 20 most mutated genes."]]=save.plot("stackedGeneBarPostUnknownRemoval")
 
@@ -645,7 +645,7 @@ processSomaticData<-function(study,
 	
 	
 	print("After all filtering steps")
-	stackedGeneBar(som_select,
+	stackedGeneBar(tcga_som=som_select,
 								 title="Top mutations after all filtering steps")
 	tracker[["After all filtering steps, distribution of mutation types in top 20 most mutated genes."]]=save.plot("stackedGeneBarPostUnknownRemoval")
 

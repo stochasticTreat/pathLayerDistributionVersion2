@@ -393,8 +393,17 @@ CheckPatientOverlap<-function(results){
 	return(psetOut)
 }#CheckPatientOverlap
 
-plotOverlapArea<-function(tabout_targAndAb, results, abandtargplotname){
-	
+
+
+# load("./testsSavePlotOverlapData.rda", verbose=T)
+# tabout_targAndAb = allInputs$tabout_targAndAb
+# results = allInputs$results
+# abandtargplotname = allInputs$abandtargplotname
+
+plotOverlapArea<-function(tabout_targAndAb, results, abandtargplotname, autosave=T){
+# 	readline("inside plot overlap area()")
+	# 	allInputs = list(tabout_targAndAb=tabout_targAndAb, results=results, abandtargplotname=abandtargplotname)
+	# 	save(allInputs, file="./testsSavePlotOverlapData.rda")
 	if(!nrow(tabout_targAndAb)){
 		print("There are no pathways in the overlap between drug targeted/drug sensitive and aberrational")
 		return()
@@ -403,27 +412,46 @@ plotOverlapArea<-function(tabout_targAndAb, results, abandtargplotname){
 	#### plot overlap area
 	if(VERBOSE) print("Plotting overlap area.. ")
 	if(VERBOSE) print(colnames(tabout_targAndAb))
-	png(filename=abandtargplotname,width=800,height=500)
 	
-	maxpathlength = max(tabout_targAndAb[,3])
-	cexvals = (tabout_targAndAb[,3]/maxpathlength)*10
+	# 	tabout_targAndAb$path_id = gsub(pattern=" ",replacement="\n",x=tabout_targAndAb$path_id)
+	p1=ggplot(data=tabout_targAndAb, aes(x=proportion_of_cohort_w_aberrational_gene_in_path, 
+																			 y=drug_targeted_genes, 
+																			 size=testable_path_length.x, 
+																			 label=path_id))+
+		geom_point(alpha=0.5)+
+		scale_size(range=c(5,30), guide = guide_legend(title = "Number of genes in path"))+
+		geom_text(size=2, vjust=1)+
+		xlab("Proportion of cohort with aberrational gene in path")+
+		ylab("Number of drug targeted genes")+
+		ggtitle("Proportion affected vs number of drug targets")+
+		theme_bw()
 	
-	plot(cex=cexvals,
-			 ylim=c(0,1.2*max(tabout_targAndAb[,"drug_targeted_genes"])),#)),
-			 x=tabout_targAndAb[,"proportion_of_cohort_w_aberrational_gene_in_path"], 
-			 y=tabout_targAndAb[,"drug_targeted_genes"],#"drug_targeted_genes"], 
-			 main="Proportion affected vs number of drug targets.",
-			 xlab="Proportion of cohort with aberrational gene in path", 
-			 ylab="Number of drug targets")
-	textxy(tabout_targAndAb[,"proportion_of_cohort_w_aberrational_gene_in_path"], 
-				 tabout_targAndAb[,"drug_targeted_genes"], 
-				 labs=1:nrow(tabout_targAndAb))#,
-	#cx=1.3)
-	legend(x="topright", 
-				 legend=paste("Size = path length (",paste(range(tabout_targAndAb[,3]), collapse=" to "),"nodes)\nNumber = path number in the \'enriched and targeted\' table"), 
-				 cex=.8, pch=1)
-	dev.off()
-	return()
+	print(p1)
+	if(autosave){
+		pfname = plotFileName(abandtargplotname)
+		ggsave(plot=p1, width=10, height=6, filename=pfname)
+	}
+# 	png(filename=abandtargplotname,width=800,height=500)
+	
+# 	maxpathlength = max(tabout_targAndAb[,3])
+# 	cexvals = (tabout_targAndAb[,3]/maxpathlength)*10
+# 	
+# 	plot(cex=cexvals,
+# 			 ylim=c(0,1.2*max(tabout_targAndAb[,"drug_targeted_genes"])),#)),
+# 			 x=tabout_targAndAb[,"proportion_of_cohort_w_aberrational_gene_in_path"], 
+# 			 y=tabout_targAndAb[,"drug_targeted_genes"],#"drug_targeted_genes"], 
+# 			 main="Proportion affected vs number of drug targets.",
+# 			 xlab="Proportion of cohort with aberrational gene in path", 
+# 			 ylab="Number of drug targets")
+# 	textxy(tabout_targAndAb[,"proportion_of_cohort_w_aberrational_gene_in_path"], 
+# 				 tabout_targAndAb[,"drug_targeted_genes"], 
+# 				 labs=1:nrow(tabout_targAndAb))#,
+# 	#cx=1.3)
+# 	legend(x="topright", 
+# 				 legend=paste("Size = path length (",paste(range(tabout_targAndAb[,3]), collapse=" to "),"nodes)\nNumber = path number in the \'enriched and targeted\' table"), 
+# 				 cex=.8, pch=1)
+# 	dev.off()
+	return(pfname)
 }#plotOverlapArea
 
 adjustOverlapToSensitive<-function(overlap, functionalEnrichmentAnalysis){
@@ -519,18 +547,19 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	
 	if(VERBOSE) print("Creating venn diagram..")
 	
+
+# 	fullvennFileName = paste(ola$outfname_path,vennFileName,sep="")
+# 	fullvennFileName = vennFileName
+
 	vennList = list()
 	vennFileName= "Overlap_venn_diagram.png"
-	fullvennFileName = paste(ola$outfname_path,vennFileName,sep="")
-	outlist$imageSlots[[vennFileName]] = vennFileName
-	
 	vennList[["Drug-screen targeted paths"]] = drugcoverage
-	vennList[["Aberration enriched paths"]] = aben
+	vennList[["Aberration-enriched\npaths"]] = aben
 	# 	print("search():")
 	# 	print(search())
 	# 	print("ls()")
 	# 	print(ls())
-	require(VennDiagram)
+	 	require(VennDiagram)
 	if(is.null(functionalEnrichmentAnalysis)){#ola$results$functional_drug_screen_summary$pathsummary)){#if this is null, then there is only a drug coverage analysis available
 		print("venn option 1 -- functionalEnrichmentAnalysis is NULL")
 		vennTmp = venn.diagram(vennList, 
@@ -546,26 +575,27 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 													 main="Overlap of significantly aberrational and drug-targeted paths")
 	}else{
 		if(VERBOSE) print("venn option 2")
-		vennList[["Paths containing drug-sensitive targets"]] = senspaths
+		vennList[["Paths containing\ndrug-sensitive targets"]] = senspaths
 		vennTmp = venn.diagram(vennList, filename=NULL,
 													 main.cex=1.5,
 													 cex=1.5,
 													 cat.cex=c(1.3,1.3,1.3)[1:length(vennList)],
 													 col="transparent",
-													 cat.pos=c(340,20,0)[1:length(vennList)],
-													 cat.dist=c(.001,.001,.001)[1:length(vennList)],
+													 cat.pos=c(340,30,0)[1:length(vennList)],
+													 cat.dist=c(.001,.001,-.001)[1:length(vennList)],
 													 cat.col=c("red","darkorchid4","blue")[1:length(vennList)],
 													 fill=c("red","darkorchid4","blue")[1:length(vennList)],
 													 main="Overlap of significantly aberrational,\ndrug-targeted and drug sensitive paths")
 	}
-	
-	png(fullvennFileName)
+	plot.new()
 	grid.draw(vennTmp)
-	dev.off()
+	fullvennFileName = save.plot(pname=vennFileName)
+	# 	png(fullvennFileName)
+	# 	dev.off()
 	if(VERBOSE) print(fullvennFileName)
 	
 	if(VERBOSE) print(vennFileName)
-	
+	outlist$imageSlots[[vennFileName]] = fullvennFileName
 	if(VERBOSE) print("Venn diagram complete.")
 	# 	#this is the base name (no folder root) of the venn diagram; 
 	# 	basename = strsplit(vennFileName,split="\\/")[[1]][length(strsplit(vennFileName,split="\\/")[[1]])]
@@ -609,16 +639,21 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 		if(nrow(tabout_targAndAb)){
 			if(VERBOSE) print("Targeted and aberrational found..")
 			plotfname = "aberrational_and_targeted.png"
-			fullplotfname = paste(ola$outfname_path,plotfname, sep="")
+			# 			fullplotfname = paste(ola$outfname_path,plotfname, sep="")
 			#show a bubble plot of the pathways that are targeted and aberrational
-			plotOverlapArea(tabout_targAndAb=tabout_targAndAb,
+			
+			tmpPlotFName = plotOverlapArea(tabout_targAndAb=tabout_targAndAb,
 											results=ola$results, 
-											abandtargplotname=fullplotfname)
-			outlist$imageSlots[[plotfname]] = plotfname
+											abandtargplotname=plotfname)
+			
+			outlist$imageSlots[[plotfname]] = tmpPlotFName
+			
 			tabout_targAndAb=cbind(1:nrow(tabout_targAndAb),tabout_targAndAb)
 			colnames(tabout_targAndAb)[1]<-"path number"
 			if(VERBOSE) print("Plot created.")
 		}
+	}else{
+		readline("not going to plot the overlap..")
 	}
 	outlist[["Aberrationally enriched, containing drug targets"]] = tabout_targAndAb
 	

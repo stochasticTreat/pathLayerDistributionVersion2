@@ -377,53 +377,6 @@ formatIDs<-function(patIDs){
 	print("Could not find OHSU or Tyner pattern patient IDs")
 }
 
-stackedGeneBar<-function(tcga_som){
-	#stackedGeneBar
-	#takes: tcga_som: initial input .maf table, after cleaning of repeat rows and gene symbols
-	
-	ufilt = tcga_som
-	gs = summarize_by(col=tcga_som[,"Hugo_Symbol"], display=F)
-	top20 = head(gs[order(gs[,2],decreasing=T),],20)
-	gsnames = top20$types
-	
-	toprows = ufilt[ufilt$Hugo_Symbol%in%gsnames,]
-	
-	slimrows = toprows[,c("Hugo_Symbol","Variant_Classification")]
-	
-	#set up the output matrix
-	mtypes = unique(slimrows$Variant_Classification)
-	mmat = matrix(data=0,ncol=length(mtypes), nrow=length(gsnames), dimnames=list(gsnames, mtypes))
-	
-	for(n in gsnames){
-		#get the rows for those names
-		msum = summarize_by(col=slimrows[slimrows$Hugo_Symbol==n,"Variant_Classification"], display=F)
-		mmat[n,msum$types] = msum$counts
-	}
-	mdf  = cbind.data.frame(gene = rownames(mmat),mmat)
-	
-	par(las=2) # make label text perpendicular to axis
-	par(mar=c(5,8,4,2)) # increase y-axis margin.
-	oldmar =c(5,4,4,2)
-	oldlas = 0 
-	
-	scol = 2
-	colseq = (scol:(scol + ncol(mmat)))*10 + 3
-	barplot(t(mmat), legend = colnames(mmat),xlab="Number of variants found in gene",
-					main="variant types for the top 20 most variant genes", 
-					col=colors(distinct=T)[colseq],
-					horiz=TRUE, 
-					cex.names=0.8)
-	par(las=oldlas)
-	par(mar = oldmar)
-	#barplot(mmat, horiz=T)
-}
-
-stackedGeneBarWrapper<-function(ohsuData){
-	
-	ohsuDataRedux = ohsuData[,c("Symbol","Consequence")]
-	colnames(ohsuDataRedux)<-c('Hugo_Symbol','Variant_Classification')
-	stackedGeneBar(tcga_som=ohsuDataRedux)
-}
 
 splitScoresOut<-function(seqdat){
 	#takes polyphen data (data frame with PolyPhen column) as provided in OHSU data

@@ -133,10 +133,12 @@ AutoSavePlot<-function(pname){
 	pfname = plotFileName(pname)
 	dev.copy(png,pfname)
 	dev.off()
+	
 	return(pfname)
 }
 
-plotFileName<-function(pname){
+
+plotFileName<-function(pname, addTime=F){
 	#takes a name, makes sure there's a directory there, adds time stamp to make it unique, adds a postfix to make sure  
 	autoincrament = F
 	root="./output/imageTemp/"
@@ -147,13 +149,16 @@ plotFileName<-function(pname){
 		pname = strsplit(x=pname, split="[/]")[[1]][length(strsplit(x=pname, split="[/]")[[1]])]#the last part of the path is the actual file name
 	}
 	dir.create(path=root, recursive=T, showWarnings=F)
+	ctime = ""
+	if(addTime) ctime = gsub(pattern=" ", replacement=".", x=paste0(as.character(Sys.time()),"."))
 	
-	fullPath = paste(root, "graphic",gsub(pattern="[-:]", replacement=".", x=as.character(Sys.time())),".", pname, sep="")
+	fullPath = paste(root, "graphic", gsub(pattern="[-:]", replacement=".", x=ctime), pname, sep="")
 	#check if it exists, if it does, append a number
 	while(file.exists(fullPath)&autoincrament){
 		pname = paste("1", pname, sep=".")
 		fullPath = paste(root, "graphic",gsub(pattern="[-:]", replacement=".", x=as.character(Sys.time())),".", pname, sep="")
-	}  
+	} 
+	
 	return(fullPath)
 }
 
