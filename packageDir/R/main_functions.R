@@ -30,6 +30,12 @@ changeStudyName<-function(study, newName){
 
 #autoRunFromSettings
 #runs all analyses described in settings found in meta data
+#to make the data file, run the code below in examples, 
+#make sure the working directory is set to 
+#setwd("../packageDir/")
+#then run this
+# abacavirSettings = sres@studyMetaData@settings
+# save(abacavirSettings, file="./inst/extdata/abacavirSettings.rda")
 #'@title Automatically run set of analyses from a set of loaded settings. 
 #'@description Function searches for settings objects in the STUDY-studyMetaData-settings slot, then automatically executes the analysis for each arm described by the settings. 
 #'@param study A \code{Study} object with settings available. 

@@ -18,22 +18,22 @@ loadBasicArms<-function(STUDY){
 	cat("\nLoading basic arms...\n")
 	arms = loadDataArm(description="Load drug screen data",
 										 title="functional_drug_screen_summary", 
-										 mainFunction=RunDrugScreen, 
+										 mainFunction=packageDir:::RunDrugScreen, 
 										 arms=arms)
 	
 	arms = loadDataArm(description="Load somatic mutation data",
 										 title="somatic_mutation_aberration_summary", 
-										 mainFunction=runSomaticMutationsProcessing, 
+										 mainFunction=packageDir:::runSomaticMutationsProcessing, 
 										 arms=arms)
 	
 	arms = loadDataArm(description="Load abitrary set of genes for path enrichment",
 										 title="arbitrary_gene_data_input", 
-										 mainFunction=RunGenericEnrichment, 
+										 mainFunction=packageDir:::RunGenericEnrichment, 
 										 arms=arms)
 	
 	arms = loadDataArm(description="Run overlap analysis",
 										 title="overlap_analysis", 
-										 mainFunction=RunOverlapAnalysis, 
+										 mainFunction=packageDir:::RunOverlapAnalysis, 
 										 arms=arms)
 	
 	STUDY@arms = arms

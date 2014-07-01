@@ -182,10 +182,10 @@ setClass("DataArm", representation(description="character",
 #'@examples
 #'study = getStudyObject(study.name="testDataSets", 
 #' 											 geneIdentifierType="HUGO")
-#'arms = study@arms
+#'arms = slot(object=study, name="arms")
 #'arms = loadDataArm(description="Load drug screen data",
 #'	title="functional_drug_screen_summary", 
-#'	mainFunction=RunDrugScreen, 
+#'	mainFunction=packageDir:::RunDrugScreen, 
 #'	arms=arms)
 loadDataArm<-function(mainFunction, 
 											arms, 

@@ -11,9 +11,6 @@ addCohortToIndividuals(res, columnsToAdd = grep(pattern = "hyper",
 
   \item{columnsToAdd}{The columns from mainPathSum to add
   to each individual patient path summary}
-
-  \item{returnFlag}{Flag indicating if the list of patient
-  results should be returned.}
 }
 \value{
 The list of path summary results for each patient.
