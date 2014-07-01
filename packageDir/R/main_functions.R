@@ -355,11 +355,10 @@ compareSources<-function(study){
 }#compareSources
 
 combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
-	if(VERBOSE) print("inside combineAberrationTypes()....................................")
+	results=study@results
+	if(VERBOSE) print("inside combineAberrationTypes2()....................................")
 	
-	if(is.null(s)){
-		s = pickSettings(study=study, settingType="aberration")
-	}
+	if(is.null(s))	s = pickSettings(study=study, settingType="aberration")
 	
 	big_pgm = NULL
 	abtypenames = "Summary of"
@@ -379,30 +378,30 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 	}
 	#next: find the overlap of patients in each ab type
 	
-	#if overlap patients are not provided , check if there are overlap patients
-	if(is.null(overlapPatients)){
-		for(i in ri){
-			curres = results[[i]]
-			print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-			if(VERBOSE) print(names(results)[i])
-			if(VERBOSE) print(curres$patientsums)
-			if(is.null(overlapPatients)){
-				overlapPatients = rownames(curres$patientsums)
-				if(VERBOSE) print("overlap patients rout 1:")
-				if(VERBOSE) print(overlapPatients)
-			}else{
-				numover = length(overlapPatients)
-				overlapPatients = intersect(overlapPatients,rownames(curres$patientsums))
-				nlost = numover - length(overlapPatients)
-				if(VERBOSE) print("overlap patients rout 2:")
-				if(VERBOSE) print(overlapPatients)
-				if(nlost > 0){
-					cat("Note: ",nlost,"patients were found not to have been analyzed by all platforms.\n")	
-				}
-				
-			}
-		}
-	}#if(is.null(overlapPatients))
+	# 	#if overlap patients are not yet provided , check if there are overlap patients
+	# 	if(is.null(overlapPatients)){
+	# 		for(i in ri){
+	# 			curres = results[[i]]
+	# 			print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+	# 			if(VERBOSE) print(names(results)[i])
+	# 			if(VERBOSE) print(curres$patientsums)
+	# 			if(is.null(overlapPatients)){
+	# 				overlapPatients = rownames(curres$patientsums)
+	# 				if(VERBOSE) print("overlap patients rout 1:")
+	# 				if(VERBOSE) print(overlapPatients)
+	# 			}else{
+	# 				numover = length(overlapPatients)
+	# 				overlapPatients = intersect(overlapPatients, rownames(curres$patientsums))
+	# 				nlost = numover - length(overlapPatients)
+	# 				if(VERBOSE) print("overlap patients rout 2:")
+	# 				if(VERBOSE) print(overlapPatients)
+	# 				if(nlost > 0){
+	# 					cat("Note: ",nlost,"patients were found not to have been analyzed by all platforms.\n")	
+	# 				}
+	# 				
+	# 			}
+	# 		}
+	# 	}#if(is.null(overlapPatients))
 	
 	if(VERBOSE) cat("Total patients analyzed using all platforms:",length(overlapPatients),"\n")
 	if(!length(overlapPatients)){
@@ -466,7 +465,7 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 	}
 	
 	if( !is.null(big_pgm)&!is.null(coverageSet) ){
-		combined_aberrations_summary = summaryTable(study=study, individualEnrichment=T,
+		combined_aberrations_summary = summaryTable(study=study, individualEnrichment=TRUE,
 																								activeGeneDescription="aberrational",
 																								pgm=big_pgm, 
 																								coverage=coverageSet,
@@ -474,40 +473,16 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 																								coverageDataSetDescription="analysis of coverage by poor-coverage genomic aberration analysis platform(s)",
 																								coverageGeneDescription="analysis of coverage by poor-coverage genomic aberration analysis platform(s)", 
 																								dataSetDescription=abtypenames)
+	}else if(!is.null(big_pgm)){
+		combined_aberrations_summary = summaryTable(study=study, 
+																								individualEnrichment=TRUE,
+																								activeGeneDescription="aberrational",
+																								pgm=big_pgm, 
+																								settings=s,
+																								dataSetDescription=abtypenames)
 	}else{
-		combined_aberrations_summary = list()
+		warning("Cannot find patient gene matrix combined for all patients...")
 	}
-
-		#2: make the target matrix into something
-# 		tm = getTargetMatrix(tgenes=coverageSet, paths=path_detail$paths)
-# 		pgm_for_coverage = matrix(data=rep(T, times=length(coverageSet)), dimnames=list(coverageSet, "genes_in_coverage"))
-# 		print("summaryTable4 from combineAberrationTypes, not null coverage set")
-# 		print("dim pgm_for_coverage:")
-# 		print(dim(pgm_for_coverage))
-
-
-# 		coverage_summary = summaryTable4(paths_detail=path_detail,
-# 																		 enrichment_tests=c(),
-# 																		 dataSetName="analysis of coverage by poor-coverage genomic aberration analysis platform(s)",
-# 																		 individualEnrichment=F,
-# 																		 outputFileName="./output/summary_of_all_aberration_data.txt",
-# 																		 targetname="analyzed",
-# 																		 patientGeneMatrix=pgm_for_coverage)
-# 	if(!is.null(big_pgm)){
-# 		combined_aberrations_summary = summaryTable4(paths_detail=path_detail,
-# 																								 enrichment_tests=c("hyperg"),
-# 																								 target_matrix=tm,
-# 																								 dataSetName=abtypenames,
-# 																								 individualEnrichment=FALSE,
-# 																								 outputFileName="./output/summary_of_all_aberration_data.txt",
-# 																								 targetname="aberrational",
-# 																								 patientGeneMatrix=big_pgm)
-# 	}else{
-# 		combined_aberrations_summary = list()
-# 	}
-# 	if(!is.null(coverage_summary)){
-# 		combined_aberrations_summary$coverage_summary = coverage_summary
-# 	}
 	
 	return(combined_aberrations_summary)	
 }#combineAberrationTypes2()
