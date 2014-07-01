@@ -239,8 +239,8 @@ summaryTableInner<-function(psr, paths_detail){
 	if(!file.exists("./output/pathSummaryRunnerObject.rda")&(ncol(psr$patientGeneMatrix)>1)){
 		dir.create(path="./output/", showWarnings=F, recursive=T)
 		if(is.null(psr$path_summary_each_patient)) warning("path summaries for each patient is null... strange")
-		warning("saving path summary runner for diagnostic purposes...")
-		save(psr, file="./output/pathSummaryRunnerObject.rda")
+	# 		warning("saving path summary runner for diagnostic purposes...")
+	# 		save(psr, file="./output/pathSummaryRunnerObject.rda")
 	# 		path_summary_each_patient = psr$path_summary_each_patient
 	# 		save(path_summary_each_patient, file="./output/pathSummaryRunnerObject_psep.rda")
 	} 	
