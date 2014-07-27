@@ -477,7 +477,7 @@ extractedDrugScreenAnalysis<-function(psubset, results, path_detail, study, s, e
 	fa = results[[findex]]
 	pgm = as.matrix(fa$patientGeneMatrix[,psubset,drop=F]) #extract the subset of patients from the patient gene matrix
 	covset = rownames(fa$coverage_summary$genesummary)
-# 	tm = getTargetMatrix(tgenes=covset, paths=path_detail$paths)
+	# 	tm = getTargetMatrix(tgenes=covset, paths=path_detail$paths)
 	if(VERBOSE) print("summaryTable from extractedDrugScreenAnalysis")
 		
 	cat("\ndim pgm going into summaryTable:", dim(pgm), "\n")
@@ -512,6 +512,11 @@ extractedDrugScreenAnalysis<-function(psubset, results, path_detail, study, s, e
 #'@return An overlap analysis
 #'@import VennDiagram
 coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations, ola, coverage=NULL){
+# 	save(functionalEnrichmentAnalysis, file="./output/overlapfunctional.rda")
+# 	save(ola, file="./output/overlapOLAobject.rda")
+# 	save(combinedAberrations, file="./output/overlapcombinedAberrations.rda")
+# 	save(coverage, file="./output/overlapcoverage.rda")
+	
 	
 	if(is.null(coverage)) coverage=ola$results$functional_drug_screen_summary$coverage_summary
 	
@@ -548,18 +553,22 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	if(VERBOSE) print("Creating venn diagram..")
 	
 
-# 	fullvennFileName = paste(ola$outfname_path,vennFileName,sep="")
-# 	fullvennFileName = vennFileName
+	# 	fullvennFileName = paste(ola$outfname_path,vennFileName,sep="")
+	# 	fullvennFileName = vennFileName
 
+	
 	vennList = list()
-	vennFileName= "Overlap_venn_diagram.png"
+	vennFileName= ifelse(test=(nrow(functionalEnrichmentAnalysis$patientsums)>1), 
+														 no=paste0(rownames(functionalEnrichmentAnalysis$patientsums),"overlap_venn_diagram.png"),
+														 yes="Cohort_overlap_venn_diagram.png")
+											
 	vennList[["Drug-screen targeted paths"]] = drugcoverage
 	vennList[["Aberration-enriched\npaths"]] = aben
 	# 	print("search():")
 	# 	print(search())
 	# 	print("ls()")
 	# 	print(ls())
-	 	require(VennDiagram)
+	require(VennDiagram)
 	if(is.null(functionalEnrichmentAnalysis)){#ola$results$functional_drug_screen_summary$pathsummary)){#if this is null, then there is only a drug coverage analysis available
 		print("venn option 1 -- functionalEnrichmentAnalysis is NULL")
 		vennTmp = venn.diagram(vennList, 
@@ -574,7 +583,7 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 													 fill=c("red","blue"),
 													 main="Overlap of significantly aberrational and drug-targeted paths")
 	}else{
-		if(VERBOSE) print("venn option 2")
+		print("venn option 2...")
 		vennList[["Paths containing\ndrug-sensitive targets"]] = senspaths
 		vennTmp = venn.diagram(vennList, filename=NULL,
 													 main.cex=1.5,
@@ -586,17 +595,22 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 													 cat.col=c("red","darkorchid4","blue")[1:length(vennList)],
 													 fill=c("red","darkorchid4","blue")[1:length(vennList)],
 													 main="Overlap of significantly aberrational,\ndrug-targeted and drug sensitive paths")
+		print("venn built..")
 	}
+	
 	plot.new()
+	print("..")
 	grid.draw(vennTmp)
+	print("saving plot...")
+	print(vennFileName)
 	fullvennFileName = save.plot(pname=vennFileName)
 	# 	png(fullvennFileName)
 	# 	dev.off()
-	if(VERBOSE) print(fullvennFileName)
+	print(fullvennFileName)
 	
 	if(VERBOSE) print(vennFileName)
 	outlist$imageSlots[[vennFileName]] = fullvennFileName
-	if(VERBOSE) print("Venn diagram complete.")
+	print("Venn diagram complete.")
 	# 	#this is the base name (no folder root) of the venn diagram; 
 	# 	basename = strsplit(vennFileName,split="\\/")[[1]][length(strsplit(vennFileName,split="\\/")[[1]])]
 	# 	outlist[[basename]] = basename #setting up a base name with a .png should compel toHTML to insert an image. .. lets see if it works
@@ -638,13 +652,19 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 		if(VERBOSE) print("Checking targeted and aberrational overlap..")
 		if(nrow(tabout_targAndAb)){
 			if(VERBOSE) print("Targeted and aberrational found..")
-			plotfname = "aberrational_and_targeted.png"
+			
+			cohortOrPatient="cohort"
+			if( nrow(functionalEnrichmentAnalysis$patientsums)==1 ){
+				cohortOrPatient = rownames(functionalEnrichmentAnalysis$patientsums)
+			}
+			
+			plotfname = paste("patient",cohortOrPatient,"aberrational_and_targeted.png")
 			# 			fullplotfname = paste(ola$outfname_path,plotfname, sep="")
 			#show a bubble plot of the pathways that are targeted and aberrational
 			
 			tmpPlotFName = plotOverlapArea(tabout_targAndAb=tabout_targAndAb,
-											results=ola$results, 
-											abandtargplotname=plotfname)
+																		 results=ola$results, 
+																		 abandtargplotname=plotfname)
 			
 			outlist$imageSlots[[plotfname]] = tmpPlotFName
 			
