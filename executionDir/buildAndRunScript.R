@@ -20,6 +20,7 @@ roxygenize(overwrite=T,
 library("packageDir")
 STUDY = allInteractiveMainFunction()
 
+STUDY = allInteractiveMainFunction(additionalArms=addSequenceCaptureArm)
 
 sourceAllInFolder<-function(folname="../packageDir/R/"){
 	
