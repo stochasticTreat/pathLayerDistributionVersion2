@@ -31,6 +31,7 @@ PGMFromVectorWithSelection<-function(s){
 	genevector = read.table(file=genefname)
 	pgm = PGMFromVector(genevector)
 	s$.text = pgm
+	return(s)
 }
 
 getPGM<-function(s){
@@ -178,8 +179,9 @@ RunGenericEnrichment_main<-function(path_detail,
 																		s=s){
 	
 	if(is.null(pgm)&is.null(genevector)){
-		cat("\nLoading patient gene matrix.. \n")
+		cat("\n    Loading patient gene matrix.. \n")
 		s = getPGM(s=s)
+		cat("\n    matrix loaded...")
 		pgm=s$.text
 	}else if(!is.null(genevector)){
 		cat("\nLoading vector of genes.. \n")
