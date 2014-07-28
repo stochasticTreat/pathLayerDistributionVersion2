@@ -11,7 +11,7 @@
 #'@examples
 #'cellularPathwayGeneSets = getDefaultPaths()
 getDefaultPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.27.txt", package = "packageDir")){
-
+	
 	path_detail_tmp<-getPaths(path_file=path_file, verbose=F)
 	return(path_detail_tmp)
 	
@@ -64,7 +64,7 @@ importAllGraphite<-function(repositories = list(reactome=reactome, spike=spike, 
 }
 
 importFromGraphite<-function(db){
-
+	
 	outset = list()
 	date = c()
 	dbname = c()
@@ -78,7 +78,7 @@ importFromGraphite<-function(db){
 	}
 	bip = list_to_table(pth=outset)
 	
-# 	neededSlots = c("name", "date", "source")
+	# 	neededSlots = c("name", "date", "source")
 	preped_paths = list()
 	preped_paths[["date"]] = paste(db[[1]]@timestamp, sep=" ", collapse=" ")
 	preped_paths[["source"]] = paste(db[[1]]@database, "via the bioconductor graphite package", sep=" ", collapse=" ")
@@ -296,7 +296,7 @@ getPathMetaData<-function(ref="./reference_data/paths/pathMetaData.txt"){
 		file.copy(from=system.file("extdata/Reactome.2014.04.06.12.52.27.txt",package = "packageDir"), 
 							to=paste0(dirname(ref), "/Reactome.2014.04.06.12.52.27.txt"))
 		
-	# write.table(x=fullTab, file=ref, quote=F, sep="\t", col.names=T, row.names=F)
+		# write.table(x=fullTab, file=ref, quote=F, sep="\t", col.names=T, row.names=F)
 		
 		return(fullTab)
 	}
@@ -357,7 +357,7 @@ getPathObject<-function(symtab, pRecord, pData, repset=NULL){
 	# pData: the bipartate graph of pathways
 	# pRecord: the row of data from the path meta data file
 	# repset: depricated: the set of repositories
-# 	pd=list()
+	# 	pd=list()
 	pd = Path_Detail$new()
 	pData = as.matrix(pData)
 	colnames(pData)  = gsub(pattern="\\.",replacement="-",x=colnames(pData))#replace periods with dashes
@@ -366,7 +366,7 @@ getPathObject<-function(symtab, pRecord, pData, repset=NULL){
 	}else{
 		cat("\nNon-HUGO symbols used in paths thus skipping gene symbol correction\n")
 	}
-
+	
 	pd = setPathMetaData(pd=pd, 
 											 symbol_type=pRecord$Gene_Id_Type,
 											 p.file=pRecord$file, 
@@ -388,7 +388,7 @@ setPathMetaData<-function(symtab,
 													p.info=NULL, 
 													pd=list(), 
 													symbol_type="HUGO"){
-#setPathMetaData
+	#setPathMetaData
 	#establishes path meta data
 	#takes: symtab: the symbol lookup table
 	#				p.paths: the set of pathways in bipartate graph format
@@ -421,7 +421,7 @@ setPathMetaData<-function(symtab,
 	pd[["symbol_type"]] = symbol_type
 	pd[["graphite"]] = list()
 	
- 	return(pd)
+	return(pd)
 }#setPathMetaData
 
 
@@ -511,7 +511,7 @@ importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
 	
 	#initialize
 	preped_paths = NULL#will hold the forming path object
-
+	
 	#allow selection
 	while(T){
 		if(!is.null(choice)) if(choice%in%c("b", "g")) break
@@ -538,10 +538,10 @@ importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
 		symbol_type=readline("Please enter the type of gene identifiers employed (ex: UniProt) ")
 		symtab=NULL
 	}
-
+	
 	#setPathMetaData
 	preped_paths = manualPathMetaData(preped_paths=preped_paths, symtab=symtab, symbol_type=symbol_type)
-
+	
 	#establish path set
 	recordPathSet(ps=preped_paths)
 	
@@ -557,7 +557,7 @@ manualPathMetaData<-function(preped_paths, symtab=NULL, symbol_type="HUGO"){
 	if(is.null(symtab)) symtab = getHugoSymbols()
 	pathsFolder = "./reference_data/paths/"
 	
-# 	allSlots = c("paths","name", "file", "info", "date", "source", "gene_overlap_counts", "full_path_length", "symtable", "original_file_or_source", "original_file_creation_date")
+	# 	allSlots = c("paths","name", "file", "info", "date", "source", "gene_overlap_counts", "full_path_length", "symtable", "original_file_or_source", "original_file_creation_date")
 	neededSlots = c("name", "date", "source")
 	missingSlots = neededSlots[!neededSlots%in%names(preped_paths)]
 	addedSlots = list()
@@ -574,7 +574,7 @@ manualPathMetaData<-function(preped_paths, symtab=NULL, symbol_type="HUGO"){
 		for(r in names(addedSlots)) cat("For \"", r, "\" you entered: ", addedSlots[[r]], "\n",sep="")
 		if(readline("If the above entries are all correct, press enter. \nTo change one or more, enter \"c\"")=="") break
 	}
-
+	
 	preped_paths = c(preped_paths, addedSlots)
 	fileName = paste(pathsFolder, preped_paths$name," ", gsub(pattern="[-:]", replacement=".", x=as.character(Sys.time())),".txt", sep="")
 	cat("\nusing file name:", fileName,"to save the current set of pathways.\n")
@@ -679,7 +679,7 @@ checkMultipleRecordsOneRepository<-function(prec){
 	duprows = c(which(duplicated(x=bnames)), which(duplicated(x=bnames, fromLast=T)))
 	
 	if(!length(duprows)) return(prec2) #return if there's nothing to correct
-
+	
 	#see if everything except the file name is the same
 	dupTest = prec[,!names(prec)%in%"file"]
 	if(nrow(dupTest)>nrow(unique(dupTest))){
@@ -688,7 +688,7 @@ checkMultipleRecordsOneRepository<-function(prec){
 		file.remove(remFile)
 		
 	}
-
+	
 	reprows = prec2[duprows,]
 	rownames(reprows)<-1:nrow(reprows)
 	cat("\nIt appears the same set of pathways was imported multiple times.\n",
@@ -702,7 +702,7 @@ checkMultipleRecordsOneRepository<-function(prec){
 		if(!sum(is.na(line))&!sum(!line%in%1:nrow(reprows))) break
 		print("Error, input not recognized, please try again.")
 	}
- 
+	
 	deleteRows = duprows[!1:length(duprows)%in%line]
 	#pull out the gsea file to be deleated
 	todel = prec2[deleteRows,]
@@ -745,19 +745,42 @@ toGSEAformat<-function(bip, psetName){
 #
 #takes: firstGeneColum: the first tab stop with gene names in it, usually 2 or 3
 #				keepLowerCaseGenes:		keep genes who are all lower case
-loadPathsAsSets<-function(firstGeneColum, 
-													keepLowerCaseGenes=F, 
+loadPathsAsSets<-function(firstGeneColum=NULL, 
+													keepLowerCaseGenes=NULL, 
 													fname="./reference_data/paths/ReactomePathways_dl_June_4_13.gmt.txt", 
 													verbose=T){
 	cat("\nLoading pathway sets..\n")
+	
 	#figure out what happens when this gets passed a bipartate graph.. 
 	pset = read.table(fname, sep="\n",comment.char="", stringsAsFactors=F, quote="")
 	outlist = list()
-	excluded = list()
+	excluded = c()
+	
+	if(is.null(firstGeneColum)){
+		rone =  strsplit(pset[1,],split="\t")[[1]]
+		rone = matrix(data=rone, ncol=1, dimnames=list(NULL,"row contents"))
+		cat("\nThis is the contents of the first row from the file:\n")
+		print(rone[1:min(length(rone),8),,drop=F])
+		while(T){
+			uin = readline("Please enter the index of the first gene identifier: ")
+			uin  = as.integer(uin)
+			if(!is.na(uin)){
+				firstGeneColum = uin
+				break
+			}
+			print("Error, please enter a number.")
+		}
+	}
+	if(is.null(keepLowerCaseGenes)){
+		keepLowerCaseGenes = "Y"==toupper(readline("Would you like to keep lowercase genes?\n(note: lower case likely indicates gene is from a virus)\nPlease enter y or n"))
+	}
 	
 	for(i in 1:nrow(pset)){
+		cat("\nWorking on row",i,"of",nrow(pset),"rows.\n")
 		currow = strsplit(pset[i,],split="\t")[[1]]
+		cat("\nGenes in current row:",(length(currow)-firstGeneColum+1))
 		pname = currow[1]
+		cat("\nPath name:",pname,"\n")
 		if(length(currow)>2){
 			genes = currow[firstGeneColum:length(currow)]
 			if(!keepLowerCaseGenes){
@@ -765,23 +788,36 @@ loadPathsAsSets<-function(firstGeneColum,
 				badInds = !grepl(pattern="[A-Z]+",x=genes)
 				if(sum(badInds)){
 					print(genes)
-					if(verbose) cat(i,"Lowercase gene names found. From",pname,"excluding",sum(badInds),"gene(s):", genes[which(badInds)], "indexes:",which(badInds),"\n")
-					excluded[[pname]] = union(excluded, genes[badInds])
-				} 
+					if(verbose) cat("Lowercase gene names found. \nFrom:\n",pname,
+													"\nexcluding",sum(badInds),"gene(s):\n", 
+													genes[which(badInds)], 
+													"\nindexes:",which(badInds),"\n")
+					cat(" .. ")
+					excluded = c(excluded, genes[badInds])
+					cat(" .. ")
+
+				}
+				cat(".")
 				genes = genes[!badInds]
+				cat(".")
 			}
+			cat("*")
 			outlist[[pname]] = genes
+			cat("*")
 		}else{
 			
 			cat("\nThe pathway \n\"",pname,"\"\nwas found not to have any genes under the currently employed type of gene symbols.\n", sep="")
+			
 		}
 		
 	}
+	
+	excluded = unique(excluded)
 	if(length(excluded)){
 		cat("\nExcluded gene symbols:\n")
 		print(excluded)
 	}
-
+	
 	return(outlist)
 }#loadPathsAsSets
 
@@ -879,7 +915,7 @@ getPathsForGenes<-function(glist=NULL, path_detail=path_detail, verbose=F){
 		cat(setdiff(x=glist, colnames(path_detail$paths)))
 		cat("\nSummary of genes from input list found in current pathway repository:\n")
 		print(tm)
-
+		
 	}
 	return(tm)
 }#getPathsForGenes()
