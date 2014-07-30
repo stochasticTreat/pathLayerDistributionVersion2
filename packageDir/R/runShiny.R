@@ -1,10 +1,13 @@
 #runShiny.R
 
 prepDrugSelect<-function(){
-	uif = system.file("shinyDrugSelect/ui.R",package = "packageDir")
-	serverf = system.file("shinyDrugSelect/server.R",package = "packageDir")
-	source(uif)
-	source(serverf)
+	if( !file.exists("shinyDrugSelect/ui.R") ){
+		uif = system.file("shinyDrugSelect/",package = "packageDir")
+		file.copy(from=uif, to="./", recursive=TRUE)
+	}
+	source("./shinyDrugSelect/ui.R")
+	source("./shinyDrugSelect/server.R")
+	return("./shinyDrugSelect/")
 }
 
 #'@title Run the drug selection worksheet.
