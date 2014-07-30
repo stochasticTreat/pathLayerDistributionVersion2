@@ -413,6 +413,11 @@ test.makeDrugSelectionWorksheet<-function(){
 #'@export
 makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	
+	if(is.null(STUDY@results$overlap_analysis)){
+		cat("\nNOTICE!\nThe overlap analysis must be conducted before the drug selection worksheet is run.\n")
+		return(NULL)
+	}
+	
 	dtd0 = importDrugDbData(STUDY=STUDY)
 	dmd0 = getDrugData()
 	
