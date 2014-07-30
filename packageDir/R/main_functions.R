@@ -60,6 +60,7 @@ autoRunFromSettings<-function(study, verbose=T){
 		cat("Settings being run for these intput arms:\n")
 		cat(analyses, "\n")
 		for(a in analyses){
+			print(a)
 			study = runArm(armDescription=a, study=study, 
 										 fromDescription=F, interactive=F)
 		}
@@ -114,7 +115,14 @@ runArm<-function(armDescription,
 		armName = armDescription
 	} 
 	
+	#load settings here incase generic arm is found in next section
 	curSettings = settings[[armName]]
+	
+	if( grepl(pattern="_generic_", x=armName, ignore.case=T) ){
+		print("Setting up for generic/arbitrary gene data input..")
+		armName="arbitrary_gene_data_input"
+	}
+
 	if(is.data.frame(curSettings)) curSettings = dfToList(df=curSettings)
 	
 	if(is.null(interactive)&!is.null(curSettings)){
