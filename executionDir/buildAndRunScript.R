@@ -5,8 +5,7 @@ setwd("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistribution
 
 detach("package:packageDir", unload=TRUE)
 remove.packages("packageDir")
-roxygenize(overwrite=T, 
-					 package.dir="/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/packageDir/")
+roxygenize(package.dir="/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/packageDir/")
 
 # roxygenize()
 
@@ -36,9 +35,6 @@ sourceAllInFolder<-function(folname="../packageDir/R/"){
 	
 }
 sourceAllInFolder()
-
-
-
 
 
 
