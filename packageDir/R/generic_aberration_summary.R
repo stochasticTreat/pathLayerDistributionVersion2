@@ -91,7 +91,7 @@ RunGenericEnrichment<-function(settings, study){
 	# 	pgm = NULL
 	
 	aberration_data_type = gsub(pattern=" ", replacement="_", 
-															x=paste(aberration_data_type, ifelse(test=(funab=="f"),
+															x=paste(aberration_data_type,"generic", ifelse(test=(funab=="f"),
 																							yes="functional",
 																							no="aberration"), 
 																			  "summary"))
@@ -106,7 +106,7 @@ RunGenericEnrichment<-function(settings, study){
 																	target_list=target_list,
 																	path_detail=study@studyMetaData@paths, 
 																	s=s)
-
+	
 	return(res)
 }
 
