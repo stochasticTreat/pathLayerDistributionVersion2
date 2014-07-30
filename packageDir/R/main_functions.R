@@ -247,6 +247,16 @@ BangForBuck<-function(darkPaths, path_detail){
 	}
 	pths = path_detail$paths
 	#1 extract the paths from path_detail
+	#check if there are paths that can't be found
+	notFound = setdiff(darkPaths, rownames(pths))
+	if(length(notFound)){
+		message("Warning, could not find all paths. Was the path repository changed?")
+		warning("Warning, could not find all paths. Was the path repository changed between data inputs?")
+		warning(paste("These paths were not found and could not be used in the BangForBuck analysis of path overlaps:\n",
+									paste(notFound,collapse="\n ")),
+						"\n(end list of paths not found)")
+		darkPaths = intersect(darkPaths, rownames(pths))
+	}
 	xpaths = pths[darkPaths,,drop=F]
 	genecounts = rep(1, nrow(xpaths))%*%xpaths
 	genecounts = genecounts[1,]
