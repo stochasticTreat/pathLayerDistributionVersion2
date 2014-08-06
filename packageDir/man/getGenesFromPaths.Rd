@@ -8,7 +8,7 @@ getGenesFromPaths(pids, STUDY)
 \arguments{
 \item{pids}{Character vector of cellular pathway identifiers.}
 
-\item{STUDY}{A study object}
+\item{STUDY}{A study object, a Path_Detail object or a bipartate graph in a "matrix" class R object.}
 }
 \value{
 Character vector of gene identifiers.

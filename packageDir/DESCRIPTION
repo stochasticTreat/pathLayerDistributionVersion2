@@ -15,6 +15,7 @@ Imports:
     RCurl,
     biomaRt,
     xtable,
+    hwriter,
     hwriterPlus,
     tools,
     graph,
