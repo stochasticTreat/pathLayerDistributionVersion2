@@ -131,10 +131,12 @@ addPanelMembership<-function(dmd, dtd, STUDY){
 		return(dmd)
 	}
 	
+	alreadyTargeted = STUDY@results$functional_drug_screen_summary$targets
 	for(dn in dmd$DrugBank.ID){
 		#for current drug, check how many targets there are
-		targetTab[dn,] = c(length(dtd$geneID[dtd$drugID==dn]), 
-											 sum(!dtd$geneID[dtd$drugID==dn]%in%STUDY@results$functional_drug_screen_summary$targets))
+		targetedGenes = dtd$geneID[dtd$drugID==dn]
+		targetTab[dn,] = c(length(targetedGenes), 
+											 sum(!targetedGenes%in%alreadyTargeted))
 	}
 	
 	dmd2 = cbind.data.frame(dmd, targetTab, stringsAsFactors=F)
@@ -142,22 +144,21 @@ addPanelMembership<-function(dmd, dtd, STUDY){
 	return(dmd2)	
 }
 
-
+#' @title addBangForBuck
+#' @description adds bang for buck analysis which shows how many paths each genes exists in. 
+#' @param pathsToTarget the set of pathways to be targeted
+#' @param STUDY the study object
+#' @param dtd drug target data table as returned by getDrugTargetData()
+#' @return dtd table with "number of paths containing gene" column added
 addBangForBuck <- function (pathsToTarget, STUDY, dtd) {
-	#' @title addBangForBuck
-		 #' @description adds bang for buck analysis which shows how many paths each genes exists in. 
-		 #' @param pathsToTarget the set of pathways to be targeted
-		 #' @param STUDY the study object
-		 #' @param dtd drug target data table as returned by getDrugTargetData()
-		 #' @return dtd table with "number of paths containing gene" column added
-		 bfbGenes = BangForBuck(darkPaths=pathsToTarget, path_detail=STUDY@studyMetaData@paths)	
-		 print("Building output tables...")
-		 bfbAddTargets = merge(x=bfbGenes, all.x=T,
-		 											y=dtd, 
-		 											by.x="row.names", 
-		 											by.y="geneID")
-		 colnames(bfbAddTargets)<-c("Gene symbol", "Number of dark paths containing gene", "Names of paths containing gene","Drugbank ID")
-		 return(bfbAddTargets)
+	bfbGenes = BangForBuck(darkPaths=pathsToTarget, path_detail=STUDY@studyMetaData@paths)	
+	print("Building output tables...")
+	bfbAddTargets = merge(x=bfbGenes, all.x=T,
+	 										y=dtd, 
+	 										by.x="row.names", 
+	 										by.y="geneID")
+	colnames(bfbAddTargets)<-c("Gene symbol", "Number of dark paths containing gene", "Names of paths containing gene","Drugbank ID")
+	return(bfbAddTargets)
 }
 
 test.getPathIdsToTarget<-function(){
@@ -179,11 +180,15 @@ getPathIdsToTarget <- function (STUDY, pathsToSearch = NULL) {
 	}else if(!is.null(STUDY@results$overlap_analysis)){		
 		dark = STUDY@results$overlap_analysis$"Aberration enriched, not drug targeted"
 		pathsToTarget = dark$path_id
-		print("pathsToSearch is null")
+		print("pathsToSearch is null, returning dark pathways")
 	}else{
 		print("pathsToSearch is null and the overlap_analysis is null.. ")
 		branchName = selectBranchToFindDrugsFor(study=STUDY)
 		pathsToTarget = STUDY@results[[branchName]]$pathsummary$path_id
+	}
+	
+	if(!is.vector(pathsToTarget)){
+		pathsToTarget = pathsToTarget[,1,drop=TRUE]
 	}
 	
 	return(pathsToTarget)
@@ -321,7 +326,7 @@ loadClinicalTrailsData<-function(fname="./reference_data/drugDB/exported_study_f
 }
 
 appendClincalTrials<-function(dmd, fname="./reference_data/drugDB/exported_study_fields_phase3_phase4.tsv"){
-	
+	message("Loading clinical trial data from this file:\n",fname)
 	if(!file.exists(fname)){
 		warning(paste("The file",fname,"could not be found.\n",
 									"This file is needed to append clinical trial information.\n",
@@ -430,16 +435,22 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	colnames(dmd0)[2]<-"Drug name"
 	rownames(dmd0)<-dmd0$DrugBank.ID
 	
-	darkPaths = STUDY@results$overlap_analysis$'Aberration enriched, not drug targeted'$path_id
-	liableGenes = getGenesFromPaths(pids=darkPaths, STUDY=STUDY)
+	#make the data frames
+	darkPaths = getPathIdsToTarget(STUDY=STUDY, pathsToSearch=pathsToSearch)
 	
+	#darkPaths = STUDY@results$overlap_analysis$'Aberration enriched, not drug targeted'$path_id
+	liableGenes = getGenesFromPaths(pids=darkPaths, STUDY=STUDY)
+	cat("number of liableGenes",length(liableGenes),"\n")
 	dtd=dtd0[dtd0$geneID%in%liableGenes,]
 	dmd = dmd0[dmd0$DrugBank.ID%in%dtd$drugID,]
+	cat("dim of dtd after limiting to liableGenes",dim(dtd),"\n")
+	cat("dim of dmd after limiting to drugs with liable targets",dim(dmd),"\n")
 	
 	ptm<-proc.time()
 	#add clinical trial information
 	# 	dmd = appendClinicalTrialIDs(dmeta=dmd)
-	dmd = appendClincalTrials(dmd)
+	dmd = appendClincalTrials(dmd=dmd)
+	cat("dim of drug meta data after appendClincalTrials()",dim(dmd),"\n")
 	totalTime = proc.time()  - ptm
 	cat("Appending clinical trial data took", totalTime["elapsed"], "seconds.\n")
 	# 	> colnames(dmd)
@@ -449,14 +460,11 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	# 	[19] "Drugs.com.link"       "NDC.ID"               "ChemSpider.ID"        "BindingDB.ID"         "TTD.ID"               "clinical_trial_IDs" 
 	
 	dmd = addPanelMembership(dtd=dtd, dmd=dmd, STUDY=STUDY)
-	
-	#make the data frames
-	pathsToTarget = getPathIdsToTarget(STUDY=STUDY, pathsToSearch=pathsToSearch)
-	
+	cat("dim of drug meta data after addPanelMembership()",dim(dmd),"\n")
 	# 	genes = getGenesFromPaths(pids=pathsToTarget, STUDY=STUDY)
 	
 	ptm<-proc.time()
-	bfbAddTargets = addBangForBuck(pathsToTarget=pathsToTarget, STUDY=STUDY, dtd=dtd)
+	bfbAddTargets = addBangForBuck(pathsToTarget=darkPaths, STUDY=STUDY, dtd=dtd)
 	totalTime = proc.time() - ptm
 	cat("Appending number of paths containing each gene took", totalTime["elapsed"], "seconds.\n")
 	
@@ -467,14 +475,19 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	# 	"Drugbank ID"  
 	
 	bfbTargDrugData = merge(x=bfbAddTargets, y=dmd, by.x="Drugbank ID", by.y="DrugBank.ID", all.x=T)
-	
+	cat("dim after addBangForBuck()",dim(bfbTargDrugData),"\n")
 	bfbTargDrugData = addMutationCount(bfbTargDrugData=bfbTargDrugData, STUDY=STUDY)
+	cat("dim after addMutationCount()",dim(bfbTargDrugData),"\n")
 	bfbTargDrugData = unique(bfbTargDrugData)
 	bfbTargDrugData = addNumberOfPathsTargeted(STUDY=STUDY, dtd=dtd, bfbTargDrugData=bfbTargDrugData)
+	cat("dim after addNumberOfPathsTargeted()",dim(bfbTargDrugData),"\n")
 	bfbTargDrugData = adjustColumns(tab=bfbTargDrugData)
-	
+	cat("dim after adjustColumns()",dim(bfbTargDrugData),"\n")
+	print(colnames(bfbTargDrugData))
+	cat("Number of records with drug name not available:",sum(is.na(bfbTargDrugData$"Drug name")),"\n")
 	bfbTargDrugData = bfbTargDrugData[!is.na(bfbTargDrugData$"Drug name"),] #remove rows with no drug name. .. . ... .. .. .. 
-	
+	cat("dim of bfbTargDrugData after removing records with drug set to NA",dim(bfbTargDrugData),"\n")
+	print(dim(bfbTargDrugData))
 	print("Output tables complete, returning data...")
 	return(bfbTargDrugData)
 }
@@ -533,7 +546,7 @@ addNumberOfPathsTargeted<-function(STUDY, bfbTargDrugData, dtd, significanceColu
 			abPathCount[d]=length(targpaths2)
 			
 		}else{
-			cat("NA value found in drug IDs.. skipping\n")
+			cat("NA value found in drug ID(s).. skipping\n")
 		}
 			#if
 	}#for
@@ -579,14 +592,15 @@ addMutationCount<-function(bfbTargDrugData, STUDY){
 	cat("\nAdding mutation counts... \n")
 	geneMuts = as.data.frame(matrix(data=0,
 																	ncol=1, 
-																	nrow=nrow(bfbTargDrugData)),
+																	nrow=nrow(bfbTargDrugData), 
+																	dimnames=list(NULL, "Aberrations in gene, across cohort")),
 													 stringsAsFactors=F)
-	colnames(geneMuts) = "Aberrations in gene, across cohort"
-	allMutCounts = STUDY@results$somatic_mutation_aberration_summary$genesummary
 	
-	muti = bfbTargDrugData$"Gene symbol"%in%rownames(allMutCounts)
+	# 	allMutCounts = STUDY@results$somatic_mutation_aberration_summary$genesummary
+	allAbCounts = STUDY@results$overlap_analysis$combined_aberrations_summary$genesummary
+	muti = bfbTargDrugData$"Gene symbol"%in%rownames(allAbCounts)
 	
-	geneMuts[muti,] = allMutCounts[bfbTargDrugData$"Gene symbol"[muti],]
+	geneMuts[muti,] = allAbCounts[bfbTargDrugData$"Gene symbol"[muti],]
 	
 	bfbTargDrugData2 = cbind.data.frame(bfbTargDrugData, geneMuts, stringsAsFactors=F)
 	

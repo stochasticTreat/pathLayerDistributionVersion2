@@ -20,20 +20,20 @@ runDrugWorksheet<-function(STUDY=STUDY){
 	print("inside runShinyMain")
 	# library("shiny")
 	# setwd("..")
-	
-	bfbTargDrugData=NULL
-	
-	if(exists("bfbTargDrugData")|!is.null(STUDY@results$drugSelectionWorksheet)){
-		print("option1")
-		if(is.null(bfbTargDrugData)&is.null(STUDY@results$drugSelectionWorksheet)){
-			cat("\nis.null(bfbTargDrugData)&is.null(STUDY@results$drugSelectionWorksheet) is TRUE...\n")
-			cat("\nrunning makeDrugSelectionWorksheet()\n")
-			bfbTargDrugData = makeDrugSelectionWorksheet(STUDY=STUDY)
-		}else{
-			cat("\nelse\n")
-			bfbTargDrugData = STUDY@results$drugSelectionWorksheet
+	buildNewWorksheet = T
+	#if bfbTargDrugData exists and has rows in it
+	if(exists("bfbTargDrugData")){
+		if(!is.null(bfbTargDrugData)){
+			buildNewWorksheet = "Y" == toupper(readline("A drug selection worksheet was found. \nWould you like the program to update the worksheet with the current study data?\n(enter Y or N ) "))
 		}
+	}
+		#ask if it should be rebuilt
+	
+	if(buildNewWorksheet){
+		cat("Building new drug selection worksheet.\n")
+		bfbTargDrugData = makeDrugSelectionWorksheet(STUDY=STUDY)
 	}else{
+		cat("\nUsing old drug selection worksheet\n")
 		bfbTargDrugData = STUDY@results$drugSelectionWorksheet
 	}
 	
@@ -44,15 +44,22 @@ runDrugWorksheet<-function(STUDY=STUDY){
 	# 		bfbTargDrugData = makeDrugSelectionWorksheet(STUDY=STUDY)
 	# 		bfbTargDrugData <<- bfbTargDrugData
 	# 	}
-
-	prepDrugSelect()
+	shinyDir = try(expr={prepDrugSelect()}, silent=T)
 	
-	shinyDir = dirname(system.file("shinyDrugSelect/server.R",package = "packageDir"))
+	#dirname(system.file("shinyDrugSelect/server.R",package = "packageDir"))
+	if(grepl(pattern="error", x=shinyDir, ignore.case=TRUE)){
+		mess = paste("Error, could not find directory ./shinyDrugSelect/ in current working directory,",getwd(),
+									".\nPlease make sure R has write access to this directory so that this program can copy data to it, then try again.")
+		message(mess)
+		warning(mess)
+	}else{
+		runApp(shinyDir)
+	}
+	# "./shinyDrugSelect/")
+	# cat("bfbTargDrugData exists:",exists("bfbTargDrugData"),"\n")
+	#	cat("bfbTargDrugData is null:",is.null(bfbTargDrugData),"\n")
+	# print(getwd())
 	
-	runApp(shinyDir)#"./shinyDrugSelect/")
-	cat("bfbTargDrugData exists:",exists("bfbTargDrugData"),"\n")
-	cat("bfbTargDrugData is null:",is.null(bfbTargDrugData),"\n")
-	print(getwd())
 	return(bfbTargDrugData)
 }
 

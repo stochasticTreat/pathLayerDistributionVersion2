@@ -22,9 +22,12 @@ shinyServer(function(input, output){
 			print(getwd())
 			setwd("..")
 			print(getwd())
-			bfbTargDrugData <<- makeDrugSelectionWorksheet(STUDY=STUDY, plimit=limPaths[,1])
+			bfbTargDrugData <<- makeDrugSelectionWorksheet(STUDY=STUDY, pathsToSearch=limPaths[,1])
 			setwd("./shinyDrugSelect/")
+			print("set working directory back to shinyDrugSelect")
 			displayData = bfbTargDrugData
+			cat("Dimensions of data:",dim(displayData))
+			cat("Colnames of data:", colnames(displayData))
 		}else{
 			displayData = bfbTargDrugData
 			bfbTargDrugData<<-bfbTargDrugData
