@@ -269,7 +269,7 @@ settingFile<-function(s, prompt, requireInput=T){
 			s$.text = s[[prompt]]
 			return(s)
 		}else{
-			if(s[[prompt]]!=""|s$interactive ) cat("\nThe file '", s[[prompt]], "' was not found, please select another.\n")
+			if(s[[prompt]]!=""|s$interactive ) message("\nThe file\n'", s[[prompt]], "'\nwas not found, please select another.\n")
 		}
 	}
 	#see if it's a prompt to select a file
