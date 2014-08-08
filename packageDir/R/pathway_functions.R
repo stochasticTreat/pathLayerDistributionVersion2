@@ -10,7 +10,7 @@
 #'@export
 #'@examples
 #'cellularPathwayGeneSets = getDefaultPaths()
-getDefaultPaths<-function(path_file=system.file("extdata/Reactome.2014.04.06.12.52.27.txt", package = "packageDir")){
+getDefaultPaths<-function( path_file=system.file("extdata/Reactome.2014.04.06.12.52.27.txt", package = "packageDir") ){
 	
 	path_detail_tmp<-getPaths(path_file=path_file, verbose=F)
 	return(path_detail_tmp)
@@ -276,10 +276,10 @@ getPaths<-function(path_file=NULL,
 		importPathways(symtab)
 	}
 	#load the actual paths
-	paths = loadPaths(pRecord=pRecord, symtab=symtab)
+	paths = loadPaths(pRecord=pRecord, symtab=symtab, firstGeneColumn=3)
 	
 	return(paths)
-}
+}#getPaths
 
 
 getPathMetaData<-function(ref="./reference_data/paths/pathMetaData.txt"){
@@ -431,11 +431,11 @@ setPathMetaData<-function(symtab,
 #will try to load path in GSEA format from the file denoted by file_name
 #takes: paths pRecord: a list with one slot named "file" and other slots to be used by getPathObject
 #returns: pathset
-loadPaths<-function(pRecord, symtab=NULL){
+loadPaths<-function(pRecord, symtab=NULL, firstGeneColumn=3){
 	
 	if(is.null(symtab)) symtab = getHugoSymbols()
-
-	tmptab = list_to_table(pth=loadPathsAsSets(firstGeneColum=3, fname=pRecord$file))
+	
+	tmptab = list_to_table(pth=loadPathsAsSets(fname=pRecord$file, firstGeneColum=firstGeneColumn, keepLowerCaseGenes=F))
 	print("getting path object")
 	pathset = getPathObject(symtab=symtab, pRecord=pRecord, pData=tmptab)
 	print("got path object..")
@@ -484,7 +484,7 @@ GSEAImport<-function(fname=NULL){
 	while(T){
 		if(is.null(fname)) fname = file.choose()
 		cat("\nFile selected: ", fname, "\n")
-		preped_paths[["paths"]] =  try(expr=list_to_table(pth=loadPathsAsSets(firstGeneColum=3, fname=fname)),silent=T)
+		preped_paths[["paths"]] =  try(expr=list_to_table(pth=loadPathsAsSets(fname=fname)),silent=T)
 		if(is.data.frame(preped_paths[["paths"]])|is.matrix(preped_paths[["paths"]])) break
 		if(!is.null(fname)) print("Alert! the file provided could not be read as a GSEA-format path set.")
 		if(!is.null(fname)) return(NULL)
@@ -911,16 +911,35 @@ GenesInPaths<-function(ordgenelist, path_detail){
 	return(ordgenelist)
 }
 
+#'@title Get gene identifiers from a list of pathways. 
+#'@description Takes a list of path identifiers and returns a list of identifiers for the genes in the submitted pathways.
+#'@param pids Character vector of cellular pathway identifiers. 
+#'@param STUDY A study object, a Path_Detail object or a bipartate graph in a "matrix" class R object.
+#'@return Character vector of gene identifiers. 
+#'@export
 getGenesFromPaths<-function(pids, STUDY){
 	
-	if(class(STUDY)=="Study") pths = STUDY@studyMetaData@paths$paths
-	if(class(STUDY)=="Path_Detail") pths = STUDY$paths
-	
-	allGenes = c()
-	for(p in pids){
-		allGenes = union( colnames(pths)[pths[p,]], allGenes)
+	if(class(STUDY)=="Study"){
+		pths = STUDY@studyMetaData@paths$paths
+	}else if(class(STUDY)=="Path_Detail"){
+		pths = STUDY$paths
+	}else if(class(STUDY)=="matrix"){
+		pths = STUDY
+	}else{
+		stop("Unrecognized path source. Must be a matrix, or a Study or Path_Detail object")
 	}
-	return(allGenes)
+	if(!is.vector(pids)) pids=pids[,1,drop=TRUE]
+	
+	missingP = !pids%in%rownames(pths)
+	if(sum(missingP)){
+		cat("Could not find these pathways:\n",paste(pids[missingP],collapse="\n", sep="\n"))
+	}
+
+	pthsub = pths[pids,,drop=FALSE]
+	
+	geneIdentifiers = colnames(pthsub)[rep(TRUE, times=nrow(pthsub))%*%pthsub>0]
+	geneIdentifiers = unique(geneIdentifiers)
+	return(geneIdentifiers)
 }
 
 #getPathsForGenes()
