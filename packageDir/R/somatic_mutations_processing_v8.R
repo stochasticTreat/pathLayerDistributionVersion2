@@ -371,6 +371,10 @@ FilterDuplicates<-function(tcga_som_raw, s, tracker, paths_detail){
 	cat("\nRemoving rows for which the values in the following colulmns are identical to those in other rows:\n")
 	filtcolumns =c( "Hugo_Symbol", "Chrom","Ncbi_Build", "Start_Position", "Reference_Allele", "Tumor_Sample_Barcode" )
 	filtcolumns2 =c( "Hugo_Symbol", "Chrom","Ncbi_Build", "Start_Position", "Reference_Allele", "Tumor_Sample_Barcode", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2")
+	cat("\nColumn names in maf data input:\n")
+	print(colnames(tcga_som))
+	cat("\nColumn names used as unique key:\n")
+	print(filtcolumns)
 	print(filtcolumns2)
 	
 	utest1 = unique(tcga_som[,filtcolumns])
@@ -395,7 +399,7 @@ FilterDuplicates<-function(tcga_som_raw, s, tracker, paths_detail){
 	}
 	if(nrow(utest1)!=nrow(utest2)){
 		#################### readline() ####################################
-# 		blnk = readline("!!PLEASE NOTE: it appears at least one mutation is inconsistent\nbetween technical replicates (sequencing on different platforms).\nPlease press enter to continue with analysis.")
+		# 		blnk = readline("!!PLEASE NOTE: it appears at least one mutation is inconsistent\nbetween technical replicates (sequencing on different platforms).\nPlease press enter to continue with analysis.")
 	
 		s = setting(s=s, prompt="!!PLEASE NOTE: it appears at least one mutation is inconsistent\nbetween technical replicates (sequencing on different platforms).\nPlease press enter to continue with analysis.")
 		
@@ -412,6 +416,7 @@ FilterDuplicates<-function(tcga_som_raw, s, tracker, paths_detail){
 		
 		customCorrections = s$.text=="y"
 	}
+	cat("\ndim tcga_som:",dim(tcga_som),"\n")
 	tcga_som[,"Hugo_Symbol"] = corsym(symbol_set=tcga_som[,c("Hugo_Symbol", "Chrom")],
 																		symref=paths_detail$symtable, 
 																		verbose=customCorrections)
@@ -481,6 +486,26 @@ addDbSNPToVariantClassification<-function(maf){
 }
 
 
+dataCleaningAndCheck<-function(tabin){
+	neededColumns = c("Hugo_Symbol", "Chrom", "Ncbi_Build", "Start_Position", "Reference_Allele", "Tumor_Sample_Barcode", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2", "Variant_Classification", "Variant_Type", "Dbsnp_Rs","Dbsnp_Val_Status")
+	missingCols = which(!neededColumns%in%colnames(tabin))
+	if(length(missingCols)==0) return(tabin)
+	warning("This/these column(s) name(s) not found:\n", neededColumns[missingCols],"\n..attempting correction by making everything uppercase")
+	message("This/these column(s) name(s) not found:\n", neededColumns[missingCols],"\n..attempting correction by making everything in column names uppercase")
+	for(i in missingCols){
+		#which of the test columns equals the needed input
+		ci = which(toupper(colnames(tabin)) == toupper(neededColumns[i]))
+		if(length(ci)==1)  colnames(tabin)[ci] = neededColumns[i]
+	}
+	#check for 'Chromosome' and change it to 'Chrom'
+	chromi = grep(pattern="Chromosome", x=colnames(tabin))
+	if(length(chromi)){
+		warning("The column name 'Chromosome' was changed to 'Chrom'")
+		colnames(tabin)<-"Chrom"
+	}
+	return(tabin)
+}
+
 #processSomaticData
 #takes:					paths_detail: a path list object
 #								removedbSNP: logical, T if dbSNP values should be removed
@@ -511,11 +536,11 @@ processSomaticData<-function(study,
 	tcga_som_raw = read.delim(file=fname, header=T, sep="\t", stringsAsFactors=F, na.strings="-")
 	
 	cat("\n",nrow(tcga_som_raw),"rows read in from file.")
-
+	
+	tcga_som_raw  = dataCleaningAndCheck(tabin=tcga_som_raw)
 
 	# 	pid = sapply(tcga_som_raw[,"Tumor_Sample_Barcode"], extract_pid)
 	# 	tcga_som_raw = cbind.data.frame(pid, tcga_som_raw, stringsAsFactors=F)#append extracted pids as a sepparated column
-	# 	
 
 	tcga_som_raw = addPidColumn(tcga_data=tcga_som_raw)
 	pid = tcga_som_raw[,"pid"]
@@ -615,18 +640,19 @@ processSomaticData<-function(study,
 	
 	##############################
 	###### Filtering out mutations with HUGO symbols given as "UNKNOWN"
-	
+		
 	som_select = som_select[som_select[,"Hugo_Symbol"]!="UNKNOWN",]
 	tracker[["Number of unique mutations after removing records with gene identifier given as \"UNKNOWN\""]] = nrow(som_select)
 	
-	tracker[["Number of patients with mutations not removed by the filtering steps:"]] = length(unique(som_select$Tumor_Sample_Barcode))
+	tracker[["Number of patients before removal of hypermutators:"]] = length(unique(som_select$pid))
 	
 	###################   hypermutator filtering
 	hfiltres = filterHyperMutators(s=s, tracker=tracker, odat=som_select, patsum=tracker[['Mutations per patient, before any filtering']])
 	som_select = hfiltres$som_select
 	s = hfiltres$s
 	tracker=hfiltres$tracker
-	
+
+	tracker[["Number of patients with mutations after all filtering steps:"]] = length(unique(som_select$pid))
 	############################################################
 	###### build output           ##############################
 	############################################################
@@ -636,13 +662,10 @@ processSomaticData<-function(study,
 	tracker[["Number of genes across cohort that are mutated more than once in the same patient"]] = uniquePatientMutations - uniquePatientSymbolsMutated
 	tracker[["Genes are considered to be in a mutated or normal state, thus the final number of unique, mutated genes passed to the enrichment analysis is:"]] = uniquePatientSymbolsMutated
 	
-	
-
 	#########################################
 	# create the patient gene matrix. 
 	#########################################
 	somatic_pgm = makePatientGeneMatrix(som_select)
-	
 	
 	print("After all filtering steps")
 	stackedGeneBar(tcga_som=som_select,
