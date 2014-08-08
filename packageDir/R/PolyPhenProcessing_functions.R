@@ -49,10 +49,18 @@ PolyPhenFromMaf<-function(mafFname=NULL, outFname=NULL){
 	return(tracker)
 }
 
+checkColums<-function(dfin, cols){
+	missingCols = cols[!cols%in%colnames(dfin)]
+	if(length(missingCols)){
+		warning("Missing columns:", paste(missingCols, sep="; ",collapse="; "))
+	}
+}
+
 makePolyPhenCols<-function(datf1){
 	#makes the actual columns of data accepted by polyphen
 	#takes: datf1: data frame with columns: Chrom, Start_Position, Reference_Allele, Tumor_Sel_Allele2, indexCol
 	#returns: data frame ready to be saved as input file for polyphen
+	checkColums(dfin=datf1, cols=c("Chrom", "Start_Position", "Reference_Allele", 'Tumor_Sel_Allele2', "indexCol"))
 	locCol = paste("chr",datf1$Chrom,":",datf1$Start_Position, sep="")
 	allele = paste(datf1$Reference_Allele,"/",datf1$Tumor_Seq_Allele2, sep="")
 	idcol = paste("#", datf1$indexCol)
