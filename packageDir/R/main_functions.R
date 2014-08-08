@@ -125,7 +125,7 @@ runArm<-function(armDescription,
 
 	if(is.data.frame(curSettings)) curSettings = dfToList(df=curSettings)
 	
-	if(is.null(interactive)&!is.null(curSettings)){
+	if( is.null(interactive)&!is.null(curSettings) ){
 		inter_option = readline("Would you like to process the data interactively so that\nnew settings or files can be selected? (enter y or n)\n")
 		interactive = inter_option=="y"
 		if(interactive){
