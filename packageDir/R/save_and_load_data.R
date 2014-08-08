@@ -519,6 +519,17 @@ checkSetDirectoryStructure<-function(verbose=T){
 	}
 }
 
+#'@title Loads a study from a file name.
+#'@description Given a file name, this function loads and returns a study. If a Path_Detail object is provided, it will be loaded as the study's path repository. 
+#'@param studyFolderName The character string giving the absolute or relative pathway to the study folder.
+#'@param path_detail Optional. A \code{Path_Detail} object. 
+#'@return A \Code{Study} object.
+loadStudy<-function(studyFolderName, path_detail=NULL){
+	
+	return(initiateStudy(studyFolderName=studyFolderName, path_detail=path_detail))
+	
+}
+
 #orchestrates establishment of a new study, or loading of an old study. 
 #takes: studyFolderName, path_detail, root, study.name
 #returns: study object

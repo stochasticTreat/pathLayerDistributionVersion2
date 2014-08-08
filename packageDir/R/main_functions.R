@@ -240,6 +240,12 @@ printProgramState<-function(stud){#results, study_name, path_detail){
 
 # darkPaths = results$overlap_analysis$'Aberration enriched, not drug targeted'$path_id
 #determine list of genes found most often in pathways
+#'@title Get pathway overlaps. 
+#'@description Determine the set of overlapping genes and number of pathway overlaps for a set of pathways. 
+#'@param darkPaths The paths to search for overlaps. 
+#'@param path_detail A Path_Detail object. 
+#'@return A data frame with columns "Number of paths" and "Path names", and a row for each gene in all the submitted pathways.
+#'@export
 BangForBuck<-function(darkPaths, path_detail){
 	cat("\nIn bang for buck analysis...")
 	if(!is.vector(darkPaths)){

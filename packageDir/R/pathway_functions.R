@@ -853,6 +853,46 @@ getTargetMatrix<-function(tgenes, paths){
 	return(nmat)
 }
 
+#'@title Get the names of the pathways containing submitted genes. 
+#'@description Given a vector of gene identifiers, this function will return a two column matrix: the gene ids and a column indicating which, if any pathways each gene belongs to.
+#'@param genevector A character vector of gene identifiers
+#'@param path_detail A \code{Path_Detail} object. 
+#'@return A two column \code{data.frame}, with columns "gene" and "path_membership"
+#'@export
+#'@examples
+#'path_detail = getDefaultPaths()
+#'res = getPathsWithGenes(genevector=c("FAT1","TP53","ENAH","HOMER3"), path_detail=path_detail)
+getPathsWithGenes<-function(genevector, path_detail){
+	
+	if(is.matrix(genevector)|is.data.frame(genevector)){
+		genevector = genevector[,1,drop=T]
+	}
+	membership = genevector%in%colnames(path_detail$paths)
+	inpaths = genevector[membership]
+	pnames = c()
+	number_of_pathways = c()
+	for(g in inpaths){
+		
+		pathsWithGene = rownames(path_detail$paths)[path_detail$paths[,g]]
+		pnames = c(pnames, paste(pathsWithGene, sep="; ", collapse="; "))
+		number_of_pathways = c(number_of_pathways, length(pathsWithGene))
+		
+	}
+	names(pnames)<-inpaths
+	
+	genematrix = cbind.data.frame( gene=genevector,
+																 number_of_pathways = rep(0,times=length(genevector)),
+																 path_membership = rep("Not in pathways", times=length(genevector)), 
+																 stringsAsFactors=FALSE)
+	rownames(genematrix)<-genematrix[,1]
+	genematrix[names(pnames),"path_membership"] = pnames
+	genematrix[names(pnames),"number_of_pathways"] = number_of_pathways
+	
+	rownames(genematrix)<-NULL
+	
+	return(genematrix)
+}
+
 #appends column indicating if the gene is in the path repository
 GenesInPaths<-function(ordgenelist, path_detail){
 	print("inside GenesInPaths()")
