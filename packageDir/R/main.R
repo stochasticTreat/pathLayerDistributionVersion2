@@ -16,6 +16,7 @@ loadBasicArms<-function(STUDY){
 	
 	arms = STUDY@arms
 	cat("\nLoading basic arms...\n")
+	
 	arms = loadDataArm(description="Load drug screen data",
 										 title="functional_drug_screen_summary", 
 										 mainFunction=packageDir:::RunDrugScreen, 
@@ -121,6 +122,7 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 													"Compare sources of aberration data",
 													"Create network diagrams for affected pathways",
 													"Save a data summary to HTML",
+													"Make nozzle report",
 													"Save current study", 
 													"Change study name",
 													"Clear all loaded settings",
@@ -183,6 +185,8 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 			STUDY@results=list()
 			STUDY@studyMetaData@settings = list()
 			STUDY@studyMetaData@studyName = ""
+		}else if(sel=="Make nozzle report"){
+			makeSelectNozzleReport(study=STUDY)
 		}else if(sel=="Save a data summary to HTML"){
 			#list summaries available to save
 			# 		checkAndSaveStudy(study=STUDY)
