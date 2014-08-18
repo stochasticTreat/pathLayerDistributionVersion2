@@ -35,6 +35,10 @@ sectionDescriptionDictionary<-function( reslots ){
 
 
 checkRowNames<-function(tab){
+	if(!nrow(tab)){
+		message("Warning, table appears to have no rows...")
+		return(tab)
+	} 
 	#check if the row names are the characters "1" through "10"
 	rowNamesNotRowNumbers = sum(rownames(tab) != as.character(c(1:nrow(tab))))>0 
 	if(rowNamesNotRowNumbers){
@@ -127,6 +131,9 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
 customSlot<-function( s, sn, sectionDescription, curel ){
 	
 	if(sn == "settings"){
+		
+		if( is.list(curel)&!is.data.frame(curel) ) curel = settingsAsDataFrame( settingsData=curel )
+		
 		curel = checkRowNames( tab=curel )
 		curel = checkColumnNames( tab=curel )
 		
@@ -139,6 +146,8 @@ customSlot<-function( s, sn, sectionDescription, curel ){
 		s <- addTo( s, f )
 		return(s)
 	}else if(sn == "Data_work_up_notes"){
+		
+		if( is.list(curel)&!is.data.frame(curel) ) curel = listToDf( lst=curel )
 		
 		curel = checkRowNames( tab=curel )
 		curel = checkColumnNames( tab=curel )
@@ -291,14 +300,14 @@ resToReport<-function(resSet, resSetName, fname){
 	writeReport( nres, filename=fname )
 }
 
-getStudyFolderName<-function(stud){
-	folderName = stud@studyMetaData@studyName
-	#check if it's a test
-	if(!grepl(pattern="^test", x=studName)){
-		folderName = paste0("study_", folderName)
-	}
-	return(folderName)
-}
+# getStudyFolderName<-function(stud){
+# 	folderName = stud@studyMetaData@studyName
+# 	#check if it's a test
+# 	if(!grepl(pattern="^test", x=studName)){
+# 		folderName = paste0("study_", folderName)
+# 	}
+# 	return(folderName)
+# }
 
 #adapter for normal results sets to be transformed into a nozzle report
 nozzlesToFileStructure<-function(study, armName, nozzleTitle=""){
@@ -386,7 +395,7 @@ makeSelectNozzleReport<-function(study){
 	for(sect in sections){
 		
 		reportName = gsub(x=sect, pattern="_", replacement=" ", fixed=TRUE)
-		fileName = paste0(study@studyMetaData@RootFile,"results/",sect,"/nozzleSummary.nozzleReport")
+		fileName = paste0(study@studyMetaData@RootFile,"/results/",sect,"/nozzleSummary.nozzleReport")
 		resToReport(resSet=study@results[[sect]], 
 								resSetName=reportName, 
 								fname=fileName)
