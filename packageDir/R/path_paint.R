@@ -81,9 +81,9 @@ addPathwayImagesWithSelection<-function(study,
 		
 	#pull out the needed pathway names
 	
- if(pathsAreFromGraphite(study)){
+ if( pathsAreFromGraphite(study) ){
 		
-		if(!length(path_detail$graphite)) path_detail$graphite = .loadGraphitePaths(study)
+		if( !length(path_detail$graphite) ) path_detail$graphite = .loadGraphitePaths(study)
 
 		if(resSetName=="overlap_analysis"){
 			results = paintOverlap(results=results, study_name=study@studyMetaData@studyName, paths_detail=path_detail)
@@ -97,12 +97,13 @@ addPathwayImagesWithSelection<-function(study,
 															 siglimit=limitVal)
 		}
 		
-	 }else	if(fromReactome(study)){
+	}else	if( fromReactome(study) ){
 	 	
 	 	pathnames = extractPathNames(resSetName=resSetName, study=study, limitCol=limitCol, limitVal=limitVal)
+	 	if(!length(pathnames)) message("No pathways were found!")
 	 	notAvailableBiopax = pathwaysFromBiopax(study=study, pathNames=pathnames, resSetName=resSetName)
 	 	
-	 }
+	}
 	
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
 	study@results = results
@@ -133,10 +134,11 @@ pathsAreFromGraphite<-function(stud){
 #'@param resSetName the name of a summary table results set
 #'@param study a study object
 #'@param limitCol the column the returned pathways should be limited by
-#'@param limitVal the value in the limitCol the returned pathways should be limited to
-#'@return vector, a list of pathways from study meeting the parameters described in the function argument
+#'@param limitVal the value in the limitCol the returned pathways should be limited to.
+#'@param verbose Flag to control if prompt should be given to limit pathways returned to only those with less than 600 genes.
+#'@return vector, a list of pathways from study meeting the parameters described in the function argument.
 #'@export
-extractPathNames <- function (resSetName, study, limitCol, limitVal) {
+extractPathNames <- function (resSetName, study, limitCol, limitVal, verbose=TRUE) {
 
 		resSet = study@results[[resSetName]]
 		if(resSetName=="overlap_analysis"){
@@ -145,10 +147,18 @@ extractPathNames <- function (resSetName, study, limitCol, limitVal) {
 		}else{
 			pathNames = resSet$pathsummary[resSet$pathsummary[,limitCol]<limitVal,1]
 		}
+		
+		pathsMissingFromRecs = setdiff(pathNames, rownames(study@studyMetaData@paths$paths))
+		
+		if( length(pathsMissingFromRecs) ){
+			message("Warning, it appears some pathways from the passed results sets are missing from the currently loaded pathway repository!")
+			uin = readline("Press any key to continue.")
+			pathNames = intersect(pathNames,rownames(study@studyMetaData@paths$paths))
+		}
+
 		plens = study@studyMetaData@paths$full_path_length[pathNames,]
 
-		
-		if(sum(plens>=600)){
+		if(sum(plens>=600)&verbose){
 			while(T){
 				res = try({			hist(plens,breaks=40, 
 													 xlab="Path length", 
