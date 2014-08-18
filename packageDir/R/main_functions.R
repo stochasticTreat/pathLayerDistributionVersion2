@@ -495,7 +495,7 @@ combineAberrationTypes2<-function(study, s, results, overlapPatients=NULL){
 																								coverage=coverageSet,
 																								settings=s,
 																								coverageDataSetDescription="analysis of coverage by poor-coverage genomic aberration analysis platform(s)",
-																								coverageGeneDescription="analysis of coverage by poor-coverage genomic aberration analysis platform(s)", 
+																								coverageGeneDescription="aberration_analysis_covered_gene", 
 																								dataSetDescription=abtypenames)
 	}else if(!is.null(big_pgm)){
 		combined_aberrations_summary = summaryTable(study=study, 
