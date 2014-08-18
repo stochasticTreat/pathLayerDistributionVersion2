@@ -722,7 +722,7 @@ getReactomeBiopax<-function(study, pathNames, verbose=T){
 	pwrecord = getPathwaysRecords(pwrecord.fileName=pwrecord.fileName)
 	neededPaths = pathNames[!pathNames%in%pwrecord$path_name]
 	
-	if(length(neededPaths)){
+	if( length(neededPaths) ){
 		if(verbose){
 			if("d"!=readline("Some biopax pathway records cannot be found on this computer.\nTo attempt to download these pathways please enter d\nTo skip this step just press enter.")){
 				cat("\nFiles describing the networks for these pathways are not available on this computer:\n")
@@ -830,18 +830,25 @@ printNotAvailable<-function(notAvail){
 getBiomartDbIds<-function(){
 	
 	reac=reactomeBiomart()
-	reac = useDataset(dataset="pathway", mart=reac)
+	reac = useDataset(dataset="pathway", verbose=TRUE, mart=reac)
+	listAttributes(mart=reac)
 	bmres1 = getBM(mart=reac, 
-								 uniqueRows=T,
+								 uniqueRows=TRUE,
 								 filters=c("species_selection"),
 								 values=c("Homo sapiens"),
 								 attributes=c("_displayname",
 								 						 "stableidentifier_identifier",
 								 						 "pathway_db_id"))
+	cat("\nRecords returned from biomart:",nrow(bmres1),"\n")
+	if(!nrow(bmres1)){
+		message("Warning, no Reactome records returned from Reactome Biomart interface!")
+		warning("Warning, no Reactome records returned from Reactome Biomart interface!")
+	}
 	colnames(bmres1)<-c("pid", "sid", "dbid")
 	rownames(bmres1) <- bmres1[,1]
 	return(bmres1)
 }
+
 reactomeBiomart<-function(verbose=T){
 	
 	reac = useMart("REACTOME")
@@ -940,7 +947,7 @@ UserProvidedBiopax<-function(pathNames, pathMetaDataFile=NULL){
 pathwaysFromBiopax<-function(study, pathNames, resSetName){
 	
 	#check if they can be obtained from Reactome, and try to get them if they are
-	if(fromReactome(study)){
+	if( fromReactome(study) ){
 		notAvailablePaths = getReactomeBiopax(study=study, pathNames=pathNames)
 	}else{
 		UserProvidedBiopax(pathNames=pathNames)
@@ -957,6 +964,7 @@ pathwaysFromBiopax<-function(study, pathNames, resSetName){
 		w = try(sendNetToCytoscape(fname=bpfnames[i], 
 															 pathname=names(bpfnames)[i],#paste(names(bpfnames)[i],": from R overlap analysis"),
 															 study=study), silent=T)
+		
 		if(is.error(w)){
 			cat("\nError while trying to display the",bpfnames[i],"pathway\n")
 			logError(elist=list(time=Sys.Date(),
