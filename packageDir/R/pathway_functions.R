@@ -949,7 +949,7 @@ getGenesFromPaths<-function(pids, STUDY){
 	
 	missingP = !pids%in%rownames(pths)
 	if(sum(missingP)){
-		cat("Could not find these pathways:\n",paste(pids[missingP],collapse="\n", sep="\n"))
+		cat("Could not find these pathways:\n", paste0(pids[missingP], collapse="\n ", sep="\n "))
 	}
 
 	pthsub = pths[pids,,drop=FALSE]
