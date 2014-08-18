@@ -75,10 +75,13 @@ abDrugOverlapAnalysis<-function(study,
 																enrich_col="hyperg_p_w_FDR",
 																verbose=T,
 																settings=NULL){
+	
 	if(!exists("VERBOSE")) VERBOSE=T
 	cat("\n******************************************************************************************\n")
 	cat("\n*************************************overlap analysis*************************************\n")
 	cat("\n******************************************************************************************\n")
+	
+	checkPathsMatch(STUDY=study)
 	
 	sfolder = paste(studyFolder(s=study),"/results/", sep="")
 	#set up ola object

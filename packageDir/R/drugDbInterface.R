@@ -411,6 +411,7 @@ test.makeDrugSelectionWorksheet<-function(){
 	
 }
 
+
 #'@title Uses genomic data from the provided Study object to produce a table of pertinent drug-gene associations.
 #'@param STUDY A \code{Study} object
 #'@param pathsToSearch A \code{vector} of pathway names. The set of cellular pathways that is to be searched for drug targets.
@@ -422,6 +423,8 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 		cat("\nNOTICE!\nThe overlap analysis must be conducted before the drug selection worksheet is run.\n")
 		return(NULL)
 	}
+	checkPathsMatch(STUDY=STUDY)
+	
 	
 	dtd0 = importDrugDbData(STUDY=STUDY)
 	dmd0 = getDrugData()

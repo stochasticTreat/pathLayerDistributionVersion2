@@ -17,6 +17,23 @@ getDefaultPaths<-function( path_file=system.file("extdata/Reactome.2014.04.06.12
 	
 }
 
+checkPathsMatch<-function(STUDY){
+	fileInMetaData = STUDY@studyMetaData@paths$file
+	allInputArms = names(STUDY@results)[grep(pattern="functional_|aberration_", x=names(STUDY@results))]
+	for(carm in allInputArms){
+		
+		ss = STUDY@results[[carm]]$summarystats
+		sspathfile = ss[ss[,1]=="Path source:",2]
+		if(sspathfile!=fileInMetaData){
+			message("Warning: pathways currently loaded do not match pathways used to analyze input data types!")
+			message("Current input arm: ", carm)
+			message("File for the pathways that are currently loaded:\n", fileInMetaData)
+			message("File for the pathways that were used in the data analysis:\n", sspathfile)
+			uin = readline("Press any key to continue")
+		}
+	}	
+}
+
 #pathsFromGraphite function
 #takes path name
 #returns nodes as HUGO symbols
