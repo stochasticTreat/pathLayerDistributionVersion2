@@ -19,3 +19,6 @@ filterMafToMutsig<-function(){
 	write.table(x=msigmaf, file=fname3, quote=T, sep="\t", row.names=F, col.names=T)
 	
 }
+
+
+# filterMafToMutsig()
