@@ -41,10 +41,13 @@ dfToList<-function(df){
 	return(out)
 }
 
-listToDf<-function(lst){
+listToDf<-function(lst, namesFirstColumn=F){
 	print("in listToDf")
 	vals = sapply(X=names(lst), FUN=function(x){lst[[x]]})
 	out = data.frame(vals=as.matrix(vals,ncol=1), stringsAsFactors=F)
+	if(namesFirstColumn){
+		out = cbind.data.frame(names(lst), out)
+	}
 	out[,1] = as.character(out[,1])
 	return(out)
 }
