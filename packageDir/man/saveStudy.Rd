@@ -3,7 +3,7 @@
 \alias{saveStudy}
 \title{saveStudy}
 \usage{
-saveStudy(study, path = "./output/")
+saveStudy(study, path = "./output")
 }
 \arguments{
 \item{study}{A Study object to be saved.}

@@ -3,7 +3,7 @@
 \alias{getPathIdsToTarget}
 \title{getPathIdsToTarget}
 \usage{
-getPathIdsToTarget(STUDY, pathsToSearch = NULL)
+getPathIdsToTarget(STUDY, pathsToSearch = NULL, verbose = TRUE)
 }
 \arguments{
 \item{pathsToSearch}{the set of pathways to search for targets. If this is provided, function passes this input as the output}
