@@ -182,15 +182,15 @@ graphNELToCytoscape<-function(gnel, pathname="no path name provided as argument 
 	g <- initEdgeAttribute(g, "edgeType", "char", "undefined")
 	g <- initEdgeAttribute(g, "weight", "numeric", 1)
 	cy <- CytoscapeConnection()
-	if (pathname %in% as.character(getWindowList(cy))) 
+	if (pathname %in% as.character( getWindowList(cy) ) ) 
 		deleteWindow(cy, pathname)
-	w <- new.CytoscapeWindow(pathname, g)
+	w <- new.CytoscapeWindow( pathname, g )
 	displayGraph(w)
 	setEdgeTargetArrowRule(w, "edgeType", c(edgeTypes, "multiple"), 
 												 c(edgeArrows, "No Arrow"))
 	layoutNetwork(w)
-	redraw(w)
-	return(w)
+	redraw( w )
+	return( w )
 }
 
 test.setAberrationDataStyles<-function(){
@@ -249,7 +249,7 @@ setAberrationDataStyles<-function(pname, resSetNombre,
 	
 	#### check if there is a coverage issue to handle
 	if(!is.null(resSet$coverage_summary$genesummary)){
-		readline("unit test the coverage coloration")
+		warning("\nunit test the coverage coloration\n")
 		#if there is a coverage issue, find the set difference between the covered
 		#nodes and the nodes already in the nameVector (abInGraph?) these will get the
 		#"normalProteinColor"
@@ -736,7 +736,7 @@ getReactomeBiopax<-function(study, pathNames, verbose=T){
 	}
 	#3 obtain the reactome dbIDs
 	cat("\nDownloading Reactome database ids...\n")
-	dbidDict = getBiomartDbIds()
+	dbidDict = getReactomeIds(pnames=neededPaths)
 	#2 find pathways unavailable by regular avenues
 	notAvailableDbIds = neededPaths[!neededPaths%in%dbidDict$pid]#figure out if any are not available
 	if(length(notAvailableDbIds)) printNotAvailable(notAvail=notAvailableDbIds)
@@ -782,7 +782,13 @@ addBiopaxPath<-function(pname, dbid, biopaxDat, dldate = as.character(Sys.time()
 	# find which pathways are needed
 	pwrecord.fileName = "./reference_data/paths/biopax/record_of_biopax_pathways.txt"
 	addToBiopaxRecord(pname=pname, dbid=dbid, dldate=dldate)
-	if(is.null(dim(biopaxDat))){#if just a file name, copy the file
+	#check if it's a file name
+	isFile = FALSE
+	if( is.null(dim(biopaxDat)) ){
+		if( file.exists(biopaxDat) ) isFile = TRUE
+	}
+	
+	if( isFile ){#if just a file name, copy the file
 		
 		dbid = basename(path=dbid)
 		sourcePath  = basename(biopaxDat)
@@ -790,9 +796,10 @@ addBiopaxPath<-function(pname, dbid, biopaxDat, dldate = as.character(Sys.time()
 		file.copy(from=biopaxDat, to=paste0(bpath, "/",sourcePath))
 		
 	}else{#if it's a whole biopax record, write the file
-		
-		write.table(file=paste(biopax.dir, dbid, ".owl",sep=""),
+		biopaxFileName = paste(biopax.dir, dbid, ".owl",sep="")
+		write.table(file=biopaxFileName,
 								x=biopaxDat, sep="", row.names=F, col.names=F, quote=F)
+		message("Biopax file '",biopaxFileName,"' written to memory.")
 		
 	}
 	
@@ -827,7 +834,7 @@ printNotAvailable<-function(notAvail){
 }
 
 
-getBiomartDbIds<-function(){
+depricated_getBiomartDbIds<-function(){
 	
 	reac=reactomeBiomart()
 	reac = useDataset(dataset="pathway", verbose=TRUE, mart=reac)
@@ -847,6 +854,46 @@ getBiomartDbIds<-function(){
 	colnames(bmres1)<-c("pid", "sid", "dbid")
 	rownames(bmres1) <- bmres1[,1]
 	return(bmres1)
+}
+
+#'@title Get reactome database ids, give reactome path ids. 
+#'@description Get reactome database ids, give reactome path ids. Used in forming URL strings to download biopax files.
+#'@param pnames A vector of pathway names
+#'@return A two column data frame; columns pid (path name) and dbid (database id). Row names are set as path names. 
+#'@import reactome.db 
+#'@import stringr
+#'@export
+getReactomeIds<-function(pnames){
+	
+	pathNames = pnames
+	hpids = getHumanPathIds()
+	cat("Normalizing path names..")
+	names(hpids)<-fixPathNames(x=names(hpids))
+	pathNames = fixPathNames(x=pathNames)
+	cat("done. ")
+	#check if some ids cannot be found
+	pathsNotFound = setdiff(pathNames, names(hpids))
+	pathsFound = intersect(pathNames, names(hpids))
+	if(length(pathsNotFound)){
+		message("Warning, database identifiers for these Reactome pathways were not found:\n", 
+						paste(pathsNotFound, sep="; ", collapse="; "))
+		warning("Database identifiers for these Reactome pathways were not found:\n", 
+						paste(pathsNotFound, sep="; ", collapse="; "))
+	}
+	dbidv = as.vector(x=hpids[pathsFound], mode="character")
+	
+	cat("Building DB id lookup table.. ")
+	tabout = cbind.data.frame(pathsFound, dbidv, stringsAsFactors=F)
+	colnames(tabout)<-c("pid", "dbid")
+	rownames(tabout) <- tabout[,1]
+	cat("done. ")
+	
+	message("\nData base identifiers retreived: ",nrow(tabout),"\n")
+	if(!nrow(tabout)){
+		message("Warning, no Reactome database ids could be retreived from the Reactome annotation db interface!")
+		warning("Warning, no Reactome database ids could be retreived from the Reactome annotation db interface!")
+	}
+	return(tabout)
 }
 
 reactomeBiomart<-function(verbose=T){
@@ -958,6 +1005,7 @@ pathwaysFromBiopax<-function(study, pathNames, resSetName){
 	#with the names as the path names and the values the file names
 	bpfnames = biopaxFileNameFromPathName(pathNames=availablePaths)
 	
+	allPathImages = list()
 	#interface with cytoscape
 	for(i in 1:length(bpfnames)){
 		# 		bioPaxToCytoscape(fname=bpfnames[i], pathName=names(bpfnames)[i])
@@ -981,16 +1029,19 @@ pathwaysFromBiopax<-function(study, pathNames, resSetName){
 															study=study, 
 															w=w, 
 															resSetName=resSetName)	
+			allPathImages = c( allPathImages, savePathImageInCytoscape( diagram=w, p=names(bpfnames)[i] ) )
+			cat("\nPathway diagram output complete..\n\n")
 		}
 	}#for each biopax file name
+	if(length(allPathImages)) study@results[[resSetName]]$allPathImages = allPathImages
 	print("Done outputting pathways from biopax files.")
-	return(notAvailablePaths)
+	return(study)
 }#pathwaysFromBiopax
 
 
 
 setLayout<-function(tw, placeInOrganelles=F){
-	layoutNetwork(obj=tw, layout.name="kamada-kawai")
+	layoutNetwork(obj=tw, layout.name="force-directed")
 	if(placeInOrganelles) organelleLayout(tw=tw)
 }
 
@@ -1395,7 +1446,7 @@ pullOutNodeTable<-function(df, nodeTypes=NULL){
 	if(is.null(nodeTypes)){
 		nodeTypes=c("BiochemicalReaction", "Catalysis", "Complex", "Protein", "SmallMolecule","PhysicalEntity")
 		print(nodeTypes)
-		readline("\nWarning, only using the above listed default node types\n")
+		message("\nWarning, only using the above listed default node types\n")
 	} 
 	
 	#get all the rows with the node types
