@@ -167,24 +167,58 @@ test.getPathIdsToTarget<-function(){
 	
 }
 
+filterByColumn<-function(pres){
+	
+	print(matrix(data=colnames(pres), ncol=1, dimnames=list(1:ncol(pres),"Columns to filter by")))
+	while(T){
+		uin = readline("Would you like to filter pathways by one of the above columns? (y/n)")
+		if(uin%in%c("y","n")) break
+	}
+
+	if(uin!="y") return(pres)
+	
+	while(T){
+		filtcol = as.numeric(readline("Please enter the number of the column you would like to filter by: "))
+		if(filtcol%in%1:ncol(pres)) break
+	}
+	
+	while(T){
+		thresh = as.numeric(readline("Please enter the threshold you'd like to filter by: "))
+		if(!is.na(thresh)) break
+	}
+	
+	while(T){
+		moreorless = readline("filter by greater (>) or less than (<) threshold value? (please enter < or >) ")
+		if(moreorless%in%c(">","<")) break
+	}
+	
+	if(moreorless==">") return(pres[pres[,filtcol] > thresh,,drop=F])
+	if(moreorless=="<") return(pres[pres[,filtcol] < thresh,,drop=F])
+	return(pres)
+}
+
 #'@title getPathIdsToTarget
 #'@param pathsToSearch the set of pathways to search for targets. If this is provided, function passes this input as the output
 #'@param STUDY the study object
 #'@return Vector of path ids/path names
-getPathIdsToTarget <- function (STUDY, pathsToSearch = NULL) {
+getPathIdsToTarget <- function (STUDY, pathsToSearch = NULL, verbose=TRUE) {
 	#1) associate paths in overlap analysis with drugs
 	# 1a: which paths? aberrational, not drug-targeted
-	if(!is.null(pathsToSearch)){
+	if( !is.null(pathsToSearch) ){
 		pathsToTarget=pathsToSearch
 		print("pathsToSearch is not null")
-	}else if(!is.null(STUDY@results$overlap_analysis)){		
+	}else if( !is.null(STUDY@results$overlap_analysis) ){		
 		dark = STUDY@results$overlap_analysis$"Aberration enriched, not drug targeted"
 		pathsToTarget = dark$path_id
 		print("pathsToSearch is null, returning dark pathways")
-	}else{
+	}else if(verbose){
 		print("pathsToSearch is null and the overlap_analysis is null.. ")
 		branchName = selectBranchToFindDrugsFor(study=STUDY)
-		pathsToTarget = STUDY@results[[branchName]]$pathsummary$path_id
+		pathres = STUDY@results[[branchName]]$pathsummary
+		
+		pathsToTarget = filterByColumn(pres=pathres)
+	
+		pathsToTarget = pathsToTarget$path_id
 	}
 	
 	if(!is.vector(pathsToTarget)){
@@ -415,16 +449,16 @@ test.makeDrugSelectionWorksheet<-function(){
 #'@title Uses genomic data from the provided Study object to produce a table of pertinent drug-gene associations.
 #'@param STUDY A \code{Study} object
 #'@param pathsToSearch A \code{vector} of pathway names. The set of cellular pathways that is to be searched for drug targets.
+#'@param verbose Logical flag to inidcate if user should be prompted for various inputs. 
 #'@return Spread sheet relating genes in paths to drugs and clinical trials. 
 #'@export
-makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
+makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL, verbose=T){
 	
-	if(is.null(STUDY@results$overlap_analysis)){
-		cat("\nNOTICE!\nThe overlap analysis must be conducted before the drug selection worksheet is run.\n")
-		return(NULL)
-	}
+# 	if(is.null(STUDY@results$overlap_analysis)){
+# 		cat("\nNOTICE!\nThe overlap analysis must be conducted before the drug selection worksheet is run.\n")
+# 		return(NULL)
+# 	}
 	checkPathsMatch(STUDY=STUDY)
-	
 	
 	dtd0 = importDrugDbData(STUDY=STUDY)
 	dmd0 = getDrugData()
@@ -439,7 +473,7 @@ makeDrugSelectionWorksheet<-function(STUDY, pathsToSearch=NULL){
 	rownames(dmd0)<-dmd0$DrugBank.ID
 	
 	#make the data frames
-	darkPaths = getPathIdsToTarget(STUDY=STUDY, pathsToSearch=pathsToSearch)
+	darkPaths = getPathIdsToTarget(STUDY=STUDY, pathsToSearch=pathsToSearch, verbose=verbose)
 	
 	#darkPaths = STUDY@results$overlap_analysis$'Aberration enriched, not drug targeted'$path_id
 	liableGenes = getGenesFromPaths(pids=darkPaths, STUDY=STUDY)
@@ -530,18 +564,22 @@ addNumberOfPathsTargeted<-function(STUDY, bfbTargDrugData, dtd, significanceColu
 	abPathCount = rep(0, times=length(udrug))
 	names(abPathCount)<-udrug
 	
+	if(is.null(STUDY@results$overlap_analysis)){
+		return(bfbTargDrugData)
+	}
 	#arent the drug selected because they target dark paths?
 	
 	for(d in udrug){
 		if(!is.na(d)){
 
 			geneSet = dtd$geneID[dtd$drugID==d]
+		
 			targpaths = whichPaths(STUDY=STUDY, 
 														 geneList=geneSet,
 														 pathList=STUDY@results$overlap_analysis$'Aberration enriched, not drug targeted'$path_id)
 			darkPathCount[d]=length(targpaths)
 			
-			abPaths = STUDY@results$overlap_analysis$combined_aberrations_summary$pathsummary
+			
 			sigAbPaths = abPaths$path_id[abPaths[,significanceColumn]<0.05]
 			targpaths2 = whichPaths(STUDY=STUDY, 
 														 geneList=geneSet,
