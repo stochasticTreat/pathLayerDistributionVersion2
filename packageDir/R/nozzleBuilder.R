@@ -131,7 +131,7 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
 customSlot<-function( s, sn, sectionDescription, curel ){
 	
 	if(sn == "settings"){
-		
+		cat("Class of settings:",class(curel))
 		if( is.list(curel)&!is.data.frame(curel) ) curel = settingsAsDataFrame( settingsData=curel )
 		
 		curel = checkRowNames( tab=curel )
@@ -142,8 +142,9 @@ customSlot<-function( s, sn, sectionDescription, curel ){
 									 			 yes=sn,
 									 			 no=sectionDescription)[[1]] 
 									 ) # w/ caption
-		
+		print("..")
 		s <- addTo( s, f )
+		print("...")
 		return(s)
 	}else if(sn == "Data_work_up_notes"){
 		
@@ -168,8 +169,18 @@ customSlot<-function( s, sn, sectionDescription, curel ){
 
 Data_work_up_notes_nozzle<-function( r, dwun ){
 	
+	cat("Class dwun 1:", class(dwun),"...\n")
+	
+	if( is.list(dwun)&!is.data.frame(dwun) ){
+		print("converting object class")
+		dwun = listToDf( lst=dwun, namesFirstColumn=TRUE )
+	} 
+	cat("Class dwun 2:", class(dwun),"...\n")
+	
 	if(is.null(dwun)) return(r)
-	if(nrow(dwun)==0) return(r)
+	if(is.list(dwun)){
+		if(length(dwun)==0) return(r)
+	}else	if(nrow(dwun)==0) return(r)
 	
 	s <-newSection("Data work up notes")
 	table2 <- newTable( dwun,
@@ -225,9 +236,9 @@ resultsToNozzle<-function(resSet, resSetName, fname){
 	sectionTitle  = sectionTitles(reslotnames=usedSections)
 	sectionDescription = sectionDescriptionDictionary(reslots=usedSections)
 	#build the report using the reportSections
-	r <- newCustomReport( resSetName )
+	r <- newCustomReport( gsub(x=resSetName, pattern="_", replacement=" ", fixed=TRUE) )
 	
-	handledSlots = c("settings","summarystats")
+	handledSlots = c("summarystats")
 	cat("\nOutputting sections to nozzle:\n")
 	for(sn in usedSections){
 		cat("..",sn, "..")
@@ -257,10 +268,17 @@ resultsToNozzle<-function(resSet, resSetName, fname){
 				print("adding patient sums to section")
 				r <- addTo( r, s )
 			}
-		}else if(sn=="Data_work_up_notes"){
+		}else if( sn=="Data_work_up_notes" ){
 			
-			r <- Data_work_up_notes_nozzle(r=r, dwun=curel)
+			r <- Data_work_up_notes_nozzle( r=r, dwun=curel )
 			
+		}else if( sn == "settings" ){
+			s <- newSection( sectionTitle[[sn]] )
+			s <- customSlot( s=s, 
+											 sn=sn, 
+											 sectionDescription="settings", 
+											 curel=curel )
+			r <- addTo( r, s )
 		}else if( class(curel)%in%c("data.frame","matrix") ){
 			s <- newSection( sectionTitle[[sn]] )
 			s <- addTable( s=s, 
@@ -296,7 +314,6 @@ resultsToNozzle<-function(resSet, resSetName, fname){
 
 resToReport<-function(resSet, resSetName, fname){
 	nres = resultsToNozzle(resSet=resSet, resSetName=resSetName, fname=fname)
-	print(getwd())
 	writeReport( nres, filename=fname )
 }
 
@@ -340,22 +357,23 @@ patientSummaryToNozzleReport<-function(patSum, rootReportName, resSetName){
 	patName = names(patSum)
 	#get the name of the root folder
 	# 	rootFolder = paste0(gsub(pattern=".nozzleReport[,/.\a-zA-Z0-9]*$", replacement="",x=rootReportName, perl=TRUE), "/")
-	# 	rootFolder = dirname(rootReportName)
+	rootFolder = dirname(rootReportName)
 	# 	print(rootFolder)
-	patFolder = paste0("./path_summary_each_patient/",patName)
+	linkText = paste0("./path_summary_each_patient/",patName, "/",patName,".nozzleReport.html")
+	patFolder = paste0(rootFolder,"/path_summary_each_patient/",patName)
 	dir.create(path=patFolder, recursive=TRUE, showWarnings=FALSE)
 	fname = paste0(patFolder,"/",patName,".nozzleReport")
 	print("fname inside patientsummarytonozzlereport():")
 	print(fname)
 	#adjust the title
-	resSetTitle = paste(resSetName,"for patient",patName)
+	resSetTitle = paste(gsub(pattern="_",replacement=" ", x=resSetName),"for patient",patName)
 	#send the summary to the regular resToReport
 	resToReport(resSet=patSum[[patName]], 
 							resSetName=resSetTitle, 
 							fname=fname)
 	#return the file name that the nozzle was saved to
-	fname = paste0(fname, ".html")
-	return(fname)
+
+	return(linkText)
 }
 
 addAllPatientSums<-function( sec, psums, rootReportName, resSetName ){
@@ -370,7 +388,7 @@ addAllPatientSums<-function( sec, psums, rootReportName, resSetName ){
 																						 resSetName=resSetName )
 		#add a new paragraph to the report with a link to the patient summary
 
-		p <- newParagraph(asLink(psumFname))
+		p <- newParagraph(asLink(url=psumFname), paste("Patient",pat,"summary"))
 
 		sec <- addTo( sec, p )
 		
@@ -392,12 +410,12 @@ makeSelectNozzleReport<-function(study){
 	}
 	
 	sections = sections[uin]
+	
 	for(sect in sections){
 		
-		reportName = gsub(x=sect, pattern="_", replacement=" ", fixed=TRUE)
 		fileName = paste0(study@studyMetaData@RootFile,"/results/",sect,"/nozzleSummary.nozzleReport")
 		resToReport(resSet=study@results[[sect]], 
-								resSetName=reportName, 
+								resSetName=sect, 
 								fname=fileName)
 		
 	}
