@@ -46,12 +46,12 @@ nestedListToStudy<-function(res){
 		}
 		print("Getting study object....")
 		#get the study object
-		so = getStudyObject(study.name=res$studyMetaData$studyName, 
+		so = getStudyObject( study.name=res$studyMetaData$studyName, 
 												geneIdentifierType=res$studyMetaData$geneIdentifierType, 
 												path_detail=Path_Detail$new(file=res$studyMetaData$path_file_name),
 												settings=sl,
 												resf=res$results, 
-												rootFolder=res$rootFolder)
+												rootFolder=res$rootFolder )
 		print("got study object.")
 	}else if(length(res)>1){
 		print("opening study saved in old format")
@@ -86,7 +86,7 @@ nestedListToStudy<-function(res){
 #'@param study A Study object to be saved. 
 #'@param path The file path where the study folder should be saved. 
 #'@export
-saveStudy<-function(study, path="./output/"){
+saveStudy<-function(study, path="./output"){
 	# 	setClass("StudyMetaData", representation(paths="list",
 	# 																					 settings="list",
 	# 																					 study.name = "character",
@@ -221,7 +221,7 @@ saveSummary<-function(summ, study_name="", path = "./output"){
 			curdat = summ[[i]]
 			curname = names(summ)[i]
 			cat(" ", curname)
-			if(curname =="settings"){ 
+			if( curname == "settings" ){ 
 				#if settings, then reformat the settings object 
 				#and pass back the refrormatted object (then a list)
 				cat("\nreformatting settings object\n")
