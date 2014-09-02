@@ -49,17 +49,12 @@ clean.biopaxRecords<-function(pwrecord){
 addPathwayImagesWithSelection<-function(study, 
 																				limitCol="hyperg_p_w_FDR", 
 																				limitVal=0.05){
+	
 	study_name = study@studyMetaData@studyName
 	#require(RCytoscape)
 	#require(rBiopaxParser)
 	results = study@results
 	path_detail = study@studyMetaData@paths
-	# 	if(is.null(path_detail$graphite)){
-	# 		results = pathwaysFromBiopax(study)
-	# 
-	# # 		cat("\n!!! sorry, at this time pathway images are only available\nif pathways from the Graphite package are used.")
-	# 		return(results)
-	# 	}
 	
 	abi = grep("aberration|overlap", x=names(results))
 	options = matrix(1:length(abi), dimnames=list(names(results[abi]),"option number"))
@@ -75,10 +70,10 @@ addPathwayImagesWithSelection<-function(study,
 		resSetName = rownames(options)[as.numeric(sel)]
 	}else{
 		readline("\nSorry, could not understand input.\nPress any key to continue.")
-		return(results)
+		
+		return(study)
 	}
 
-		
 	#pull out the needed pathway names
 	
  if( pathsAreFromGraphite(study) ){
@@ -96,17 +91,18 @@ addPathwayImagesWithSelection<-function(study,
 															 sigtest=limitCol, 
 															 siglimit=limitVal)
 		}
+		study@results = results
 		
 	}else	if( fromReactome(study) ){
 	 	
 	 	pathnames = extractPathNames(resSetName=resSetName, study=study, limitCol=limitCol, limitVal=limitVal)
 	 	if(!length(pathnames)) message("No pathways were found!")
-	 	notAvailableBiopax = pathwaysFromBiopax(study=study, pathNames=pathnames, resSetName=resSetName)
+	 	study = pathwaysFromBiopax(study=study, pathNames=pathnames, resSetName=resSetName)
 	 	
 	}
 	
 	#system('/usr/bin/afplay ./reference_data/Submarine.aiff')
-	study@results = results
+
 	return(study)
 }#addPathwayImagesWithSelection()
 
@@ -128,6 +124,31 @@ pathsAreFromGraphite<-function(stud){
 	
 }
 
+chooseOverlapSet<-function(olares){
+	pslots = c("Aberration enriched, not drug targeted",  
+						 "Aberrationally enriched, containing drug targets", 
+						 "Drug targeted, not aberrationally enriched", 
+						 "Paths containing drug-sensitive genes", 
+						 "Enriched for aberration and enriched for sensitive drug targets",
+						 "Aberration enriched, containing sensitive targets")
+	cat("\nFor which set of pathways would you like to create network diagrams?\n ")
+	print(matrix(data=pslots, ncol=1, dimnames=list(1:length(pslots), "Path set description:")))
+	uin = c()
+	while(T){
+		uin = readline("Please enter the number of your selected option: ")
+		uin = as.numeric(uin)
+		if(uin%in%1:length(pslots)) break
+		print("error, try again")
+	}
+	cat("You have selected '",pslots[uin],"'\n")
+	selset = olares[[pslots[uin]]]
+	if( is.data.frame(selset)){
+		selset = selset$path_id
+	}else if( is.matrix(selset) ){
+		selset = selset[,1,drop=TRUE]
+	}
+	return(selset)
+}
 
 #'@title Get names of significant pathways.
 #'@description Extracts path names given a results set name, study and limitCol
@@ -142,6 +163,7 @@ extractPathNames <- function (resSetName, study, limitCol, limitVal, verbose=TRU
 
 		resSet = study@results[[resSetName]]
 		if(resSetName=="overlap_analysis"){
+			pathNames = chooseOverlapSet(olares=resSet)
 			pathNames = resSet$"Aberration enriched, not drug targeted"[resSet$"Aberration enriched, not drug targeted"[,limitCol]<limitVal,1]
 			pathNames = c(resSet$"Aberration enriched, containing sensitive targets", pathNames)
 		}else{
@@ -182,7 +204,6 @@ extractPathNames <- function (resSetName, study, limitCol, limitVal, verbose=TRU
 			}
 		}
 
-		
 		return(pathNames)	
 }
 
@@ -257,6 +278,37 @@ addPathwayImages<-function(results,
 		results = tmpRes
 	}
 	return(results)
+}
+
+test.savePathImageInCytoscape<-function(){
+	
+	load("./savePathImageInCytoscape_input_data.rda", verbose=T)
+	saveres = savePathImageInCytoscape(diagram=diagram, p=p)
+	
+	
+}
+savePathImageInCytoscape<-function(diagram, p){
+	# 	print("inside savePathImageInCytoscape()")
+	# 	save(diagram, p, file="./savePathImageInCytoscape_input_data.rda")
+	imgTmp  = paste0(getwd(),"/output/imageTemp/")
+	
+	dir.create(imgTmp,recursive=T,showWarnings=F)
+	#sanatize pathname
+	clean_p_name = gsub(pattern="[/;:*.~<>]", replacement="_", x=p)
+	#make the image file name
+	imageFileName = paste(clean_p_name,"_path_image.png",sep="")
+	#construct the absolute name that saveImage() needs
+	diagram_fname = paste(imgTmp,imageFileName,sep="")
+	cat("\nSaving pathway diagram to file\n",diagram_fname,"\n\n")
+	saveImage(obj=diagram,
+						image.type="png",
+						file.name=diagram_fname, 
+						scale=2)
+	#so it can be concatenated onto a list
+	retlist  = list()
+	retlist[[clean_p_name]] = diagram_fname
+	# 	return(diagram_fname)
+	return(retlist)
 }
 
 
@@ -816,6 +868,50 @@ biopaxFileFromPathName<-function(){
 	#check if we got it
 	#if we dont have it get it
 }
+
+
+test.fixPathNames<-function(){
+	res = fixPathNames(c('activation of  cell cycle inhibitor p21 '))
+	checkEquals(target='activation of cell cycle inhibitor p21', current=res)
+}
+
+#remove all extraneous white space
+fixPathNames<-function(x){
+	#leading and trailing whitespace
+	x = str_trim(string=x, side="both")
+	x = str_replace_all(string=x, pattern="\\s+", replacement=" ")
+	return(x)
+}
+
+#'@title Pull out human path ids from the reactome.db annotation package
+#'@description Get human path ids from the reactome.db annotation package
+#'@return \code{list}, names are path names, values are db ids.
+#'@import reactome.db 
+#'@import AnnotationDbi
+getHumanPathIds<-function(){
+	library("reactome.db")
+	library("AnnotationDbi")
+	print(class(reactomePATHNAME2ID))
+	cat("pulling the path id list out of the annotation package.....")
+	
+	xx <- AnnotationDbi::as.list(reactomePATHNAME2ID)
+	cat("done\nExtracting human paths...")
+	hpidi = grep(pattern="^Homo sapiens: ", x=names(xx))
+	hx = xx[hpidi]
+	names(hx)<-gsub(pattern="^Homo sapiens: ", replacement="", x=names(hx))
+	cat("done\n")
+	return(hx)
+}
+
+#pathNames = tpids
+test.getReactomeDbIds<-function(){
+	
+	testPathNames = c("Abnormal conversion of 2-oxoglutarate to 2-hydroxyglutarate", "NADPH  regeneration ", "Transcriptional  activation of  cell cycle inhibitor p21")
+	testPathIds = getReactomeDbIds(pathNames=testPathNames)
+	checkEquals(target=c("2978092", "389542",  "69895"), current=testPathIds, msg="Tested 3 path names with some slight formatting issues, ie: too many spaces in the wrong places.")
+	
+}
+
 
 # Copyright 2011 Gabriele Sales <gabriele.sales@unipd.it>
 #
