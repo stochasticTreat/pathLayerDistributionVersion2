@@ -11,6 +11,7 @@ overlapSectionTitles<-function( reslotnames ){
 	sectiondict$"Enriched for aberration and enriched for sensitive drug targets" = "Significantly aberrational and significantly sensitive"
 	sectiondict$"Aberration enriched, containing sensitive targets" = "Significantly aberrational pathways with sensitive targets"
 	sectiondict$"settings" = "Settings used for overlap analysis"
+	sectiondict$overlap_analysis_each_patient ="Individual patientient overlap analyses"
 	sectiondict = sectiondict[ intersect(reslotnames, names(sectiondict)) ]
 	
 	return(sectiondict)
@@ -41,15 +42,16 @@ overlapSectionDescriptionDictionary<-function( reslots ){
 	sectiondesc = list()
 	length(sectiondesc) = length(reslots)
 	names(sectiondesc)<-reslots
-	sectiondict$imageSlots = "Visualizations describing the overlap between aberrational and functionally targeted pathways."
-	sectiondict$"Aberration enriched, not drug targeted" = "Pathways which were found to be aberrational but not targeted by the functional assay (ie. by the drug screen or siRNA)."
-	sectiondict$"Pathway overlaps of genes in aberration enriched, not drug targeted paths" = "Genes found in multiple dark pathawys"
-	sectiondict$"Aberrationally enriched, containing drug targets" = "Pathways found to be significantly aberrational and targeted by the functional assay."
-	sectiondict$"Drug targeted, not aberrationally enriched" = "Pathways which were/are targeted by the functional assay but not significantly aberrational."
-	sectiondict$"Paths containing drug-sensitive genes" = "Pathways containing sensitive targets"
-	sectiondict$"Enriched for aberration and enriched for sensitive drug targets" = "Pathways which are significantly aberrational and significantly sensitive (significance determined by enrichment or other test) "
-	sectiondict$"Aberration enriched, containing sensitive targets" = "Pathways which were found to be significantly aberrational and to contain sensitive targets."
-	sectiondict$"settings" = "Settings used for overlap analysis"
+	sectiondesc$imageSlots = "Visualizations describing the overlap between aberrational and functionally targeted pathways."
+	sectiondesc$"Aberration enriched, not drug targeted" = "Pathways which were found to be aberrational but not targeted by the functional assay (ie. by the drug screen or siRNA)."
+	sectiondesc$"Pathway overlaps of genes in aberration enriched, not drug targeted paths" = "Genes found in multiple dark pathawys"
+	sectiondesc$"Aberrationally enriched, containing drug targets" = "Pathways found to be significantly aberrational and targeted by the functional assay."
+	sectiondesc$"Drug targeted, not aberrationally enriched" = "Pathways which were/are targeted by the functional assay but not significantly aberrational."
+	sectiondesc$"Paths containing drug-sensitive genes" = "Pathways containing sensitive targets"
+	sectiondesc$"Enriched for aberration and enriched for sensitive drug targets" = "Pathways which are significantly aberrational and significantly sensitive (significance determined by enrichment or other test) "
+	sectiondesc$"Aberration enriched, containing sensitive targets" = "Pathways which were found to be significantly aberrational and to contain sensitive targets."
+	sectiondesc$"settings" = "Settings used for overlap analysis"
+	sectiondesc$overlap_analysis_each_patient  = "Overlap analyses for individual patients"
 	return(sectiondesc)
 }
 
@@ -65,6 +67,7 @@ sectionDescriptionDictionary<-function( reslots ){
 	sectiondesc$patientsums = "Number of affected genes for each patient."
 	sectiondesc$genesummary = "Number of cohort patients in which each gene is found to be affected"
 	sectiondesc$active_genes_ea_path = "Affected genes found in each affected pathway"
+	sectiondesc$overlap_analysis_each_patient = "The overlap analysis was run on individual patients. Results can be found by following the links below."
 	return(sectiondesc)
 }
 
@@ -87,7 +90,8 @@ checkRowNames<-function(tab){
 	return(tab)
 }
 
-checkColumnNames<-function(tab){
+checkColumnNames<-function(tab, sn){
+	if( is.null(colnames(tab)) & ncol(tab)==1 ) colnames(tab) <- sn
 	colnames(tab)<-gsub(pattern="_", replacement=" ", x=colnames(tab), fixed=TRUE)
 	return(tab)
 }
@@ -136,12 +140,13 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
 	}
 
 	mtab = checkRowNames(tab=mtab)
-	mtab = checkColumnNames(tab=mtab)
+	mtab = checkColumnNames(tab=mtab, sn=sn)
 	
 	desc = ifelse(test=is.null( sectionDescription[[sn]] ), 
 								yes=sn,
 								no=sectionDescription[[sn]] )[[1]] 
-	
+	print("desc:")
+	print(desc)
 	if(nrow(mtab)!=nrow(tab)) desc = paste(desc, ". Showing",nrow(mtab), "out of", nrow(tab),"rows; see 'GET FULL TABLE' for the full set of rows.")
 	
 	f <- newTable( table=mtab, 
@@ -168,7 +173,7 @@ formatSettingsToNozzleTable<-function( curel, sn, sectionDescription ){
 	if( is.list(curel)&!is.data.frame(curel) ) curel = settingsAsDataFrame( settingsData=curel )
 	
 	curel = checkRowNames( tab=curel )
-	curel = checkColumnNames( tab=curel )
+	curel = checkColumnNames( tab=curel, sn=sn )
 	
 	f <- newTable( table=curel, 
 								 ifelse(test=is.null( sectionDescription ), 
@@ -192,7 +197,7 @@ customSlot<-function( s, sn, sectionDescription, curel ){
 		if( is.list(curel)&!is.data.frame(curel) ) curel = listToDf( lst=curel )
 		
 		curel = checkRowNames( tab=curel )
-		curel = checkColumnNames( tab=curel )
+		curel = checkColumnNames( tab=curel, sn=sn )
 		f <- newTable( table=curel, 
 									 ifelse(test=is.null( sectionDescription ), 
 									 			 yes=sn,
@@ -354,11 +359,13 @@ armResultsToNozzle<-function(resSet, resSetName, fname){
 }
 
 resToReport<-function(resSet, resSetName, fname){
-	if(resSetName=="overlap_analysis"){
+	if( grepl( x=resSetName, pattern="overlap" ) ){
+		cat("\nOverlap analysis found with name '",resSetName,"'\n")
 		nres = overlapAnalysisToNozzle( resSet=resSet, 
 																		resSetName=resSetName, 
 																		fname=fname )
 	}else{
+		cat("\nRegular result set found with name '",resSetName,"'\n")
 		nres = armResultsToNozzle(resSet=resSet, resSetName=resSetName, fname=fname)
 	}
 
@@ -373,9 +380,11 @@ addImageSlots<-function( rs, sectionTitle ){
 	
 	ovi = grep(pattern="overlap_venn_diagram", names(rs))
 	abtarg = grep(pattern="aberrational_and_targeted", names(rs))
+	oviFname = paste0("./imageSlots/",basename(rs[[ovi]]))
+	abtargFname = paste0("./imageSlots/",basename(rs[[abtarg]]))
 	
-	fig1 <- newFigure(file=rs[[ovi]], " The overlap between functionally targeted and aberrational pathways. ")
-	fig2 <- newFigure(file=rs[[abtarg]], " Relation between number of functional targets and degree of aberration in pathways with aberrational genes and targeted genes. ")
+	fig1 <- newFigure(file=oviFname, " The overlap between functionally targeted and aberrational pathways. ")
+	fig2 <- newFigure(file=abtargFname, " Relation between number of functional targets and degree of aberration in pathways with aberrational genes and targeted genes. ")
 	s <- addTo( s, fig1 )
 	s <- addTo( s, fig2 )
 	
@@ -383,7 +392,11 @@ addImageSlots<-function( rs, sectionTitle ){
 	
 	if(length(remainingImages)){
 		for(im in remainingImages){
-			s <- addTo( s, newFigure( file=rs[[im]] ) )
+			curFname = paste0("./imageSlots/",basename(rs[[im]]))
+			capt = gsub(pattern="^graphic",replacement="", x=basename(rs[[im]]))
+			capt = gsub(pattern=".png$",replacement="", x=capt)
+			capt = gsub(pattern="_",replacement=" ", x=capt)
+			s <- addTo( s, newFigure( file=curFname ), capt )
 		}
 	}
 	
@@ -433,7 +446,7 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 						 'Aberration enriched, containing sensitive targets',
 #						 'combined_aberrations_summary',
 #						 'functional_drug_screen_summary',
-#						 'overlap_analysis_each_patient',
+						 'overlap_analysis_each_patient',
 						 'settings'
 # 						 'allPathImages'
 						)
@@ -456,7 +469,6 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 	#build the report using the reportSections
 	r <- newCustomReport( gsub(x=resSetName, pattern="_", replacement=" ", fixed=TRUE) )
 	
-
 	cat("\nOutputting sections to nozzle:\n")
 	for(sn in usedSections){
 		cat("..",sn, "..")
@@ -494,7 +506,7 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 			if( length(resSet[[sn]]) ){
 				s <- newSection( sectionTitle[[sn]] )
 				print("starting patient overlap summaries")
-				s <- addAllPatientOverlapSums( sec=s, 
+				s <- addAllPatientOverlaps( sec=s, 
 																psums=resSet[[sn]], 
 																resSetName=resSetName, 
 																rootReportName=fname )
@@ -558,14 +570,13 @@ patientSummaryToNozzleReport<-function(patSum, rootReportName, resSetName){
 	patName = names(patSum)
 	#get the name of the root folder
 	# 	rootFolder = paste0(gsub(pattern=".nozzleReport[,/.\a-zA-Z0-9]*$", replacement="",x=rootReportName, perl=TRUE), "/")
-	rootFolder = dirname(rootReportName)
+	rootFolder = dirname(rootReportName) #set the folder
 	# 	print(rootFolder)
+	#build the links
 	linkText = paste0("./path_summary_each_patient/",patName, "/",patName,".nozzleReport.html")
 	patFolder = paste0(rootFolder,"/path_summary_each_patient/",patName)
 	dir.create(path=patFolder, recursive=TRUE, showWarnings=FALSE)
 	fname = paste0(patFolder,"/",patName,".nozzleReport")
-	print("fname inside patientsummarytonozzlereport():")
-	print(fname)
 	#adjust the title
 	resSetTitle = paste(gsub(pattern="_",replacement=" ", x=resSetName),"for patient",patName)
 	#send the summary to the regular resToReport
@@ -575,6 +586,55 @@ patientSummaryToNozzleReport<-function(patSum, rootReportName, resSetName){
 	#return the file name that the nozzle was saved to
 
 	return(linkText)
+}
+
+patientOverlapToNozzleReport<-function(patSum, rootReportName, resSetName){
+	
+	#take a patient summary
+	#set the correct target directory
+	#get the name of the patient
+	patName = names(patSum)
+	#get the name of the root folder
+	# 	rootFolder = paste0(gsub(pattern=".nozzleReport[,/.\a-zA-Z0-9]*$", replacement="",x=rootReportName, perl=TRUE), "/")
+	rootFolder = dirname(rootReportName) #set the folder
+	# 	print(rootFolder)
+	#build the links
+	linkText = paste0("./overlap_analysis_each_patient/",patName, "/overlap_analysis/",patName,".nozzleReport.html")
+	patFolder = paste0(rootFolder,"/overlap_analysis_each_patient/",patName,"/overlap_analysis")
+	dir.create(path=patFolder, recursive=TRUE, showWarnings=FALSE)
+	fname = paste0(patFolder,"/",patName,".nozzleReport")
+	#adjust the title
+	resSetTitle = paste(gsub(pattern="_",replacement=" ", x=resSetName),"for patient",patName)
+	#send the summary to the regular resToReport
+	resToReport( resSet=patSum[[patName]]$overlap_analysis, 
+							resSetName=resSetTitle, 
+							fname=fname )
+	#return the file name that the nozzle was saved to
+	
+	return(linkText)
+	
+}
+
+addAllPatientOverlaps<-function( sec, psums, rootReportName, resSetName ){
+	
+	patnames = names(psums)
+	
+	for(pat in patnames){
+		
+		print(pat)
+		#make the patient summary
+		psumFname = patientOverlapToNozzleReport( patSum=psums[pat], 
+																							rootReportName=rootReportName, 
+																							resSetName=resSetName )
+		#add a new paragraph to the report with a link to the patient summary
+		
+		p <- newParagraph( paste(" Patient",pat,"summary"), asLink(url=psumFname, " Click this link to see patient overlap summary. "))
+		
+		sec <- addTo( sec, p )
+		
+	}
+	
+	return(sec)
 }
 
 addAllPatientSums<-function( sec, psums, rootReportName, resSetName ){
