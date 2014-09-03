@@ -1,4 +1,22 @@
 
+overlapSectionTitles<-function( reslotnames ){
+	
+	sectiondict = list()
+	sectiondict$imageSlots = "Data visualizations"
+	sectiondict$"Aberration enriched, not drug targeted" = "Dark pathway summary"
+	sectiondict$"Pathway overlaps of genes in aberration enriched, not drug targeted paths" = "Genes overlapping between dark pathways"
+	sectiondict$"Aberrationally enriched, containing drug targets" = "Significantly aberrational and functionally targeted"
+	sectiondict$"Drug targeted, not aberrationally enriched" = "Drug targeted, not significantly aberrational"
+	sectiondict$"Paths containing drug-sensitive genes" = "Paths containing sensitive targets"
+	sectiondict$"Enriched for aberration and enriched for sensitive drug targets" = "Significantly aberrational and significantly sensitive"
+	sectiondict$"Aberration enriched, containing sensitive targets" = "Significantly aberrational pathways with sensitive targets"
+	sectiondict$"settings" = "Settings used for overlap analysis"
+	sectiondict = sectiondict[ intersect(reslotnames, names(sectiondict)) ]
+	
+	return(sectiondict)
+	
+}
+
 sectionTitles<-function( reslotnames ){
 	sectiondict = list()
 	sectiondict$settings = "Settings"
@@ -16,6 +34,23 @@ sectionTitles<-function( reslotnames ){
 	sectiondict = sectiondict[ intersect(reslotnames, names(sectiondict)) ]
 	
 	return(sectiondict)
+}
+
+overlapSectionDescriptionDictionary<-function( reslots ){
+	
+	sectiondesc = list()
+	length(sectiondesc) = length(reslots)
+	names(sectiondesc)<-reslots
+	sectiondict$imageSlots = "Visualizations describing the overlap between aberrational and functionally targeted pathways."
+	sectiondict$"Aberration enriched, not drug targeted" = "Pathways which were found to be aberrational but not targeted by the functional assay (ie. by the drug screen or siRNA)."
+	sectiondict$"Pathway overlaps of genes in aberration enriched, not drug targeted paths" = "Genes found in multiple dark pathawys"
+	sectiondict$"Aberrationally enriched, containing drug targets" = "Pathways found to be significantly aberrational and targeted by the functional assay."
+	sectiondict$"Drug targeted, not aberrationally enriched" = "Pathways which were/are targeted by the functional assay but not significantly aberrational."
+	sectiondict$"Paths containing drug-sensitive genes" = "Pathways containing sensitive targets"
+	sectiondict$"Enriched for aberration and enriched for sensitive drug targets" = "Pathways which are significantly aberrational and significantly sensitive (significance determined by enrichment or other test) "
+	sectiondict$"Aberration enriched, containing sensitive targets" = "Pathways which were found to be significantly aberrational and to contain sensitive targets."
+	sectiondict$"settings" = "Settings used for overlap analysis"
+	return(sectiondesc)
 }
 
 sectionDescriptionDictionary<-function( reslots ){
@@ -80,7 +115,7 @@ trimTable<-function( tab, numRows=50, siglim=0.05, sigcol=c("hyperg_p_w_FDR") ){
 		
 	}else if(sigcol%in%colnames(tab)){ #if more than 20 rows and sigcol is there, show all sig, min 20
 		
-		nshow = max(numRows, sum(tab[,sigcol]<siglim))
+		nshow = max(numRows, sum(tab[,sigcol]<siglim, na.rm=T))
 		return(tab[1:min(nshow, nrow(tab)),,drop=F])
 	}
 	#if nothing else, only return rows 1-20
@@ -128,23 +163,29 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
 	return(s)
 }
 
+formatSettingsToNozzleTable<-function( curel, sn, sectionDescription ){
+	
+	if( is.list(curel)&!is.data.frame(curel) ) curel = settingsAsDataFrame( settingsData=curel )
+	
+	curel = checkRowNames( tab=curel )
+	curel = checkColumnNames( tab=curel )
+	
+	f <- newTable( table=curel, 
+								 ifelse(test=is.null( sectionDescription ), 
+								 			 yes=sn,
+								 			 no=sectionDescription)[[1]] 
+	) # w/ caption
+	return(f)
+}
+
 customSlot<-function( s, sn, sectionDescription, curel ){
 	
 	if(sn == "settings"){
-		cat("Class of settings:",class(curel))
-		if( is.list(curel)&!is.data.frame(curel) ) curel = settingsAsDataFrame( settingsData=curel )
-		
-		curel = checkRowNames( tab=curel )
-		curel = checkColumnNames( tab=curel )
-		
-		f <- newTable( table=curel, 
-									 ifelse(test=is.null( sectionDescription ), 
-									 			 yes=sn,
-									 			 no=sectionDescription)[[1]] 
-									 ) # w/ caption
-		print("..")
-		s <- addTo( s, f )
-		print("...")
+
+		st <- formatSettingsToNozzleTable( curel=curel, sn=sn, sectionDescription=sectionDescription )
+
+		s <- addTo( s, st )
+
 		return(s)
 	}else if(sn == "Data_work_up_notes"){
 		
@@ -208,7 +249,7 @@ Data_work_up_notes_nozzle<-function( r, dwun ){
 	return(r)
 }
 
-resultsToNozzle<-function(resSet, resSetName, fname){
+armResultsToNozzle<-function(resSet, resSetName, fname){
 	
 	if(!require( "Nozzle.R1" )){
 		install.packages("Nozzle.R1")
@@ -313,18 +354,178 @@ resultsToNozzle<-function(resSet, resSetName, fname){
 }
 
 resToReport<-function(resSet, resSetName, fname){
-	nres = resultsToNozzle(resSet=resSet, resSetName=resSetName, fname=fname)
+	if(resSetName=="overlap_analysis"){
+		nres = overlapAnalysisToNozzle( resSet=resSet, 
+																		resSetName=resSetName, 
+																		fname=fname )
+	}else{
+		nres = armResultsToNozzle(resSet=resSet, resSetName=resSetName, fname=fname)
+	}
+
 	writeReport( nres, filename=fname )
 }
 
-# getStudyFolderName<-function(stud){
-# 	folderName = stud@studyMetaData@studyName
-# 	#check if it's a test
-# 	if(!grepl(pattern="^test", x=studName)){
-# 		folderName = paste0("study_", folderName)
-# 	}
-# 	return(folderName)
-# }
+
+addImageSlots<-function( rs, sectionTitle ){
+	
+	s <- newSection( sectionTitle )
+	print("starting patient summaries")
+	
+	ovi = grep(pattern="overlap_venn_diagram", names(rs))
+	abtarg = grep(pattern="aberrational_and_targeted", names(rs))
+	
+	fig1 <- newFigure(file=rs[[ovi]], " The overlap between functionally targeted and aberrational pathways. ")
+	fig2 <- newFigure(file=rs[[abtarg]], " Relation between number of functional targets and degree of aberration in pathways with aberrational genes and targeted genes. ")
+	s <- addTo( s, fig1 )
+	s <- addTo( s, fig2 )
+	
+	remainingImages <- setdiff(1:length(rs), c(ovi, abtarg))
+	
+	if(length(remainingImages)){
+		for(im in remainingImages){
+			s <- addTo( s, newFigure( file=rs[[im]] ) )
+		}
+	}
+	
+	return(s)
+	
+}
+
+overlapSettings<-function( curel, s ){
+	
+	for(cs in names(curel)){
+		stitle = gsub(pattern="_", replacement=" ", x=cs)
+		ss<-newSubSection( stitle )
+		st <- formatSettingsToNozzleTable( curel=curel[[cs]], sn=stitle, sectionDescription=NULL )
+		ss <- addTo( ss, st )
+		s <- addTo( s, ss )
+	}
+	
+	return(s)
+}
+
+overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
+	
+	if(!require( "Nozzle.R1" )){
+		install.packages("Nozzle.R1")
+		library("Nozzle.R1")
+	}
+	# 	[1] "list"
+	# 	[1] "data.frame"
+	# 	[1] "data.frame"
+	# 	[1] "data.frame"
+	# 	[1] "data.frame"
+	# 	[1] "data.frame"
+	# 	[1] "matrix"
+	# 	[1] "matrix"
+	# 	[1] "list"
+	# 	[1] "list"
+	# 	[1] "list"
+	# 	[1] "list"
+	# 	[1] "list"
+	sorder = c('imageSlots',
+						 'Aberration enriched, not drug targeted',
+						 'Pathway overlaps of genes in aberration enriched, not drug targeted paths',
+						 'Aberrationally enriched, containing drug targets',
+						 'Drug targeted, not aberrationally enriched',
+						 'Paths containing drug-sensitive genes',
+						 'Enriched for aberration and enriched for sensitive drug targets',						 
+						 'Aberration enriched, containing sensitive targets',
+#						 'combined_aberrations_summary',
+#						 'functional_drug_screen_summary',
+#						 'overlap_analysis_each_patient',
+						 'settings'
+# 						 'allPathImages'
+						)
+	#extract out the sections 
+	dfslots = c('Aberration enriched, not drug targeted',
+							'Pathway overlaps of genes in aberration enriched, not drug targeted paths',
+							'Aberrationally enriched, containing drug targets',
+							'Drug targeted, not aberrationally enriched',
+							'Paths containing drug-sensitive genes',
+							'Enriched for aberration and enriched for sensitive drug targets',						 
+							'Aberration enriched, containing sensitive targets')
+
+	dfileSections = setdiff(names(resSet), sorder)
+	cat("Not including these sections:\n",dfileSections, "\n")
+	missingSections = setdiff(sorder, names(resSet))
+	usedSections  = intersect(sorder, names(resSet))
+	
+	sectionTitle  = overlapSectionTitles(reslotnames=usedSections)
+	sectionDescription = overlapSectionDescriptionDictionary(reslots=usedSections)
+	#build the report using the reportSections
+	r <- newCustomReport( gsub(x=resSetName, pattern="_", replacement=" ", fixed=TRUE) )
+	
+
+	cat("\nOutputting sections to nozzle:\n")
+	for(sn in usedSections){
+		cat("..",sn, "..")
+		
+		curel = resSet[[sn]]
+		
+		if( sn=="imageSlots" ){
+			if( length(resSet[[sn]]) ){
+				s <- addImageSlots( rs = resSet[[sn]], sectionTitle = sectionTitle[[sn]] )
+				r <- addTo( r, s )
+			}
+		}else if( sn%in%dfslots ){
+			
+			s <- newSection( sectionTitle[[sn]] )
+			s <- addTable( s=s, 
+										 tab=curel, 
+										 sectionDescription=sectionDescription, 
+										 sn=sn )
+			r <-addTo( r, s )
+			
+		}else if( sn == "settings" ){
+			
+			s <- newSection( sectionTitle[[sn]] )
+			s <- overlapSettings( curel, s )
+			r <- addTo( r, s )
+			
+		}else if( class(curel)%in%c("data.frame","matrix") ){
+			s <- newSection( sectionTitle[[sn]] )
+			s <- addTable( s=s, 
+										 tab=curel, 
+										 sectionDescription=sectionDescription, 
+										 sn=sn )
+			r <-addTo( r, s )
+		}else if( sn=="overlap_analysis_each_patient" ){
+			if( length(resSet[[sn]]) ){
+				s <- newSection( sectionTitle[[sn]] )
+				print("starting patient overlap summaries")
+				s <- addAllPatientOverlapSums( sec=s, 
+																psums=resSet[[sn]], 
+																resSetName=resSetName, 
+																rootReportName=fname )
+				print("adding patient sums to section")
+				r <- addTo( r, s )
+			}
+		}else if (class(curel)=="character"){
+			s <- newSection( sectionTitle[[sn]] )
+			
+			if(length(curel)>1){
+				cat(curel)
+				lst = newList(isNumbered=TRUE)
+				for(li in curel) lst <- addTo( lst, newParagraph(li) )
+				s <- addTo( s, lst )
+			}else{
+				p <- newParagraph( curel[1] )
+				s <- addTo( s, p )
+			}
+			r <-addTo( r, s )
+			
+		}else{
+			s <- newSection( sectionTitle[[sn]] )
+			p <- newParagraph( paste("Data type not yet supported: ",class(curel)) )
+			s <- addTo( s, p )
+			r <-addTo( r, s )
+		}
+		
+	}
+	#writeReport( r, filename="nozzleTest" );
+	return(r)
+}
 
 #adapter for normal results sets to be transformed into a nozzle report
 nozzlesToFileStructure<-function(study, armName, nozzleTitle=""){
@@ -388,7 +589,7 @@ addAllPatientSums<-function( sec, psums, rootReportName, resSetName ){
 																						 resSetName=resSetName )
 		#add a new paragraph to the report with a link to the patient summary
 
-		p <- newParagraph(asLink(url=psumFname), paste("Patient",pat,"summary"))
+		p <- newParagraph( paste(" Patient",pat,"summary"), asLink(url=psumFname, " Click this link to see patient summary. "))
 
 		sec <- addTo( sec, p )
 		
@@ -399,11 +600,10 @@ addAllPatientSums<-function( sec, psums, rootReportName, resSetName ){
 
 makeSelectNozzleReport<-function(study){
 	
-	
 	sections = names(study@results)
 	while(T){
 		print(matrix(data=sections, ncol=1, dimnames=list(1:length(sections), "Results ready for output")))
-		uin = readline(prompt="Which data set(s) would you like to build (a) nozzle report for?\n(please enter the numbers sepparated by a space)\n")
+		uin = readline(prompt="Which data set(s) would you like to build (a) nozzle report(s) for?\n(please enter the numbers sepparated by a space)\n")
 		uin  = as.numeric(strsplit(x=uin, split=" ")[[1]])
 		if( !sum(!uin%in%1:length(sections)) ) break
 		message("There was an error, please try your input again.")
