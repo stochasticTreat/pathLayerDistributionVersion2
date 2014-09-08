@@ -127,7 +127,7 @@ trimTable<-function( tab, numRows=50, siglim=0.05, sigcol=c("hyperg_p_w_FDR") ){
 }
 
 
-addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
+addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE, resSet=NULL ){
 
 	#check to make sure there is actually data in the table
 	if( sum(dim(tab)==c(0,0)) ){
@@ -139,8 +139,8 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
 		mtab  = trimTable( tab=tab, siglim=0.05, sigcol=c("hyperg_p_w_FDR"))
 	}
 
-	mtab = checkRowNames(tab=mtab)
-	mtab = checkColumnNames(tab=mtab, sn=sn)
+	mtab = checkRowNames( tab=mtab )
+	mtab = checkColumnNames( tab=mtab, sn=sn )
 	
 	desc = ifelse(test=is.null( sectionDescription[[sn]] ), 
 								yes=sn,
@@ -153,7 +153,9 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
 								 desc, 
 								 significantDigits=5) # w/ caption
 	
-	if(nrow(mtab)!=nrow(tab)){
+	f <- addPathDiagrams( tab=tab, sn=sn, ntab=f, resSet=resSet )
+	
+	if( nrow(mtab) != nrow(tab) ){
 		
 		cat(".external table needed.")
 		tfname = paste0("./",sn,".txt")
@@ -166,6 +168,51 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE ){
 	s <- addTo( s, f )
 	
 	return(s)
+}
+
+pathSlots<-function(){
+	
+	pslots = c("pathsummary",
+						 "Aberration enriched, not drug targeted",
+						 "Aberrationally enriched, containing drug targets",
+						 "Drug targeted, not aberrationally enriched",
+						 "Paths containing drug-sensitive genes",
+						 "Enriched for aberration and enriched for sensitive drug targets",
+						 "Aberration enriched, containing sensitive targets"
+						 )
+	return(pslots)
+}
+
+addPathDiagrams<-function( tab, sn, ntab, resSet ){
+	
+	if( !sn%in%pathSlots() | !length(resSet$allPathImages) | !nrow(tab) ){#if the slot does't contain pathways, return the nozzle table element. 
+		return(ntab)
+	}
+	
+	pdict = resSet$allPathImages
+	
+	pidcol = max(1, grep( pattern="path id", x=colnames(ntab$table) ) )
+	wantedPaths = ntab$table[,pidcol]
+	wantedCleanPNames = gsub(pattern="[/;:*.~<>]", replacement="_", x=wantedPaths) #sanatize pathname
+# 	wantedImageFileNames = paste(wantedCleanPNames,"_path_image2.png",sep="") #make the image file name
+	
+	for ( i in 1:nrow(ntab$table) )
+	{
+		cat("row number,",i," ")
+		#check for path diagram
+		pname = wantedCleanPNames[i]
+		if( pname%in%names(pdict) ){
+			cat("Found diagram for path '",pname,"'\n")
+			cur = paste0("./allPathImages/", basename( pdict[[pname]] ) )
+			resultsContent <- newFigure( cur )
+			result1 <- addTo( newResult( "Pathway diagram" ),
+												addTo( newSection( ntab$table[i,pidcol] ),  resultsContent ) );
+		}else{
+				result1 <- newResult( "" ) ;
+		}
+		ntab <- addTo( ntab, result1, row=i, column=pidcol )
+	}
+	return(ntab)
 }
 
 formatSettingsToNozzleTable<-function( curel, sn, sectionDescription ){
@@ -237,7 +284,6 @@ Data_work_up_notes_nozzle<-function( r, dwun ){
 		cur = dwun[i,2]
 		if ( grepl(pattern=".txt$|.png$", x=cur) )
 		{	
-			
 			if(grepl(pattern=".png", x=cur)) resultsContent <- newFigure( basename(cur) )
 			if(grepl(pattern=".txt", x=cur)) resultsContent <- newTable( "Click link to download table", file=basename(cur) )
 			result1 <- addTo( newResult( "Click to see" ),
@@ -284,14 +330,14 @@ armResultsToNozzle<-function(resSet, resSetName, fname){
 	#build the report using the reportSections
 	r <- newCustomReport( gsub(x=resSetName, pattern="_", replacement=" ", fixed=TRUE) )
 	
-	handledSlots = c("summarystats")
+
 	cat("\nOutputting sections to nozzle:\n")
 	for(sn in usedSections){
 		cat("..",sn, "..")
 
 		curel = resSet[[sn]]
 		
-		if( sn%in%handledSlots ){
+		if( sn=="summarystats" ){
 			s <- newSection( sectionTitle[[sn]] )
 			
 			if(sn=="active_genes_not_in_paths"){
@@ -301,7 +347,8 @@ armResultsToNozzle<-function(resSet, resSetName, fname){
 										 tab=curel, 
 										 sectionDescription=sectionDescription, 
 										 sn=sn, 
-										 sortAndTrim=FALSE )
+										 sortAndTrim=FALSE, 
+										 resSet=resSet )
 			r <-addTo( r, s )
 		}else if( sn=="path_summary_each_patient" ){
 			if( length(resSet[[sn]]) ){
@@ -325,12 +372,14 @@ armResultsToNozzle<-function(resSet, resSetName, fname){
 											 sectionDescription="settings", 
 											 curel=curel )
 			r <- addTo( r, s )
+			cat("added settings..\n")
 		}else if( class(curel)%in%c("data.frame","matrix") ){
 			s <- newSection( sectionTitle[[sn]] )
 			s <- addTable( s=s, 
 										 tab=curel, 
 										 sectionDescription=sectionDescription, 
-										 sn=sn )
+										 sn=sn, 
+										 resSet=resSet )
 			r <-addTo( r, s )
 		}else if (class(curel)=="character"){
 			s <- newSection( sectionTitle[[sn]] )
@@ -352,13 +401,15 @@ armResultsToNozzle<-function(resSet, resSetName, fname){
 			s <- addTo( s, p )
 			r <-addTo( r, s )
 		}
-		
+		cat("*")
 	}
+	cat("\nAdded all\n")
 	#writeReport( r, filename="nozzleTest" );
 	return(r)
 }
 
 resToReport<-function(resSet, resSetName, fname){
+	
 	if( grepl( x=resSetName, pattern="overlap" ) ){
 		cat("\nOverlap analysis found with name '",resSetName,"'\n")
 		nres = overlapAnalysisToNozzle( resSet=resSet, 
@@ -369,19 +420,21 @@ resToReport<-function(resSet, resSetName, fname){
 		nres = armResultsToNozzle(resSet=resSet, resSetName=resSetName, fname=fname)
 	}
 
-	writeReport( nres, filename=fname )
+	writeReport( report=nres, filename=fname )
 }
 
 
 addImageSlots<-function( rs, sectionTitle ){
 	
 	s <- newSection( sectionTitle )
-	print("starting patient summaries")
+	rsnames = names(rs)
+	rs = as.vector(rs, mode="character")
+	names(rs)<-rsnames
 	
 	ovi = grep(pattern="overlap_venn_diagram", names(rs))
 	abtarg = grep(pattern="aberrational_and_targeted", names(rs))
-	oviFname = paste0("./imageSlots/",basename(rs[[ovi]]))
-	abtargFname = paste0("./imageSlots/",basename(rs[[abtarg]]))
+	oviFname = paste0("./imageSlots/", basename( rs[ovi] ) )
+	abtargFname = paste0( "./imageSlots/", basename( rs[abtarg] ) )
 	
 	fig1 <- newFigure(file=oviFname, " The overlap between functionally targeted and aberrational pathways. ")
 	fig2 <- newFigure(file=abtargFname, " Relation between number of functional targets and degree of aberration in pathways with aberrational genes and targeted genes. ")
@@ -436,7 +489,8 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 	# 	[1] "list"
 	# 	[1] "list"
 	# 	[1] "list"
-	sorder = c('imageSlots',
+	sorder = c(
+# 		'imageSlots',
 						 'Aberration enriched, not drug targeted',
 						 'Pathway overlaps of genes in aberration enriched, not drug targeted paths',
 						 'Aberrationally enriched, containing drug targets',
@@ -471,7 +525,7 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 	
 	cat("\nOutputting sections to nozzle:\n")
 	for(sn in usedSections){
-		cat("..",sn, "..")
+		cat("\nSection:",sn, "..\n")
 		
 		curel = resSet[[sn]]
 		
@@ -486,7 +540,8 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 			s <- addTable( s=s, 
 										 tab=curel, 
 										 sectionDescription=sectionDescription, 
-										 sn=sn )
+										 sn=sn, 
+										 resSet=resSet )
 			r <-addTo( r, s )
 			
 		}else if( sn == "settings" ){
@@ -500,7 +555,8 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 			s <- addTable( s=s, 
 										 tab=curel, 
 										 sectionDescription=sectionDescription, 
-										 sn=sn )
+										 sn=sn, 
+										 resSet=resSet )
 			r <-addTo( r, s )
 		}else if( sn=="overlap_analysis_each_patient" ){
 			if( length(resSet[[sn]]) ){
@@ -532,9 +588,9 @@ overlapAnalysisToNozzle<-function( resSet, resSetName, fname ){
 			p <- newParagraph( paste("Data type not yet supported: ",class(curel)) )
 			s <- addTo( s, p )
 			r <-addTo( r, s )
-		}
-		
+		}#for
 	}
+	cat("\nAll sections written...\n")
 	#writeReport( r, filename="nozzleTest" );
 	return(r)
 }
@@ -674,9 +730,9 @@ makeSelectNozzleReport<-function(study){
 	for(sect in sections){
 		
 		fileName = paste0(study@studyMetaData@RootFile,"/results/",sect,"/nozzleSummary.nozzleReport")
-		resToReport(resSet=study@results[[sect]], 
+		resToReport( resSet=study@results[[sect]], 
 								resSetName=sect, 
-								fname=fileName)
+								fname=fileName )
 		
 	}
 	
