@@ -14,7 +14,8 @@ roxygenize(package.dir="/Users/samhiggins2001_worldperks/tprog/distribution/path
 # cd ~/tprog/distribution/pathLayerDistributionVersion2
 
 # install.packages("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/packageDir_0.1.tar.gz", repos = NULL, type = "source")
-
+library("rBiopaxParser")
+library("stringr")
 # devtools::install("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/packageDir")
 library("packageDir")
 STUDY = allInteractiveMainFunction()
