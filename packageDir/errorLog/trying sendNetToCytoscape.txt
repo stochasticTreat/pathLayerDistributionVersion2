@@ -1,0 +1,11 @@
+time 2014-09-08 13:47:23
+2014-09-08
+name 2014-09-08 13:47:23
+trying sendNetToCytoscape
+errorText 2014-09-08 13:47:23
+Error : XML content does not seem to be XML, nor to identify a file name './reference_data/paths/biopax/.owl'
+
+pathName 2014-09-08 13:47:23
+NA
+pathFileName 2014-09-08 13:47:23
+./reference_data/paths/biopax/.owl
