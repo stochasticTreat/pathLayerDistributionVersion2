@@ -211,7 +211,8 @@ genesNotInPath<-function(pname, study, w){
 addToStyle<-function(style, geneNames, value){
 	
 	style$names = c(style$names, geneNames)
-	if(length(value)==1){style$colors = c(style$colors, rep(value, times=length(geneNames)))
+	if(length(value)==1){
+		style$colors = c(style$colors, rep(value, times=length(geneNames)) )						 
 	}else if(length(value)==length(geneNames)){
 		style$colors = c(style$colors, value)
 	}else{
@@ -223,20 +224,23 @@ addToStyle<-function(style, geneNames, value){
 
 setAberrationDataStyles<-function(pname, resSetNombre,
 																	study, w, resSet, 
-																	normalProteinColor="#4aa7ff",
-																	notInPathColor="#F0F8FF",
-																	abColor = "#fcff00", 
-																	defaultColor="#686868"){ #default color will be equal to the "dark" color
-	print("Setting styles for aberration data")
+																	normalProteinColor="#4aa7ff", # blue
+																	notInPathColor="#F0F8FF", # off white/bluish
+																	abColor = "#fcff00", #yellow
+																	defaultColor="#686868"){ #grey #default color will be equal to the "dark" color
+	cat("\nSetting styles for aberration data")
 	style = list()
 	style[["names"]] = c()#for readability
 	style[["colors"]] = c()#for readability
 	
-# 	resSet = study@results[[resSetNombre]]
+	# 	resSet = study@results[[resSetNombre]]
 	nodesInGraph = noa(graph=w@graph, node.attribute.name="label")
 	#### Assign the not-in-path color
 	nipprots = genesNotInPath(pname=pname, study=study, w=w)
 	names(nipprots)<-NULL
+	
+	inPathProts = setdiff(nodesInGraph, nipprots)
+	
 	#add to the color vector
 	style = addToStyle(style=style, geneNames=nipprots, value=notInPathColor)
 
@@ -248,14 +252,15 @@ setAberrationDataStyles<-function(pname, resSetNombre,
 	style=addToStyle(style=style, geneNames=abInGraph, value=abColor)
 	
 	#### check if there is a coverage issue to handle
-	if(!is.null(resSet$coverage_summary$genesummary)){
+	if( !is.null(resSet$coverage_summary$genesummary) ){
 		warning("\nunit test the coverage coloration\n")
 		#if there is a coverage issue, find the set difference between the covered
 		#nodes and the nodes already in the nameVector (abInGraph?) these will get the
 		#"normalProteinColor"
-		coveredGenes = resSet$coverage_summary$genesummary
+		coveredGenes = rownames(resSet$coverage_summary$genesummary)
 		coveredNormal = setdiff(coveredGenes, abInGraph)
-		style=addToStyle(style=style, geneNames=coveredNormal, value=normalProteinColor)
+		coveredNormalInGraph = intersect(nodesInGraph, coveredNormal)
+		style=addToStyle(style=style, geneNames=coveredNormalInGraph, value=normalProteinColor)
 	}else{#if there's no coverage issue, assign all remaining as normal
 		#### Assign the color for the normal, non-ab proteins
 		#get the names of the proteins in the path
@@ -263,7 +268,7 @@ setAberrationDataStyles<-function(pname, resSetNombre,
 		normalGenes = setdiff(x=pgenes, y=style$names)
 		style=addToStyle(style=style, geneNames=normalGenes, value=normalProteinColor)
 	}
-	
+	cat("..setting node color rule")
 	#now send the colors to the graph
 	setNodeColorRule(default.color=defaultColor, 
 									 mode='lookup',
@@ -271,6 +276,7 @@ setAberrationDataStyles<-function(pname, resSetNombre,
 									 control.points=style$names,
 									 node.attribute.name="label",
 									 obj=w)
+	cat("styles for aberration data set.\n")
 }
 
 setFunctionalDataStyle<-function(pname, study, w, resSet, resSetNombre,
@@ -379,7 +385,8 @@ setBiologicalDataStyles<-function(pname,
 	if(grepl(x=resSetName, pattern="aberration", ignore.case=T)){
 		print("found aberration data")
 		setAberrationDataStyles(pname=pname, 
-														study=study, w=w, 
+														study=study, 
+														w=w, 
 														resSet = studsub, 
 														resSetNombre = resSetName)
 			
@@ -1008,6 +1015,7 @@ pathwaysFromBiopax<-function(study, pathNames, resSetName){
 	allPathImages = list()
 	#interface with cytoscape
 	for(i in 1:length(bpfnames)){
+		cat("\nPathway",i,"of",length(bpfnames),":\n",names(bpfnames)[i],"\n")
 		# 		bioPaxToCytoscape(fname=bpfnames[i], pathName=names(bpfnames)[i])
 		w = try(sendNetToCytoscape(fname=bpfnames[i], 
 															 pathname=names(bpfnames)[i],#paste(names(bpfnames)[i],": from R overlap analysis"),
