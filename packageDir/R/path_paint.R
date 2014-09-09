@@ -877,6 +877,7 @@ test.fixPathNames<-function(){
 
 #remove all extraneous white space
 fixPathNames<-function(x){
+	library("stringr")
 	#leading and trailing whitespace
 	x = str_trim(string=x, side="both")
 	x = str_replace_all(string=x, pattern="\\s+", replacement=" ")
