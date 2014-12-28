@@ -134,6 +134,10 @@ addTable<-function( s, tab, sectionDescription, sn, sortAndTrim=TRUE, resSet=NUL
 		s <- addTo( s, newParagraph("The table is empty") )
 		return(s)
 	} 
+	if( is.vector(tab) & class(tab)=="character" ){
+		s <- addTo( s, newParagraph(tab) )
+		return(s)
+	} 
 	mtab = tab
 	if(sortAndTrim){
 		mtab  = trimTable( tab=tab, siglim=0.05, sigcol=c("hyperg_p_w_FDR"))
@@ -270,10 +274,12 @@ Data_work_up_notes_nozzle<-function( r, dwun ){
 	} 
 	cat("Class dwun 2:", class(dwun),"...\n")
 	
-	if(is.null(dwun)) return(r)
-	if(is.list(dwun)){
-		if(length(dwun)==0) return(r)
-	}else	if(nrow(dwun)==0) return(r)
+	if( is.null(dwun) ) return(r)
+	if( is.list(dwun) ){
+		if( length(dwun)==0 ) return(r)
+	}else	if( nrow(dwun)==0 ) return(r)
+	
+	cat("Number of rows in the data work up notes:",nrow(dwun),"\n")
 	
 	s <-newSection("Data work up notes")
 	table2 <- newTable( dwun,
@@ -281,11 +287,12 @@ Data_work_up_notes_nozzle<-function( r, dwun ){
 	
 	for ( i in 1:nrow(dwun) )
 	{
-		cur = dwun[i,2]
+		cur = as.character(dwun[i,2])
+		
 		if ( grepl(pattern=".txt$|.png$", x=cur) )
 		{	
-			if(grepl(pattern=".png", x=cur)) resultsContent <- newFigure( basename(cur) )
-			if(grepl(pattern=".txt", x=cur)) resultsContent <- newTable( "Click link to download table", file=basename(cur) )
+			if( grepl(pattern=".png", x=cur) ) resultsContent <- newFigure( basename(cur) )
+			if( grepl(pattern=".txt", x=cur) ) resultsContent <- newTable( "Click link to download table", file=basename(cur) )
 			result1 <- addTo( newResult( "Click to see" ),
 												addTo( newSection( dwun[i,1] ),  resultsContent ) );
 		}
@@ -333,7 +340,7 @@ armResultsToNozzle<-function(resSet, resSetName, fname){
 
 	cat("\nOutputting sections to nozzle:\n")
 	for(sn in usedSections){
-		cat("..",sn, "..")
+		cat(".. adding",sn, "..")
 
 		curel = resSet[[sn]]
 		
@@ -676,7 +683,7 @@ addAllPatientOverlaps<-function( sec, psums, rootReportName, resSetName ){
 	patnames = names(psums)
 	
 	for(pat in patnames){
-		
+		cat("\nPatient:")
 		print(pat)
 		#make the patient summary
 		psumFname = patientOverlapToNozzleReport( patSum=psums[pat], 
