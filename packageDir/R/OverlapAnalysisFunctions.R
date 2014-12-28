@@ -124,7 +124,7 @@ abDrugOverlapAnalysis<-function(study,
 		if(settings$.text%in%c("a","d")) break
 		print("Sorry, your input was not understood, please try again.")
 	}
-	if(settings$.text=="d"){
+	if( settings$.text=="d" ){
 		settings_full$defaultSummaryTable = getDefaultSettings()$defaultSummaryTable
 		settings$interactive = F
 	}else{
@@ -156,7 +156,7 @@ selectOverlapType<-function(ola, study){
 	
 	matched = length(overlapPatients)>0 #if there are overlap patients, it's assumed to be a matched sample
 	
-	if(matched){
+	if( matched ){
 		#1: cohort, matched
 		#limit cohort
 		ola = runMatchedCohort(overlapPatients=overlapPatients, ola=ola, study=study)
@@ -169,7 +169,7 @@ selectOverlapType<-function(ola, study){
 		
 	}
 	
-	if(ola$runEachPatient){#if the overlap analysis should be run for each patient
+	if( ola$runEachPatient ){#if the overlap analysis should be run for each patient
 		
 		ola$outfname_path = paste(ola$outfname_path, "overlap_analysis_each_patient/", sep="")
 		
@@ -215,7 +215,8 @@ runUnmatchedCohort<-function(ola, study, functional_analysis_name="functional_dr
 	ola$outfname_path = paste(ola$outfname_path, "overlap_analysis/", sep="")
 	ola$results$overlap_analysis = coreOverlapAnalysis(functionalEnrichmentAnalysis=functionalEnrichmentAnalysis, 
 																										 combinedAberrations=combinedAberrations, 
-																										 ola=ola)
+																										 ola=ola, 
+																										 coverage=ola$results$functional_drug_screen_summary$coverage_summary)
 	
 	return(ola)
 }#runUnmatchedCohort
@@ -287,7 +288,8 @@ runMatchedCohort<-function(ola, overlapPatients, study){
 	ola$outfname_path = paste(ola$outfname_path, "overlap_analysis/", sep="")
 	ola$results$overlap_analysis = coreOverlapAnalysis(functionalEnrichmentAnalysis=functionalEnrichmentAnalysis, 
 																										 combinedAberrations=ola$results$combinedAberrations, 
-																										 ola=ola)
+																										 ola=ola, 
+																										 coverage=ola$results$functional_drug_screen_summary$coverage_summary)
 
 	return(ola)
 }
@@ -523,18 +525,29 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	
 	if(is.null(coverage)) coverage=ola$results$functional_drug_screen_summary$coverage_summary
 	
+# 	if( is.null(functionalEnrichmentAnalysis$pathsummary) & !is.null(coverage) ){
+# 		functionalEnrichmentAnalysis = coverage
+# 	}
+	
 	dir.create(path=ola$outfname_path, showWarnings=F, recursive=T)
 	outlist = list()
 	outlist[["imageSlots"]] = list()
 	drugcoverage = coverage$pathsummary[,"path_id"]
-	if(nullOrEmpty( functionalEnrichmentAnalysis$pathsummary )){
+	if( nullOrEmpty( functionalEnrichmentAnalysis$pathsummary ) ){
+		
 		senspaths = NULL
 		sensen=NULL
 		print("There are no sensitive targets in this sample.")
+		cohortOrcoverage = TRUE
+		print(cohortOrcoverage)
 	}else{
+		
 		print("Sensitive targets found.")
 		senspaths = functionalEnrichmentAnalysis$pathsummary[,"path_id"]
 		sensen  = functionalEnrichmentAnalysis$pathsummary[functionalEnrichmentAnalysis$pathsummary[,ola$enrich_col]<ola$threshold,"path_id"]
+		cohortOrcoverage = nrow(functionalEnrichmentAnalysis$patientsums)>1
+		print(cohortOrcoverage)
+		
 	}
 	
 	# 	if(is.null(senspaths)){
@@ -554,14 +567,13 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	aben = abpathsum[abpathsum[,ola$enrich_col]<ola$threshold,"path_id"] #aberration enriched
 	
 	if(VERBOSE) print("Creating venn diagram..")
-	
 
 	# 	fullvennFileName = paste(ola$outfname_path,vennFileName,sep="")
 	# 	fullvennFileName = vennFileName
 
-	
 	vennList = list()
-	vennFileName= ifelse(test=(nrow(functionalEnrichmentAnalysis$patientsums)>1), 
+
+	vennFileName= ifelse(test=cohortOrcoverage, 
 														 no=paste0(rownames(functionalEnrichmentAnalysis$patientsums),"overlap_venn_diagram.png"),
 														 yes="Cohort_overlap_venn_diagram.png")
 											
@@ -572,7 +584,7 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	# 	print("ls()")
 	# 	print(ls())
 	require(VennDiagram)
-	if(is.null(functionalEnrichmentAnalysis)){#ola$results$functional_drug_screen_summary$pathsummary)){#if this is null, then there is only a drug coverage analysis available
+	if( is.null(functionalEnrichmentAnalysis) ){#ola$results$functional_drug_screen_summary$pathsummary)){#if this is null, then there is only a drug coverage analysis available
 		print("venn option 1 -- functionalEnrichmentAnalysis is NULL")
 		vennTmp = venn.diagram(vennList, 
 													 filename=NULL,
@@ -619,6 +631,7 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	# 	outlist[[basename]] = basename #setting up a base name with a .png should compel toHTML to insert an image. .. lets see if it works
 	# 	
 	if(VERBOSE) print("Creating overlap tables...")
+
 	#overlap tables	
 	######1
 	abNotDrug = setdiff(aben, drugcoverage)#aberration enriched, not drug targeted
@@ -635,7 +648,8 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	}else{
 		outlist[["Pathway overlaps of genes in aberration enriched, not drug targeted paths"]]="No dark pathways were found (ie, no pathways were found to be aberrationally enriched but not drug targeted)"
 	}
-	if(VERBOSE){
+
+	if( VERBOSE ){
 		print("targAndAb")
 		######2
 		print(is.null(aben))
@@ -646,7 +660,8 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	if(VERBOSE) print("tabout_targAndAb")
 	if(VERBOSE) print(is.null(targAndAb))
 	tabout_targAndAb = NULL
-	if(!is.null(targAndAb)){
+
+	if( !is.null(targAndAb) ){
 		tabout_targAndAb = merge(coverage$pathsummary[targAndAb,],
 														 combinedAberrations$pathsummary[targAndAb,],
 														 by="path_id",
@@ -657,10 +672,13 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 			if(VERBOSE) print("Targeted and aberrational found..")
 			
 			cohortOrPatient="cohort"
-			if( nrow(functionalEnrichmentAnalysis$patientsums)==1 ){
-				cohortOrPatient = rownames(functionalEnrichmentAnalysis$patientsums)
+			if( !is.null(functionalEnrichmentAnalysis$patientsums) ){
+				if( nrow(functionalEnrichmentAnalysis$patientsums)==1 ){
+					cohortOrPatient = rownames(functionalEnrichmentAnalysis$patientsums)
+				}
+				
 			}
-			
+
 			plotfname = paste("patient",cohortOrPatient,"aberrational_and_targeted.png")
 			# 			fullplotfname = paste(ola$outfname_path,plotfname, sep="")
 			#show a bubble plot of the pathways that are targeted and aberrational
@@ -687,7 +705,7 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	if(VERBOSE) print("drugNotAb; merging to make tabout_drugNotAb")
 	if(VERBOSE) print(dim(coverage$pathsummary[drugNotAb,]))
 	if(VERBOSE) print(dim(combinedAberrations$pathsummary))
-	if(is.null(dim(combinedAberrations$pathsummary))){
+	if( is.null(dim(combinedAberrations$pathsummary)) ){
 		if(VERBOSE) print("it's null")
 		if(VERBOSE) print(combinedAberrations$pathsummary)
 		tabout_drugNotAb = "Patient was not found to have aberrations in currently employed set of pathways."
@@ -712,10 +730,10 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 	
 	allSensPathsMergAb = "No pathways were found to contain drug-sensitive genes"
 	
-	if(!nullOrEmpty(functionalEnrichmentAnalysis$pathsummary)){
+	if( !nullOrEmpty(functionalEnrichmentAnalysis$pathsummary) ){
 		allSensPathsMergAb = functionalEnrichmentAnalysis$pathsummary
 		if(VERBOSE) print("allSensPathsMergAb; merging to make allSensPathsMergAb")
-		if(is.null(dim(combinedAberrations$pathsummary))){
+		if (is.null(dim(combinedAberrations$pathsummary)) ){
 			print("Patient was not found to have aberrations in currently employed set of pathways.")
 		}else{
 			tabout_allSensPathsMergAb = merge(x=functionalEnrichmentAnalysis$pathsummary,
@@ -733,10 +751,11 @@ coreOverlapAnalysis<-function(functionalEnrichmentAnalysis, combinedAberrations,
 			allSensPathsMergAb = tabout_allSensPathsMergAb
 		}
 	}
+
 	outlist[["Paths containing drug-sensitive genes"]] = allSensPathsMergAb
 	
 	if(VERBOSE) print("sensenAndAb")
-	if(is.null(aben)){
+	if( is.null(aben) ){
 		outlist[["Enriched for aberration and enriched for sensitive drug targets"]] = "Patient was not found to have aberrations in currently employed set of pathways."
 		outlist[["Aberration enriched, containing sensitive targets"]] = "Patient was not found to have aberrations in currently employed set of pathways."
 	}else{

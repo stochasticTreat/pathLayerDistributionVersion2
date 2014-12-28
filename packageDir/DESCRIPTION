@@ -6,6 +6,8 @@ Description: Allows exploration of relationship between aberrational and
 Depends:
     R (>= 2.50)
 Imports:
+    AnnotationDbi,
+    reactome.db,
     RCytoscape,
     graphite,
     HGNChelper,
@@ -25,6 +27,7 @@ Imports:
     ggplot2,
     gridExtra,
     shiny,
+    stringr,
     hwriter
 Suggests:
     RUnit,
