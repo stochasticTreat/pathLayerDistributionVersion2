@@ -1,6 +1,30 @@
 #data in: patientGeneLevels (patient gene matrix with continuous values for each gene)
 
 
+# fname = "./input/120314_HNSCC_panel_data/newDrugsAndTargetsV1.txt"
+
+#reformats list of drug-target associations where cells in the targets column
+#contain a comma sepparated list of gene symbols. 
+#Saves normalized list to a new file. New file name is created as <old_file_name>_normalized.txt
+normalizeDrugTargetsList<-function(fname){
+	
+	tin = read.table(file=fname, header=T, sep="\t", stringsAsFactors=F)
+	cleantargets = gsub(pattern="[(),]", replacement=" ", x=tin$target)
+	cleantargets = gsub("( )+", " ", cleantargets)
+	splitRes = strsplit(x=cleantargets, split=" ")
+	names(splitRes)<-tin$drug
+	omat = NULL
+	for(i in 1:length(splitRes)){
+		cur = splitRes[i]
+		tmp = cbind( rep(names(cur), times = length(cur[[1]])), cur[[1]] )
+		omat = rbind(omat, tmp)
+	}
+	colnames(omat)<-c("drug","target")
+	fname2 = gsub(pattern="[.][a-zA-Z]+$", replacement="", x=fname)
+	fname2 = paste0(fname2, "_normalized.txt")
+	write.table(x=omat, file=fname2, sep="\t", row.names=F, col.names=T)
+	
+}
 
 #main function for runing drug screen
 #implements armMain interface, thus this function is passed as armMain() inside the runArm() function
