@@ -320,7 +320,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 	resave = F
 	###################################  Check Corrections File
 	raw_correction_set = getSymbolCorrectionTable(correctionsfile=correctionsfile)
-	if(file.exists(correctionsfile)){
+	if( file.exists(correctionsfile) ){
 		
 		raw_correction_set_tmp=corListCheck(cl=raw_correction_set, symtab=symref)
 		if(sum(!all.equal(target=raw_correction_set_tmp, current=raw_correction_set)==T)){
@@ -331,7 +331,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 		
 		numcor = intersect(x=correction_set[,1], not_approved[,"Hugo_Symbol"])#numcor is the number of symbols in symbols set 
 		#that can be corrected from the symbol correction file 
-		if(length(numcor)){
+		if( length(numcor) ){
 			if(verbose){
 				cat("\nA previously made corrections file was found at",correctionsfile,"\nThis file contains corrections for ", 
 						as.character(length(numcor)), "of the ",nrow(not_approved),"unapproved gene symbols.\n")
@@ -341,7 +341,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 				use_previous = readline(paste("Press enter to use these corrections.\nEnter anything else to skip using these corrections\n", 
 																			"(You will be provided with a chance to select your own corrections): "))
 			}
-			if(use_previous==""){
+			if( use_previous=="" ){
 				symbol_set[,"Hugo_Symbol"] = swapsymbols2(corrected=correction_set, genelist=symbol_set[,"Hugo_Symbol"])
 				not_approved = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])#temporary state of not_approved
 				not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2), drop=F]#not approved now has two columns
@@ -358,19 +358,19 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 			}
 		}
 		
-		if(max(0,nrow(not_approved))==0){
+		if( max(0,nrow(not_approved))==0 ){
 			return(symbol_set[,"Hugo_Symbol"])
 		}
 	}
 	
 	if(verbose){
-		if(max(0,nrow(not_approved))){
+		if( max(0,nrow(not_approved)) ){
 			###################################   Check previously used symbols
 			checkprev = readline("\nWould you like to check previously official HUGO symbols for the remaining unmatching symbols? \n(enter y or n)")
 			if(checkprev=="y"){
 				######## Check previous HUGO symbols
 				switches = checkPreviousSymbols(symbols=not_approved, indexes=1:nrow(not_approved), symlookup=cref, col2=col2)
-				if(nrow(switches)){
+				if( nrow(switches) ){
 					print(switches)
 					symbol_set[,"Hugo_Symbol"]=swapsymbols2(corrected=switches, genelist=symbol_set[,"Hugo_Symbol"]) 
 					not_approved = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])#temporary state of not_approved
@@ -386,10 +386,10 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 			}	
 		}
 		print(not_approved)
-		if(max(nrow(not_approved),0)){
+		if( max(nrow(not_approved),0) ){
 			###################################   Check synonyms
 			checksyn = readline("\nWould you like to check synonyms for the remaining unmatching symbols? (enter y or n) ")
-			if(checksyn=="y"){
+			if( checksyn=="y" ){
 				
 				syncor = checkSynonyms(symbols=not_approved, indexes=1:nrow(not_approved), symlookup=cref, col2=col2)
 				if(nrow(syncor)){
@@ -398,6 +398,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 					not_approved = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])#temporary state of not_approved
 					not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2), drop=F]#not approved now has two columns
 					not_approved = unique(not_approved)
+					colnames(new_corrections)<-c("old_symbol","new_symbol")
 					new_corrections = rbind(new_corrections, syncor)
 				}
 				cat("\nThere is/are now", as.character(nrow(not_approved)), "symbol(s) remaining which do not match approved HUGO symbols.\n")
