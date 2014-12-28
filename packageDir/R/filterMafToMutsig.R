@@ -16,8 +16,9 @@ filterMafToMutsig<-function(){
 	msigmaf = mafin[mafin$Hugo_Symbol%in%msigGenes,,drop=FALSE]
 	
 	fname3 = paste0(fname,".",basename(fname2),".mutsigex.txt" )
+	cat("\nSaving filtered .maf\n")
 	write.table(x=msigmaf, file=fname3, quote=T, sep="\t", row.names=F, col.names=T)
-	
+	cat("\nFiltered .maf saved to file:", fname3, "\nin folder:", getwd())
 }
 
 
