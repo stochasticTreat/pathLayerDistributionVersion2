@@ -58,6 +58,17 @@ runSomaticMutationsProcessing<-function(settings, study){
 	}
 }
 
+#addPidColumn
+#extracts TCGA barcodes, and reformats them so dashes (-) are replaced with periods (.) . 
+#param tcga_data data.frame with a column containing the string Sample_Barcode (if more than one are found, the first one will be used), from which the base tcga barcode will be extracted.
+#return the tcga_data data.frame with a column appended containing the extracted pid, in the format TCGA.AB.2988, for each row. 
+addPidColumn<-function(tcga_data){
+	cat("\nFixing patient ids...\n")
+	colIndex = grep(pattern="Sample_Barcode", x=colnames(tcga_data), ignore.case=T)[1]
+	pid = sapply(as.character(tcga_data[,colIndex]), extract_pid)
+	tcga_data = cbind.data.frame(pid, tcga_data, stringsAsFactors=F)#append extracted pids as a sepparated column
+	return(tcga_data)
+}
 
 #top20Hists(unfilteredData=STUDY@results$somatic_mutation_aberration_summary$original_data_matrix)
 top20Hists<-function(unfilteredData){
@@ -488,10 +499,11 @@ addDbSNPToVariantClassification<-function(maf){
 
 dataCleaningAndCheck<-function(tabin){
 	neededColumns = c("Hugo_Symbol", "Chrom", "Ncbi_Build", "Start_Position", "Reference_Allele", "Tumor_Sample_Barcode", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2", "Variant_Classification", "Variant_Type", "Dbsnp_Rs","Dbsnp_Val_Status")
+	
 	missingCols = which(!neededColumns%in%colnames(tabin))
 	if(length(missingCols)==0) return(tabin)
-	warning("This/these column(s) name(s) not found:\n", neededColumns[missingCols],"\n..attempting correction by making everything uppercase")
-	message("This/these column(s) name(s) not found:\n", neededColumns[missingCols],"\n..attempting correction by making everything in column names uppercase")
+	warning("This/these column(s) name(s) not found:\n", paste(neededColumns[missingCols], collapse=", "),"\n..attempting correction by making everything in column names uppercase.")
+	message("This/these column(s) name(s) not found:\n", paste(neededColumns[missingCols], collapse=", "),"\n..attempting correction by making everything in column names uppercase.")
 	for(i in missingCols){
 		#which of the test columns equals the needed input
 		ci = which(toupper(colnames(tabin)) == toupper(neededColumns[i]))
@@ -501,8 +513,9 @@ dataCleaningAndCheck<-function(tabin){
 	chromi = grep(pattern="Chromosome", x=colnames(tabin))
 	if(length(chromi)){
 		warning("The column name 'Chromosome' was changed to 'Chrom'")
-		colnames(tabin)<-"Chrom"
+		colnames(tabin)[chromi]<-"Chrom"
 	}
+	if( sum(!neededColumns%in%colnames(tabin)) ) stop("This/these column(s) name(s) not found:\n", paste(neededColumns[missingCols], collapse=", "),"\nPlease check the input file and make sure these columns are avaiable and spelled the same.")
 	return(tabin)
 }
 
