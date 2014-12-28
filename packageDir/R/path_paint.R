@@ -877,7 +877,7 @@ test.fixPathNames<-function(){
 
 #remove all extraneous white space
 fixPathNames<-function(x){
-	library("stringr")
+	# 	library("stringr")
 	#leading and trailing whitespace
 	x = str_trim(string=x, side="both")
 	x = str_replace_all(string=x, pattern="\\s+", replacement=" ")
@@ -890,8 +890,8 @@ fixPathNames<-function(x){
 #'@import reactome.db 
 #'@import AnnotationDbi
 getHumanPathIds<-function(){
-	library("reactome.db")
-	library("AnnotationDbi")
+	# 	library("reactome.db")
+	# 	library("AnnotationDbi")
 	print(class(reactomePATHNAME2ID))
 	cat("pulling the path id list out of the annotation package.....")
 	
