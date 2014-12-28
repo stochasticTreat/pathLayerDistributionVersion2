@@ -1394,6 +1394,7 @@ logError<-function(elist,elogDir="./errorLog/"){
 												 yes=as.character(Sys.Date()), 
 												 no=elist$name), 
 									".txt")
+	efname = gsub(pattern=" ", replacement="_", x=efname) #make sure there are no spaces in the file name
 	cat("writing error to file", efname,"\n")
 	for(i in 1:length(elist)){
 		el=as.character(elist[[i]])
