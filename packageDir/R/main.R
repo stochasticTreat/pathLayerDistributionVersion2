@@ -80,6 +80,8 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 		initResults = F
 		if(!exists("STUDY")){
 			initResults=T
+# 		}else if(exists("STUDY")){
+# 			if(is.null(STUDY)) initResults=T
 		}else if(STUDY@studyMetaData@studyName==""){
 			initResults=T
 		}#if(!exists("results"))
