@@ -21,10 +21,16 @@ checkPathsMatch<-function(STUDY){
 	fileInMetaData = STUDY@studyMetaData@paths$file
 	allInputArms = names(STUDY@results)[grep(pattern="functional_|aberration_", x=names(STUDY@results))]
 	for(carm in allInputArms){
-		
-		ss = STUDY@results[[carm]]$summarystats
+		if( !"summarystats" %in% names(STUDY@results[[carm]]) ){
+			if( "coverage_summary" %in% names(STUDY@results[[carm]]) ){
+				ss = STUDY@results[[carm]]$coverage_summary$summarystats
+			}
+		}else{
+			ss = STUDY@results[[carm]]$summarystats
+		}
+
 		sspathfile = ss[ss[,1]=="Path source:",2]
-		if(sspathfile!=fileInMetaData){
+		if( sspathfile!=fileInMetaData ){
 			message("Warning: pathways currently loaded do not match pathways used to analyze input data types!")
 			message("Current input arm: ", carm)
 			message("File for the pathways that are currently loaded:\n", fileInMetaData)
@@ -571,6 +577,7 @@ importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
 #				symtab: the symbol lookup table
 #returns: preped_paths: the path_detail object with meta data filled in
 manualPathMetaData<-function(preped_paths, symtab=NULL, symbol_type="HUGO"){
+# 	library("tools")
 	if(is.null(symtab)) symtab = getHugoSymbols()
 	pathsFolder = "./reference_data/paths/"
 	
