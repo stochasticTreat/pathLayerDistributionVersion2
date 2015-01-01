@@ -11,7 +11,7 @@ loadStudy(studyFolderName, path_detail = NULL)
 \item{path_detail}{Optional. A \code{Path_Detail} object.}
 }
 \value{
-A \Code{Study} object.
+A \code{Study} object.
 }
 \description{
 Given a file name, this function loads and returns a study. If a Path_Detail object is provided, it will be loaded as the study's path repository.

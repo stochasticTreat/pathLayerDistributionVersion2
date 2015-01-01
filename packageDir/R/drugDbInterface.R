@@ -200,6 +200,7 @@ filterByColumn<-function(pres){
 #'@title getPathIdsToTarget
 #'@param pathsToSearch the set of pathways to search for targets. If this is provided, function passes this input as the output
 #'@param STUDY the study object
+#'@param verbose Logical flag indicating if diagnostic information should be printed to the screen.
 #'@return Vector of path ids/path names
 getPathIdsToTarget <- function (STUDY, pathsToSearch = NULL, verbose=TRUE) {
 	#1) associate paths in overlap analysis with drugs

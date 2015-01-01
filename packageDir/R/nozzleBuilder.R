@@ -622,7 +622,7 @@ nozzlesToFileStructure<-function(study, armName, nozzleTitle=""){
 #'@description Make a Nozzle report from an individual patient's results
 #'@param patSum The list element, including item name of the patient's summary (note this must include the patient name, thus what is given by \code{list[1]} would be correct, not what is subscripted like \code{list[[1]]})
 #'@param rootReportName The file path to the root nozzle report ex: "./output/study_mutSigAnalysisOnly/results/somatic_mutation_aberration_summary.nozzleReport"
-#'@param resSetName 
+#'@param resSetName The name of the results set being added to the nozzle page.
 #'@export
 #'@return The path to the file that the patient summary was saved to.
 patientSummaryToNozzleReport<-function(patSum, rootReportName, resSetName){
