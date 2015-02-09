@@ -91,10 +91,12 @@ RunGenericEnrichment<-function(settings, study){
 	# 	pgm = NULL
 	
 	aberration_data_type = gsub(pattern=" ", replacement="_", 
-															x=paste(aberration_data_type,"generic", ifelse(test=(funab=="f"),
+															x=paste(aberration_data_type,
+																			"generic", 
+																			ifelse(test=(funab=="f"),
 																							yes="functional",
 																							no="aberration"), 
-																			  "summary"))
+																			"summary"))
 	
 	print("Running main generic aberraion analysis function:")
 	res = RunGenericEnrichment_main(aberration_data_type=aberration_data_type,
@@ -223,7 +225,7 @@ RunGenericEnrichment_main<-function(path_detail,
 	
 	typeName=aberration_data_type
 	
-	glist = list(summary=gsum, resTypeName=typeName, settings=s)
+	glist = list(summary=gsum, resTypeName=typeName, settings=gsum$settings)
 	
 	return(glist)
 }
