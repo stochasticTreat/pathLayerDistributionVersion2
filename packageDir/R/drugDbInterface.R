@@ -62,7 +62,7 @@ getDrugTargetData<-function(hugo,
 									"'Drug Target Identifiers', 'All Drugs'\n",
 									"'and 'Drug Enzyme Identifiers', 'All Drugs'",
 									"\nCurrent working directory:",getwd()))
-		
+		cat("Returning NULL.. .")
 		return(NULL)
 	}
 	ptm<-proc.time()

@@ -1,11 +1,11 @@
 require("roxygen2")
 
 # dir.create("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/executionDir")
-setwd("/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/executionDir")
+setwd("/Users/higgins/tprog/distribution/pathLayerDistributionVersion2/executionDir")
 
 detach("package:packageDir", unload=TRUE)
 remove.packages("packageDir")
-roxygenize(package.dir="/Users/samhiggins2001_worldperks/tprog/distribution/pathLayerDistributionVersion2/packageDir/")
+roxygenize(package.dir="/Users/higgins/tprog/distribution/pathLayerDistributionVersion2/packageDir/")
 
 # roxygenize()
 

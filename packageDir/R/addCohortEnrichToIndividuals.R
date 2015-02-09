@@ -15,7 +15,7 @@ addCohortToEachIndividual<-function(psro,pdo){
 
 #'@title Adds path enrichment information from cohort to paths found to contain active genes in individual patients.
 #'@description Adds the columns in columnsToAdd from the whole cohort path enrichment to the path enrichments for each patient.
-#'@param res The results list object containing slots named path_summary_each_patient and pathsummary.
+#'@param res The results list object containing slots named path_summar y_each_patient and pathsummary.
 #'@param columnsToAdd The columns from mainPathSum to add to each individual patient path summary
 #'@return The list of path summary results for each patient.
 #'@export
@@ -23,7 +23,9 @@ addCohortToEachIndividual<-function(psro,pdo){
 #' tstudy = getTestStudyObject()
 #' all_results = slot(object=tstudy, name="results")
 #' psep = addCohortToIndividuals(res=all_results$somatic_mutation_aberration_summary)
+#'\dontrun{
 #' View(psep$p1$pathsummary)
+#'}
 addCohortToIndividuals<-function(res, 
 																 columnsToAdd=grep(pattern="hyper",colnames(res$pathsummary))[1]:ncol(res$pathsummary) ){
 	psep = res$path_summary_each_patient

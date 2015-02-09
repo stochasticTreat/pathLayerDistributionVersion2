@@ -44,8 +44,10 @@ changeStudyName<-function(study, newName){
 #'@export
 #'@examples
 #'#load a set of settings
-#'load(system.file("extdata/abacavirSettings.rda",package="packageDir"), verbose=TRUE)
+#'abacavirSettings = getBasicSettings()
+#'
 #'#initialize the study
+#'
 #'s1 = getStudyObject(path_detail=getDefaultPaths(), 
 #'										settings=abacavirSettings,
 #'										study.name="integrationTestAvacavirMetabolism")
@@ -56,8 +58,8 @@ autoRunFromSettings<-function(study, verbose=T){
 	allanalyses = names(study@studyMetaData@settings)	
 	analyses = allanalyses[!grepl(pattern="^default|^overlap_analysis", x=allanalyses, ignore.case=T)]#remove any settings starting with the string "default"
 	
-	if(length(analyses)){
-		cat("Settings being run for these intput arms:\n")
+	if( length(analyses) ){
+		cat("Settings were found for these intput arms:\n")
 		cat(analyses, "\n")
 		for(a in analyses){
 			print(a)
@@ -82,6 +84,29 @@ checkForceRowNames<-function(tab){
 }
 
 
+#'@title Get settings object pre-loaded for example analysis
+#'@description Returns set of setting for analysis of example somatic mutation data, example drug screen data, overlap analysis, and path analysis. 
+#'@return A \code{Settings}
+#'@export
+getBasicSettings<-function(){
+	#pull up the settings
+	varname = load(system.file("extdata/abacavirSettings.rda",package="packageDir"), verbose=TRUE)
+	abacavirSettings = get(varname[1])
+	
+	if(is.data.frame(abacavirSettings)) abacavirSettings = dfToList(abacavirSettings)
+	#swap out locations of any files, getting 
+	for( sl in names(abacavirSettings) ){
+		
+		fileSlots = grep(pattern = "file", x = names( abacavirSettings[[sl]] ) )
+		
+		for(si in fileSlots ){
+			fileTmp = basename(	abacavirSettings[[sl]][[si]] )
+			if(fileTmp!="")	abacavirSettings[[sl]][[si]] = system.file(paste0("extdata/", fileTmp), package="packageDir")
+		}
+	}
+	
+	return(abacavirSettings)
+}
 
 #runArm
 #function that executes the armsMain interface
@@ -333,7 +358,9 @@ bmerge<-function(x,y){
 #' stud = getTestStudyObject()
 #' stud = compareSources(study=stud)
 #' resslot = slot(object=stud, name="results")
+#' \dontrun{
 #' View(resslot$'Aberration data type comparrison')
+#' }
 compareSources<-function(study){
 	#takes:		 the results list
 	#returns:	 Two item list: list(outtable=outtable, results=results)

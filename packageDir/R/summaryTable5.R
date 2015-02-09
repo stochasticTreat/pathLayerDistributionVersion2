@@ -42,7 +42,9 @@ saveDefaultSettings<-function(psr){
 #'																pgm=getTestPGM(),
 #'																dataSetDescription="test analysis of gene data",
 #'																activeGeneDescription="analyzed_gene")
+#'\dontrun{
 #'View(pathwayAnalysis$patientsums)
+#'}
 summaryTable<-function(study, 
 											 activeGeneDescription="active_gene", 
 											 dataSetDescription="analysis of undefined active genes",

@@ -169,7 +169,6 @@ allInteractiveMainFunction<-function(additionalArms=NULL){
 		}else if(sel=="Run analysis from loaded settings"){
 			STUDY = autoRunFromSettings(study=STUDY)
 			results = STUDY@results
-			
 		}else if(sel=="combine aberration data and summarize by pathway"){
 			STUDY = combineAberrationTypes(study=STUDY)
 		}else if(sel=="View summary of loaded data"){#View summary of loaded data 

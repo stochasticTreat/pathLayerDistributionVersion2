@@ -43,7 +43,8 @@ test.abacavirMetabolismOverlapSets<-function(){
 	#		save(abacavirSettings, file="../packageDir/inst/extdata/abacavirSettings.rda")
 	
 	varname = load(system.file("extdata/abacavirSettings.rda",package="packageDir"), verbose=T)
-	integrationSettings = get(varname[1])
+
+	integrationSettings = getBasicSettings()
 	#initialize the study
 	s1 = getStudyObject(path_detail=getDefaultPaths(), 
 											settings=integrationSettings,
