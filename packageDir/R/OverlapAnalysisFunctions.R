@@ -508,6 +508,45 @@ extractedDrugScreenAnalysis<-function(psubset, results, path_detail, study, s, e
 	return(summ)
 }#extractedDrugScreenAnalysis
 
+
+combineAbSens<-function(functionalEnrichmentAnalysis, combinedAberrations, ola, coverage=NULL){
+	
+}
+
+
+coreOverlapAnalysis2<-function(functionalEnrichmentAnalysis, combinedAberrations, ola, coverage=NULL){
+
+	### combine into single table:
+	#	functional path enrichments
+	# aberration path enrichments
+	#	functional coverage
+	# aberration data coverage
+ 
+	
+	combtab = combineAbSens(functionalEnrichmentAnalysis=functionalEnrichmentAnalysis, combinedAberrations=combinedAberrations, ola=ola, coverage=coverage)
+	
+	### determine what kind of overlap
+	#	1) ab + sensitivity + panel coverage
+	# 2) ab + panel coverage
+	
+	### find which paths are in each part of the overlap
+	
+	#panel coverage:
+	# 1) dark: ab, not covered
+	#	2) light: covered, not ab
+	# 3) prioritized: ab, covered
+	
+	#sensitivity overlap
+	# 1) dark: ab, not targ
+	# 2) duds: ab, targ, not sensitive
+	# 3) prioritized: ab, targ, sensitive
+	# 4) mysterious: not ab, targ, sensitive
+	# 5) uninteresting: not sensitive, targ, not aberrational
+	
+}
+
+
+
 #'@title The central function used in an overlap analysis
 #'@description Examines the actual overlap between functionally significant and aberrationally signficant pathways.
 #'@param functionalEnrichmentAnalysis The functional enrichment analysis to be used. 
