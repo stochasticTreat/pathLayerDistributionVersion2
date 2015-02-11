@@ -254,7 +254,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 		symbol_set = cbind(symbol_set,rep("",times=length(symbol_set)))
 	}
 	#correct the column names
-	if(!sum(c("Hugo_Symbol",col2)%in%colnames(symbol_set))){
+	if( !sum(c("Hugo_Symbol",col2)%in%colnames(symbol_set)) ){
 		colnames(symbol_set)<-c("Hugo_Symbol",col2)
 	}
 	
@@ -293,6 +293,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 	if(!max(0,nrow(not_approved))){#if all symbols match approved hugo symbols, this will be true
 		return(symbol_set[,"Hugo_Symbol"])
 	}
+	
 	if((max(0,nrow(not_approved))<50) & verbose){
 		cat("\nThese are the symbols that were not found to be approved HUGO symbols:\n")
 		print(not_approved)
@@ -392,14 +393,20 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 			if( checksyn=="y" ){
 				
 				syncor = checkSynonyms(symbols=not_approved, indexes=1:nrow(not_approved), symlookup=cref, col2=col2)
-				if(nrow(syncor)){
+				if( nrow(syncor) ){
 					colnames(syncor)<-c("old_symbol","new_symbol")
 					symbol_set[,"Hugo_Symbol"]=swapsymbols2(corrected=syncor, genelist=symbol_set[,"Hugo_Symbol"])
+					
 					not_approved = which(!symbol_set[,"Hugo_Symbol"] %in% cref[,"Approved.Symbol"])#temporary state of not_approved
 					not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2), drop=F]#not approved now has two columns
 					not_approved = unique(not_approved)
-					colnames(new_corrections)<-c("old_symbol","new_symbol")
+					
 					new_corrections = rbind(new_corrections, syncor)
+					if(!is.null(new_corrections)){
+						notCorrectedi = new_corrections[,1] == new_corrections[,2]
+						new_corrections = new_corrections[!notCorrectedi,,drop=F]
+					}
+					colnames(new_corrections)<-c("old_symbol","new_symbol")
 				}
 				cat("\nThere is/are now", as.character(nrow(not_approved)), "symbol(s) remaining which do not match approved HUGO symbols.\n")
 				print(not_approved)
@@ -408,7 +415,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 			if(verbose){cat("\nA full list of symbols which were found not to be approved and which could\n",
 											"not be corrected can be found at ./output/not_approved_not_correctable_symbols_from_last_run.txt\n")}
 			write.table(x=not_approved,file="./output/not_approved_not_correctable_symbols_from_last_run.txt",sep="\t",row.names=F)
-			if(length(new_corrections)){
+			if( !is.null(new_corrections) ){
 				cat("\nThese are the new corrections that were just added:\n")
 				print(new_corrections)
 				if(readline("Would you like to save this set of corrections just made to the corrections file (y/n)")=="y"){
