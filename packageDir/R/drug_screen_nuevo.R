@@ -235,7 +235,7 @@ extractAndCleanGeneSymbols<-function(tab, study, s, symtab=NULL){
 	
 	#remove blank rows: 
 	blanki = which(tab$gene=="")
-	tab2 = tab[!1:nrow(tab)%in%blanki,]
+	tab2 = tab[!1:nrow(tab)%in%blanki,,drop=F]
 	#remove -domain information
 	allSymsPlusPhos = sapply(X=tab2$gene,function(x){strsplit(x=x,split="\\(")[[1]][1]})
 	#remove phosphorylation info

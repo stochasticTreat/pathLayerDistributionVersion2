@@ -538,7 +538,7 @@ importPathways<-function(symtab=NULL, choice=NULL, fname=NULL){
 	#allow selection
 	while(T){
 		if(!is.null(choice)) if(choice%in%c("b", "g")) break
-		choice = readline("To provide a set of pathways in bipartate graph format, enter b\nTo provide a set of pathways in GSEA format, enter g: ")
+		choice = readline("To provide a set of pathways in bipartate graph format, enter b\nTo provide a set of pathways in GSEA/'gene set' format, enter g: ")
 	}
 	
 	#&open path file
