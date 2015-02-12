@@ -401,12 +401,14 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 					not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2), drop=F]#not approved now has two columns
 					not_approved = unique(not_approved)
 					
+					colnames(new_corrections)<-c("old_symbol","new_symbol")
+					
 					new_corrections = rbind(new_corrections, syncor)
 					if(!is.null(new_corrections)){
 						notCorrectedi = new_corrections[,1] == new_corrections[,2]
 						new_corrections = new_corrections[!notCorrectedi,,drop=F]
 					}
-					colnames(new_corrections)<-c("old_symbol","new_symbol")
+				
 				}
 				cat("\nThere is/are now", as.character(nrow(not_approved)), "symbol(s) remaining which do not match approved HUGO symbols.\n")
 				print(not_approved)

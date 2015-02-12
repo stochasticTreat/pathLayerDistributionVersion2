@@ -780,7 +780,7 @@ loadPathsAsSets<-function(firstGeneColum=NULL,
 	outlist = list()
 	excluded = c()
 	
-	if(is.null(firstGeneColum)){
+	if( is.null(firstGeneColum) ){
 		rone =  strsplit(pset[1,],split="\t")[[1]]
 		rone = matrix(data=rone, ncol=1, dimnames=list(NULL,"row contents"))
 		cat("\nThis is the contents of the first row from the file:\n")
@@ -799,7 +799,7 @@ loadPathsAsSets<-function(firstGeneColum=NULL,
 		keepLowerCaseGenes = "Y"==toupper(readline("Would you like to keep lowercase genes?\n(note: lower case likely indicates gene is from a virus)\nPlease enter y or n"))
 	}
 	
-	for(i in 1:nrow(pset)){
+	for( i in 1:nrow(pset) ){
 		cat("\nWorking on row",i,"of",nrow(pset),"rows.\n")
 		currow = strsplit(pset[i,],split="\t")[[1]]
 		cat("\nGenes in current row:",(length(currow)-firstGeneColum+1))
