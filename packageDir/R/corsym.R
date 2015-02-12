@@ -401,7 +401,7 @@ corsym_full<-function(symbol_set, symref=NULL, verbose=T, col2="Chrom", correcti
 					not_approved = symbol_set[not_approved,c("Hugo_Symbol", col2), drop=F]#not approved now has two columns
 					not_approved = unique(not_approved)
 					
-					colnames(new_corrections)<-c("old_symbol","new_symbol")
+					if(!is.null(new_corrections)) colnames(new_corrections)<-c("old_symbol","new_symbol")
 					
 					new_corrections = rbind(new_corrections, syncor)
 					if(!is.null(new_corrections)){
@@ -449,6 +449,7 @@ getSymbolCorrectionTable<-function(correctionsfile){
 #'@param correctionsfile the file name of the corrections file
 #'@param correction_set the original contents of the corrections file before new corrections were made
 addCorrections<-function(new_corrections, correctionsfile="./reference_data/gene_symbol_corrections_list.txt", correction_set=NULL){
+	cat("Adding corrections to symbol corrections file...")
 	if(is.null(correction_set)){
 		if(file.exists(correctionsfile)){
 			correction_set = as.matrix(read.delim(file=correctionsfile, header=T, sep="\t", stringsAsFactors=F,quote="", na.strings="-"))
