@@ -5,7 +5,7 @@
 #'@description Provides hypergeometric test for analysis of pathway enrichment. Implements interface from the summaryTable function to path significance tests.
 #'@param paths_detail An object of the Path_Detail class
 #'@param pathSigRunner An object of the PathSummaryRunner reference class
-#'@return data.frame with two columns, one with hypergeometric p-values for each path, the other with B.H./FDR adjusted p-value.
+#'@return data.frame with two columns, one with hypergeometric p-values for each path, the other with B.Y./FDR adjusted p-value.
 #'@note Implements the path test interface with one input, the path summary list, and the output, a data.frame with pathway names as row name(s) and named column(s) giving the result of the significance test. 
 #'@export
 hypergeometricPathEnrichment <- function (pathSigRunner, paths_detail) {
@@ -26,7 +26,7 @@ hypergeometricPathEnrichment <- function (pathSigRunner, paths_detail) {
 																 total_nodes-total_active, 
 																 total_in_path)
 	}
-	dout = cbind.data.frame(hyperg_p_value, hyperg_p_w_FDR=p.adjust(hyperg_p_value, method=c("BH")))
+	dout = cbind.data.frame(hyperg_p_value, hyperg_p_w_FDR=p.adjust(hyperg_p_value, method=c("BY")))
 	rownames(dout)<-rownames(targetMatrix)
 	return(dout)
 }
